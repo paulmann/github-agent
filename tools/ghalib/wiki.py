@@ -385,10 +385,19 @@ def publish(
     work_dir.mkdir(parents=True, exist_ok=True)
     rc, _, err = git(["clone", "--quiet", remote, str(clone_dir)], work_dir)
     if rc != 0:
+        probe_rc, _, _ = git(["ls-remote", "--quiet", remote], work_dir)
+        if probe_rc != 0:
+            report.error(
+                "wiki.remote-missing",
+                f"the wiki repository does not exist: {remote}",
+                hint=("GitHub creates <repo>.wiki.git only when the first page is saved in the web "
+                      "interface (Wiki → New page); a push cannot create it. Create one page, then publish."),
+            )
+            return report
         clone_dir.mkdir(parents=True, exist_ok=True)
         git(["init", "--quiet"], clone_dir)
         git(["remote", "add", "origin", remote], clone_dir)
-        report.info("wiki.remote-empty", f"remote {remote} is empty or not initialised; a first commit will create it")
+        report.info("wiki.remote-empty", f"remote {remote} is initialised but has no commits yet")
         if err.strip():
             report.info("wiki.clone-note", err.strip().splitlines()[0])
 

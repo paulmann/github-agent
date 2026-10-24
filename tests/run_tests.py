@@ -579,6 +579,12 @@ def test_wiki(tmp: Path) -> None:
     git(["remote", "add", "origin", str(remote)], seed)
     git(["push", "--quiet", "origin", "HEAD:refs/heads/master"], seed)
 
+    report = wiki_module.publish("owner/demo", out, push=False, work_dir=tmp / "publish-missing",
+                                remote=str(tmp / "no-such-wiki.git"))
+    expect_rule(report, "wiki.remote-missing", "wiki: publishing to a wiki that does not exist is a clear error")
+    check("wiki: the missing-remote error explains the platform step",
+          any("web" in f.hint for f in report.findings if f.rule == "wiki.remote-missing"))
+
     work = tmp / "publish-work"
     report = wiki_module.publish("owner/demo", out, push=False, work_dir=work, remote=str(remote),
                                  author_name="Test", author_email="test@example.com")

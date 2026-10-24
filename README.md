@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-3776AB)](https://www.python.org/)
 [![Dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](tools/ghagent.py)
-[![Checks](https://img.shields.io/badge/self--tests-111%20checks-brightgreen)](tests/run_tests.py)
+[![Checks](https://img.shields.io/badge/self--tests-113%20checks-brightgreen)](tests/run_tests.py)
 
 ## Содержание
 
@@ -52,12 +52,12 @@ CHANGELOG без дат, вики из трёх страниц без навиг
 
 | Поверхность | Значение | Источник измерения |
 |---|---:|---|
-| Самопроверок | 111 | `tests/run_tests.py` |
+| Самопроверок | 113 | `tests/run_tests.py` |
 | Команд CLI | 12 | `tools/ghagent.py --help` |
 | Модулей библиотеки | 10 | `tools/ghalib/*.py` |
 | Правил осмотрено на этом дереве | 16 | `doc --json`, поле `rules_examined` |
 | Внешних зависимостей | 0 | `tools/ghagent.py`, импорты |
-| Проверенных ловушек платформы | 13 | таблица в [AGENTS.md](AGENTS.md#ловушки-платформы) |
+| Проверенных ловушек платформы | 14 | таблица в [AGENTS.md](AGENTS.md#ловушки-платформы) |
 | Строк Python | 3055 | `tools/**/*.py` |
 
 ## Installation
@@ -172,8 +172,10 @@ score: 72.5% (22 scored, 1 skipped)
 ссылки в дерево репозитория становятся абсолютными, относительные картинки считаются
 ошибкой, потому что вики-репозиторий дерева проекта не видит.
 
-Проверено на практике этого репозитория: вики собрана и опубликована командой пакета,
-навигация и перекрёстные ссылки проверены `wiki verify`.
+Вики собрана и проверена командой пакета: `wiki build` и `wiki verify` проходят на этом
+дереве. Публикация требует одного действия в интерфейсе GitHub: `<repo>.wiki.git` не
+существует, пока не сохранена первая страница, и `git push` его не создаёт — команда
+`wiki publish` в этом случае возвращает `wiki.remote-missing` с этим шагом.
 
 ## Как это устроено
 
@@ -199,7 +201,7 @@ flowchart LR
 | `tools/ghalib/changelog.py` | Keep a Changelog 2.0.0, выпуск версии, черновик из коммитов |
 | `tools/ghalib/meta.py` | описание, темы, домашняя страница |
 | `tools/ghalib/install.py` | установка навыка, манифест sha256, проверка, удаление |
-| `tests/run_tests.py` | 111 самопроверок с фикстурами и приманками |
+| `tests/run_tests.py` | 113 самопроверок с фикстурами и приманками |
 
 Якоря считаются по правилам GitHub: регистр приводится к нижнему, знаки препинания
 удаляются, пробелы становятся дефисами, повтор заголовка получает `-1`. Правило

@@ -23,7 +23,7 @@ command. It does not write marketing copy and does not invent numbers: it checks
 wrote and refuses to publish what is broken.
 
 > **Documentation status.** Every number in this README was measured on 2026-10-24 against
-> version 1.0.0 with the commands named in the table. Long guides live in the
+> version 1.1.0 with the commands named in the table. Long guides live in the
 > [Wiki](https://github.com/paulmann/github-agent/wiki) and [`docs/`](docs/); the protocol for
 > agents is [`AGENTS.md`](AGENTS.md).
 

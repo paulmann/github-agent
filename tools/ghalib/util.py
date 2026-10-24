@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 PACK_NAME = "github-agent"
-PACK_VERSION = "1.0.0"
+PACK_VERSION = "1.1.0"
 
 EXIT_OK = 0
 EXIT_FAIL = 1

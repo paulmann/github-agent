@@ -1,63 +1,65 @@
 ---
 name: github-repo
-description: Ведение репозитория GitHub как продукта — описание, темы, домашняя страница, README, гигиена файлов, релизы. Загружать, когда нужно оценить или переделать репозиторий, написать README, привести метаданные в порядок, проверить сообщество и ссылки перед публикацией.
+description: Running a GitHub repository as a product — description, topics, homepage, README, hygiene files, releases. Load when a repository needs to be audited or rebuilt, when a README must be written, when metadata has to match the content, or before announcing a project.
 ---
 
-# Репозиторий как продукт
+# Repository as a product
 
-## Когда загружать
+## When to load
 
-- Репозиторий опубликован, но его «не видно»: описание из трёх слов, тем нет, README
-  начинается с философии вместо установки.
-- Нужен README, который читают до конца.
-- Нужно проверить перед публикацией: файлы сообщества, лицензия, ссылки, бейджи.
+- The repository exists but is invisible: a three-word description, no topics, a README that
+  opens with philosophy instead of installation.
+- A README is needed that people finish.
+- A pre-publication check is needed: community files, license, links, badges.
 
-## Первый вызов
+## First call
 
 ```bash
 python <pack>/tools/ghagent.py audit . --json
 python <pack>/tools/ghagent.py audit --repo owner/name
 ```
 
-`audit` отвечает одной структурой: оценка гигиены, список пунктов со статусом
-`pass|fail|warn|skipped`, находки с `файл:строка`. Пункты, которые не удалось осмотреть,
-попадают в `skipped` и **не** поднимают оценку.
+`audit` answers with one structure: the hygiene score, items with `pass|fail|warn|skipped`, and
+findings with `file:line`. Items that could not be examined land in `skipped` and do **not**
+raise the score.
 
-## Что решает публикуемость
+## What decides discoverability
 
-| Поле | Правило | Почему |
+| Field | Rule | Why |
 |---|---|---|
-| `description` | категория впереди, до 200 символов, без эмодзи и превосходных степеней | поиск показывает первые ~120 символов |
-| `topics` | 8–20, нижний регистр через дефис, главный термин первым | единственное структурированное поле ключевых слов |
-| `homepage` | отвечает `200` или пусто | мёртвая ссылка хуже отсутствия |
-| `LICENSE` | определяется GitHub: `license.spdx_id` не `NOASSERTION` | иначе проект юридически «нельзя использовать» |
-| README | заголовок, абзац, бейджи, установка, использование, лицензия | первые 30 секунд решают, читать ли дальше |
-| Wiki | `Home`, `_Sidebar`, `_Footer` | навигация превращает набор страниц в документацию |
-| Release | тег `vX.Y.Z` и заметки | признак живого проекта |
+| `description` | category noun first, under 200 characters, no emoji, no superlatives | search shows the first ~120 characters |
+| `topics` | 8–20, lowercase and hyphenated, primary term first | the only structured keyword field |
+| `homepage` | answers `200`, or empty | a dead link is worse than none |
+| `LICENSE` | detected by GitHub: `spdx_id` is not `NOASSERTION` | otherwise the project is legally unusable |
+| README | title, banner, badges, installation, usage, license | the first thirty seconds decide |
+| Images | a 1280×640 social preview and a README banner | link cards look empty without them |
+| Wiki | `Home`, `_Sidebar`, `_Footer` | navigation turns pages into documentation |
+| Release | tag `vX.Y.Z` with notes | the signal that the project is alive |
 
-## Порядок работы
+## Order of work
 
-1. `audit .` — где провал. Сначала `error`, потом `warn`.
-2. README: взять `reference/readme-template.md`, заполнить фактами, проверить
+1. `audit .` — find the failures; fix `error` before `warn`.
+2. README: start from `reference/readme-template.md`, fill in facts, check with
    `ghagent doc --root .`.
-3. Метаданные: `ghagent meta suggest`, затем `ghagent meta apply ... --write`.
-4. Проверка после записи: `ghagent audit --repo owner/name --http`.
-5. Отчёт: `ghagent report . --out AUDIT.md`.
+3. Images: `ghagent assets render --write`, then `assets check`.
+4. Metadata: `ghagent meta suggest`, then `meta apply ... --write`.
+5. Read back: `ghagent audit --repo owner/name --http`.
+6. Report: `ghagent report . --out AUDIT.md`.
 
-## Ловушки
+## Traps
 
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| `PUT /topics` заменяет список | исчезли темы, которых не касались | слить с существующими, перечитать |
-| Больше 20 тем | часть не сохранилась | оставить 20, главный термин первым |
-| Pages в приватном репозитории | `422 Your current plan does not support GitHub Pages for this repository` | на бесплатном плане Pages недоступны |
-| Сборка Pages асинхронна | сразу после включения 404 | ждать сборку, затем проверить URL |
-| `gh api --jq .content` для README | base64 с переводами строк | `-H 'Accept: application/vnd.github.raw'` |
-| Бейдж на несуществующий workflow | бейдж «не найден» | путь бейджа = путь workflow |
+| `PUT /topics` replaces the list | topics you did not touch disappear | merge with the existing set, re-read |
+| More than 20 topics | some are silently dropped | keep 20, primary term first |
+| Pages in a private repository | `422 Your current plan does not support GitHub Pages for this repository` | the free plan does not allow it |
+| Pages builds are asynchronous | 404 right after enabling | poll the build, then the URL |
+| `gh api --jq .content` for a README | base64 with line breaks | `-H 'Accept: application/vnd.github.raw'` |
+| A badge pointing at a missing workflow | the badge renders as "not found" | the badge path is the workflow path |
 
-## Критерий готовности
+## Done means
 
-- `ghagent audit .` — код `0`, оценка ≥ 80%.
-- `ghagent audit --repo owner/name` — код `0`.
-- В README каждое число имеет источник измерения.
-- В описании нет ни одного слова, которое нельзя проверить.
+- `ghagent audit .` exits `0` with a score of at least 80%.
+- `ghagent audit --repo owner/name` exits `0`.
+- Every number in the README names its source.
+- The description contains nothing a reader cannot verify.

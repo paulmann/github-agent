@@ -1,7 +1,7 @@
 <!-- ghagent: template -->
-# Участие в проекте
+# Contributing
 
-## Перед pull request
+## Before a pull request
 
 ```bash
 <test command>
@@ -9,22 +9,28 @@
 <secret scan>
 ```
 
-Все команды должны вернуть код `0`.
+Every command must exit `0`.
 
-## Правила
+## Rules
 
-- Один pull request — одна логическая причина.
-- Новое поведение приходит с тестом; новая проверка — с фикстурой, которая без неё падает.
-- Не добавляйте зависимости без обсуждения: <причина, по которой проект остаётся без них>.
-- Не коммитьте секреты, реальные домены, IP и персональные данные. В примерах —
-  `example.com`, `203.0.113.0/24`, `user@users.noreply.github.com`.
-- Стиль: <ссылка на руководство по стилю>.
+- One pull request, one logical reason.
+- New behaviour arrives with a test; a new check arrives with a fixture that fails without it.
+- Do not add dependencies without a discussion: <the reason this project stays dependency-free>.
+- Do not commit secrets, real domains, IP addresses or personal data. Use `example.com`,
+  `203.0.113.0/24`, `user@users.noreply.github.com`.
+- Style: <link to the style guide>.
 
-## Сообщения коммитов
+## Language of documentation
 
-Conventional Commits: `feat:`, `fix:`, `docs:`, `perf:`, `refactor:`, `test:`, `chore:`.
-Ломающее изменение — `!` в заголовке или `BREAKING CHANGE:` в теле.
+English files are canonical; translations carry a language suffix (`README.ru.md`) and are
+updated in the same commit.
 
-## Сообщение об ошибке
+## Commit messages
 
-Приложите версию, окружение, точную команду, код возврата и вывод без секретов.
+Conventional Commits: `feat:`, `fix:`, `docs:`, `perf:`, `refactor:`, `test:`, `chore:`. A
+breaking change is marked with `!` in the header or `BREAKING CHANGE:` in the body.
+
+## Reporting a bug
+
+Include the version, the environment, the exact command, the exit code, and the output without
+secrets.

@@ -1,44 +1,46 @@
-# Политика безопасности
+# Security policy
 
-## Поддерживаемые версии
+## Supported versions
 
-| Версия | Поддержка |
+| Version | Supported |
 |---|---|
-| 1.0.x | да |
-| < 1.0.0 | нет |
+| 1.1.x | yes |
+| 1.0.x | yes |
+| < 1.0.0 | no |
 
-## Как сообщить об уязвимости
+## Reporting a vulnerability
 
-Используйте приватный канал GitHub: вкладка **Security** → **Report a vulnerability**.
-Не открывайте публичный issue: сообщение об уязвимости в публичном трекере раскрывает её
-до исправления.
+Use the private channel: the **Security** tab → **Report a vulnerability**. Do not open a public
+issue; a vulnerability report in a public tracker discloses it before a fix exists.
 
-Что приложить:
+Include:
 
-- версию пакета (`python tools/ghagent.py --version`) и версию Python;
-- команду, которая воспроизводит проблему, и её вывод;
-- чем опасность подтверждается: что именно читается, перезаписывается или публикуется.
+- the pack version (`python tools/ghagent.py --version`) and the Python version;
+- the command that reproduces the problem and its output;
+- what the risk actually is: which file is read, overwritten or published.
 
-Ответ — в течение семи дней. Принятая уязвимость исправляется в отдельной ветке, затем
-выходит патч-версия с записью в разделе `Security` файла [CHANGELOG.md](CHANGELOG.md).
+Expect an answer within seven days. An accepted vulnerability is fixed on a branch, then a patch
+release carries a `Security` entry in [CHANGELOG.md](CHANGELOG.md).
 
-## Модель угроз
+## Threat model
 
-Пакет работает с локальным деревом и с GitHub API от имени владельца. Опасные места:
+The pack works on a local tree and with the GitHub API on behalf of the owner. The dangerous
+places:
 
-| Место | Риск | Защита |
+| Place | Risk | Protection |
 |---|---|---|
-| `wiki publish --push` | перезапись или удаление чужих страниц | без `--push` — сухой прогон; чужие страницы сохраняются, удаление только через `--prune` |
-| `wiki publish` с пустым манифестом | публикация пустой вики | пустой набор страниц — ошибка, публикация не начинается |
-| `meta apply --write` | замена списка тем | список сливается с существующим; `--replace-topics` — отдельный флаг |
-| `install` / `uninstall` | удаление чужого каталога | `uninstall` требует манифест `.install.json`, иначе отказывается |
-| `doc` / `audit` | чтение файлов с секретами | значения не печатаются: сообщение содержит только имя правила, путь и строку |
-| `changelog release --write` | порча журнала изменений | запись только после проверки, затем повторная проверка файла |
+| `wiki publish --push` | overwriting or deleting someone else's pages | without `--push` it is a dry run; pages the build does not contain are kept, deletion requires `--prune` |
+| `wiki publish` with an empty manifest | publishing an empty wiki | an empty page set is an error before any write |
+| `meta apply --write` | replacing the topic list | the list is merged with the existing one; `--replace-topics` is a separate flag |
+| `install` / `uninstall` | deleting a foreign directory | `uninstall` requires the `.install.json` manifest and refuses otherwise |
+| `doc` / `audit` / `privacy` | reading files that contain secrets | values are never printed: a finding names the rule, the path and the line |
+| `changelog release --write` | corrupting the changelog | the file is validated again after writing, and errors are reported immediately |
+| `assets render` | overwriting an existing image | files are written only with `--write`, and the target names are fixed |
 
-## Чего пакет не делает
+## What the pack does not do
 
-- Не отправляет содержимое репозитория никуда, кроме `api.github.com` (и только по
-  командам `audit --repo`, `meta`, `wiki publish`).
-- Не хранит и не запрашивает учётные данные: используется существующая авторизация `gh`
-  или переменная `GITHUB_TOKEN`, значение которой не печатается.
-- Не вызывает `git push --force` и не переписывает историю.
+- It sends nothing anywhere except `api.github.com`, and only for `audit --repo`, `meta` and
+  `wiki publish`.
+- It stores no credentials and prints none: it uses the existing `gh` authorisation or the
+  `GITHUB_TOKEN` variable.
+- It never runs `git push --force` and never rewrites history.

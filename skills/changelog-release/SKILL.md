@@ -1,89 +1,88 @@
 ---
 name: changelog-release
-description: Журнал изменений и выпуск версий по Keep a Changelog 2.0.0 и Semantic Versioning — проверка формата, перенос Unreleased в версию с датой и ссылками сравнения, черновик записей из conventional commits, текст релиза для gh release. Загружать при подготовке релиза, при жалобах «в changelog непонятно что изменилось», когда версии идут не по порядку или даты отсутствуют.
+description: Changelog and version releases by Keep a Changelog 2.0.0 and Semantic Versioning — conformance check, promoting Unreleased into a dated version with comparison links, a draft from conventional commits, and a release body for gh release. Load when preparing a release, when a changelog does not say what changed, when versions are out of order or dates are missing.
 ---
 
-# Журнал изменений и выпуск
+# Changelog and release
 
-## Контракт (Keep a Changelog 2.0.0)
+## The contract (Keep a Changelog 2.0.0)
 
-- Шесть типов и только они: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`,
-  `Security`. Тип отвечает на «что это», текст — на «почему это важно».
-- Версия: `## [1.2.3] - 2026-10-24`. Дата — ISO, иначе версии нельзя сортировать и
-  связывать.
-- `## [Unreleased]` сверху; при выпуске его содержимое переезжает в новую версию.
-- Новые версии выше старых.
-- Ссылки сравнения внизу; `Unreleased` сравнивается с последним тегом:
+- Six types and only them: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+  The type answers "what is this", the text answers "why it matters".
+- Version: `## [1.2.3] - 2026-10-24`. The date is ISO, otherwise versions cannot be sorted or
+  linked.
+- `## [Unreleased]` on top; on release its content moves into a new version.
+- Newer versions above older ones.
+- Comparison links at the bottom; `Unreleased` compares against the last tag:
 
 ```markdown
 [Unreleased]: https://github.com/owner/repo/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/owner/repo/compare/v1.0.0...v1.1.0
 ```
 
-- Ломающее изменение помечается `**Breaking:**` в самой записи, а не отдельным разделом.
-- Запись адресована пользователю, а не коммиту: «счётчик дней до оплаты больше не
-  ошибается на сутки», а не «fix off-by-one in ExpiryCalculator».
+- A breaking change is marked `**Breaking:**` inside its entry, not as a separate section.
+- An entry addresses a user, not a commit: "the expiry countdown no longer loses a day", not
+  "fix off-by-one in ExpiryCalculator".
 
-## Команды
+## Commands
 
 ```bash
 python <pack>/tools/ghagent.py changelog check
 python <pack>/tools/ghagent.py changelog suggest --since v1.1.0
 python <pack>/tools/ghagent.py changelog release 1.2.0 --write
-python <pack>/tools/ghagent.py changelog check                 # после записи
+python <pack>/tools/ghagent.py changelog check                 # after writing
 python <pack>/tools/ghagent.py changelog notes 1.2.0 > release-body.md
 gh release create v1.2.0 --notes-file release-body.md --title v1.2.0
 ```
 
-Коды возврата: `0` — чисто, `1` — есть ошибки формата, `2` — файла нет или версия не
-SemVer.
+Exit codes: `0` clean, `1` format errors, `2` no file or a non-SemVer version.
 
-## Что проверяет `check`
+## What `check` verifies
 
-| Правило | Пример нарушения |
+| Rule | Example of a violation |
 |---|---|
-| `changelog.date-missing` | `## [1.1.0]` без даты |
+| `changelog.date-missing` | `## [1.1.0]` with no date |
 | `changelog.date-format` | `## [1.1.0] - 20.10.2026` |
-| `changelog.order` | версия 1.0.0 выше версии 1.1.0 |
-| `changelog.duplicate` | две записи об одной версии |
-| `changelog.empty-version` | заголовок версии без записей |
-| `changelog.types` | раздел «Разное» вместо `Changed` |
-| `changelog.link-refs` | ссылки `[1.1.0]` без разрешения внизу файла |
-| `changelog.unreleased` | нет `[Unreleased]` (предупреждение) |
+| `changelog.order` | version 1.0.0 above 1.1.0 |
+| `changelog.duplicate` | two entries for the same version |
+| `changelog.empty-version` | a version heading with no entries |
+| `changelog.types` | a section called "Misc" instead of `Changed` |
+| `changelog.link-refs` | `[1.1.0]` references with no definitions at the bottom |
+| `changelog.unreleased` | no `[Unreleased]` section (warning) |
 
-## Порядок выпуска
+## Release order
 
-1. `check` — журнал в порядке до выпуска.
-2. `suggest --since <тег>` — черновик из коммитов. Это **черновик**: назначение записи —
-   сказать пользователю, что изменилось, а не пересказать лог.
-3. Дописать черновик в `[Unreleased]` вручную.
-4. `release <версия> --write` — перенос, дата, ссылки сравнения, автоматическая повторная
-   проверка. Если после записи появились ошибки, они печатаются: молча «полувыпущенного»
-   журнала не бывает.
-5. `notes <версия>` — текст релиза без служебных ссылок.
-6. Тег `vX.Y.Z`, подпись владельца.
+1. `check` — the changelog is in order before the release.
+2. `suggest --since <tag>` — a draft from commits. It is a **draft**: an entry tells a user what
+   changed, it does not retell the log.
+3. Finish the draft by hand under `[Unreleased]`.
+4. `release <version> --write` — moves the section, sets the date, updates comparison links and
+   re-checks the file immediately. If errors appear after the write, they are printed: a
+   half-released changelog never passes silently.
+5. `notes <version>` — the release body without service links.
+6. Tag `vX.Y.Z`, signed by the owner.
 
-## Выбор версии
+## Choosing the number
 
-| Изменение | Версия |
+| Change | Version |
 |---|---|
-| исправление, ничего не добавляет | патч `1.2.3 → 1.2.4` |
-| новая возможность, совместимо | минор `1.2.3 → 1.3.0` |
-| ломающее изменение поведения или API | мажор `1.2.3 → 2.0.0` |
-| проект до 1.0.0 | `0.y.z`: минор может ломать, но это нужно писать явно |
+| a fix, nothing added | patch `1.2.3 → 1.2.4` |
+| a new capability, compatible | minor `1.2.3 → 1.3.0` |
+| a breaking change in behaviour or API | major `1.2.3 → 2.0.0` |
+| before `1.0.0` | `0.y.z`: a minor may break, and that must be stated |
 
-## Ловушки
+## Traps
 
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| Журнал из лога коммитов | записи вида `fix: typo`, `Merge pull request #12` | писать записи заново, по-человечески |
-| Заголовки разделов по-русски и по-английски в одном файле | половина записей не находится | выбрать один язык; инструмент принимает оба набора, но не смесь |
-| Дата в будущем | версия «выпущена завтра» | предупреждение `changelog.date-future` |
-| Версия без раздела | пустая версия в истории | `changelog.empty-version` |
-| Забыли ссылку сравнения | `[1.2.0]` не открывается | `release` добавляет её сам |
+| A changelog made from the commit log | entries like `fix: typo`, `Merge pull request #12` | write entries again, in human words |
+| Mixed heading languages in one file | half the entries are not found | pick one language; the tool accepts both sets, not a mix |
+| A date in the future | a version "released tomorrow" | `changelog.date-future` warns |
+| A version with no sections | an empty version in history | `changelog.empty-version` |
+| A forgotten comparison link | `[1.2.0]` does not open | `release` adds it |
 
-## Критерий готовности
+## Done means
 
-- `changelog check` — код `0`.
-- Каждая запись объясняет изменение пользователю и не пересказывает коммит.
-- `notes` даёт текст, который можно отправлять как есть.
+- `changelog check` exits `0`.
+- Every entry explains the change to a user and does not retell a commit.
+- `notes` produces text that can be sent as is.

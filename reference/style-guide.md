@@ -1,87 +1,81 @@
-# Стиль документации на GitHub
+# Documentation style on GitHub
 
-Правила, по которым пакет проверяет тексты. Каждое подтверждено либо документацией GitHub,
-либо замером на живом репозитории — источник указан рядом.
+The rules the pack enforces. Each is backed either by the GitHub documentation or by a
+measurement on a live repository — the source is named next to it.
 
-## Что рендерит GitHub, а что нет
+## What GitHub actually renders
 
-| Конструкция | Поддержка | Замечание |
+| Construct | Support | Note |
 |---|---|---|
-| Заголовки `#` … `######` | да | один `H1` на документ; уровни не пропускаются |
-| Таблицы с `\|` | да | число ячеек в строке обязано совпадать с заголовком |
-| Экранированная черта `\|` в ячейке | да | без экранирования ячейка разрежется |
-| Inline-код с чертой: `` `a \| b` `` | да | внутри кода спасает обратная кавычка |
-| Блок кода с языком | да | без языка подсветки нет, а линтер предупреждает |
-| `> [!NOTE]` … `> [!CAUTION]` | да, ровно пять типов | `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` (документация GitHub) |
-| Сноски `[^1]` | да | рендерятся внизу независимо от места объявления |
-| Задачи `- [ ]` | да | в README и issue |
-| `<details><summary>` | да | свёрнутый блок для длинных логов |
-| Математика `$…$`, `$$…$$` | да | в вики тоже |
-| Mermaid | да | ` ```mermaid `; в вики поддерживается |
-| Относительная картинка в вики | **нет** | вики — отдельный репозиторий, дерево проекта не видно |
-| Автоматическое оглавление в тексте | **нет** | у читателя есть панель Outline, но в файл оглавление не вставляется |
-| Вложенные страницы в вики | **нет** | плоское пространство файлов |
+| Headings `#` … `######` | yes | one `H1` per document; levels are not skipped |
+| Tables with `\|` | yes | every row must have the same cell count as the header |
+| Escaped `\|` inside a cell | yes | without escaping the cell is split |
+| Inline code with a pipe: `` `a \| b` `` | yes | backticks protect it |
+| Fenced code with a language | yes | no language means no highlighting, and the linter warns |
+| `> [!NOTE]` … `> [!CAUTION]` | yes, exactly five types | `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` |
+| Footnotes `[^1]` | yes | rendered at the bottom regardless of where they are declared |
+| Task lists `- [ ]` | yes | README and issues |
+| `<details><summary>` | yes | collapsed blocks for long logs |
+| Math `$…$`, `$$…$$` | yes | also in wikis |
+| Mermaid | yes | ` ```mermaid `; supported in wikis |
+| A relative image inside a wiki | **no** | the wiki is a separate repository |
+| An auto-generated table of contents in the text | **no** | readers get the Outline panel; nothing is inserted into the file |
+| Nested wiki pages | **no** | the namespace is flat |
 
-## Якоря заголовков
+## Heading anchors
 
-Правила GitHub (документация «Basic writing and formatting syntax»):
+GitHub's documented rules: letters are lowercased; spaces become hyphens; any other whitespace
+and punctuation is removed; leading and trailing whitespace is stripped; markup is removed;
+a repeated heading gets `-1`, `-2`.
 
-1. Регистр приводится к нижнему.
-2. Пробелы становятся дефисами.
-3. Прочие пробельные символы и знаки препинания удаляются.
-4. Пробелы по краям удаляются.
-5. Разметка удаляется, остаётся текст: `_курсив_` → `курсив`.
-6. Повтор заголовка в документе получает суффикс `-1`, `-2`.
+Consequences that break links most often:
 
-Следствия, которые чаще всего ломают ссылки:
+- `## Ship it — fast, safely` → `#ship-it--fast-safely`: the em dash is removed, and the two
+  surrounding spaces produce **two** hyphens;
+- Cyrillic survives: `#установка`, never transliterated;
+- `## API and MCP` → `#api-and-mcp`.
 
-- `## Помочь проекту — фактами, а не активностью` → `#помочь-проекту--фактами-а-не-активностью`:
-  тире удаляется, два соседних пробела дают **два** дефиса;
-- кириллица сохраняется: `#установка`, а не транслитерация;
-- `## API и MCP` → `#api-и-mcp`.
+Measurement and one caveat: the platform's own documentation shows an anchor with a capital
+Greek letter (`…#letter-Θ`), which contradicts its lowercase rule. `ghagent` therefore compares
+anchors case-insensitively — otherwise it would report a false `FAIL` on the platform's own
+document.
 
-Замер и оговорка: документация GitHub в одном примере показывает якорь с заглавной
-греческой буквой (`…#letter-Θ`), что противоречит правилу о нижнем регистре. Поэтому
-`ghagent` сравнивает якоря без учёта регистра — иначе он давал бы ложный `FAIL` на
-документе самой платформы.
+## Tone and content
 
-## Тон и содержание
+- Write what a reader can verify: a command, a file, a number, an API response.
+- No judgement without a unit: "fast" does not replace "0.4 s for 10,000 lines".
+- Every number in a numbers table carries its source: a command or a path.
+- One thought per sentence, one fact per bullet, paragraphs under five lines.
+- No emoji in metadata, headings or repository descriptions: search and parsers read them.
+- No superlatives ("blazing fast", "best-in-class"): they cannot be verified.
 
-- Пишите то, что читатель может проверить: команду, файл, число, ответ API.
-- Никаких оценок без единицы измерения: «быстро» не заменяет «0,4 с на 10 000 строк».
-- Числа в таблице «В цифрах» сопровождаются источником: командой или путём.
-- Одна мысль — одно предложение. Абзац до пяти строк.
-- Эмодзи в метаданных, заголовках и описании репозитория не используются: их читают
-  поиск и парсеры.
-- Превосходные степени («blazing fast», «лучший») не используются: они не проверяемы и
-  снижают доверие.
+## README layout
 
-## Раскладка README
+1. `H1` — the project name, under 60 characters.
+2. A paragraph: what it is, for whom, what it does differently.
+3. A banner image or a badge block. 3–8 badges: CI, release, license, runtime.
+4. A table of contents from `H2` once the document passes 200 lines.
+5. Installation → quick start → configuration → capabilities → limitations → documentation →
+   development → contributing → license. The order may vary; the set may not.
 
-1. `H1` — название до 60 символов.
-2. Абзац: что это, для кого, чем отличается.
-3. Бейджи: CI, релиз, лицензия, среда. 3–8 штук, не больше.
-4. Оглавление от `H2`, если документ длиннее 200 строк.
-5. Установка → быстрый старт → настройка → возможности → ограничения → документация →
-   разработка → участие → лицензия. Порядок можно менять, набор — нет.
+## Wiki page layout
 
-## Раскладка страницы вики
+1. `H1` — the page name (the filename without `.md`).
+2. One paragraph: why this page exists.
+3. A table of contents from `H2` when there are more than five sections.
+4. Links to neighbouring pages — without `.md`.
+5. At the end, a link to the repository or the next page: a reader must not hit a dead end.
 
-1. `H1` — название страницы (файл без `.md`).
-2. Один абзац: зачем эта страница.
-3. Содержание от `H2`, если страниц больше пяти.
-4. Ссылки на соседние страницы — без `.md`.
-5. В конце — ссылка на репозиторий или соседнюю страницу: читатель не должен упираться
-   в тупик.
+## Defects the pack treats as blocking
 
-## Ошибки, которые пакет считает блокирующими
-
-| Дефект | Правило |
+| Defect | Rule |
 |---|---|
-| BOM, CRLF, отсутствие перевода строки в конце | `doc.bom`, `doc.crlf`, `doc.final-newline` |
-| Второй `H1`, пропущенный уровень | `md.h1`, `md.heading-skip` |
-| Незакрытый блок кода | `md.fence` |
-| Строка таблицы с другим числом ячеек | `md.table` |
-| Ссылка на несуществующий файл или якорь | `md.link-local`, `md.link-anchor` |
-| Оглавление, ведущее на несуществующий заголовок | `md.toc` |
-| Токен, приватный ключ, абсолютный путь машины | `privacy.secret`, `privacy.abs-path` |
+| BOM, CRLF, missing final newline | `doc.bom`, `doc.crlf`, `doc.final-newline` |
+| A second `H1`, a skipped heading level | `md.h1`, `md.heading-skip` |
+| An unclosed code fence | `md.fence` |
+| A table row with a different cell count | `md.table` |
+| A link to a missing file or anchor | `md.link-local`, `md.link-anchor` |
+| A table of contents pointing at a heading that does not exist | `md.toc` |
+| A token, private key or absolute machine path | `privacy.secret`, `privacy.abs-path` |
+| An image over plain `http://` | `md.image-http` |
+| A social preview that is not PNG/JPG/GIF, or over 1 MB, or under 640×320 | `assets.social-*` |

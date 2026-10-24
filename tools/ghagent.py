@@ -27,6 +27,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from ghalib import assets as assets_module        # noqa: E402
 from ghalib import audit as audit_module           # noqa: E402
 from ghalib import changelog as changelog_module   # noqa: E402
 from ghalib import config as cfg                   # noqa: E402
@@ -56,6 +57,32 @@ def _add_json(parser: argparse.ArgumentParser) -> None:
 
 def _add_ignore(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--ignore", default="", help="comma-separated rule ids to skip")
+
+
+def cmd_assets(args: argparse.Namespace) -> int:
+    root = Path(args.root)
+    if args.action == "check":
+        report = assets_module.check(root)
+        return emit(report, args.json)
+    if args.action == "suggest":
+        report = assets_module.suggest(root)
+        return emit(report, args.json)
+    if args.action == "render":
+        width, _, height = (args.size or "1280x640").partition("x")
+        try:
+            spec = assets_module.spec_from_repository(
+                root,
+                title=args.title or "",
+                tagline=args.tagline or "",
+                command=args.command or "",
+                chips=[chip.strip() for chip in args.chips.split(",") if chip.strip()] or None,
+            )
+            spec.width, spec.height = int(width), int(height)
+        except ValueError:
+            return fail("--size must look like 1280x640")
+        report = assets_module.write_assets(root, out_dir=args.out_dir, spec=spec, write=args.write)
+        return emit(report, args.json)
+    return fail(f"unknown assets action: {args.action}")
 
 
 def cmd_audit(args: argparse.Namespace) -> int:
@@ -350,6 +377,19 @@ def build_parser() -> argparse.ArgumentParser:
     privacy_parser.add_argument("--root", default=".")
     _add_json(privacy_parser)
     privacy_parser.set_defaults(func=cmd_privacy)
+
+    assets_parser = subparsers.add_parser("assets", help="banner and social preview: render, check, suggest")
+    assets_parser.add_argument("action", choices=["render", "check", "suggest"])
+    assets_parser.add_argument("--root", default=".")
+    assets_parser.add_argument("--title", default="")
+    assets_parser.add_argument("--tagline", default="")
+    assets_parser.add_argument("--command", default="")
+    assets_parser.add_argument("--chips", default="")
+    assets_parser.add_argument("--size", default="1280x640")
+    assets_parser.add_argument("--out-dir", default="assets")
+    assets_parser.add_argument("--write", action="store_true")
+    _add_json(assets_parser)
+    assets_parser.set_defaults(func=cmd_assets)
 
     wiki_parser = subparsers.add_parser("wiki", help="build, verify and publish the GitHub wiki")
     wiki_parser.add_argument("action", choices=["init", "build", "verify", "publish"])

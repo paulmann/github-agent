@@ -1,86 +1,83 @@
 ---
 name: contributing-and-community
-description: Файлы сообщества GitHub — CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, SUPPORT, шаблоны issue и pull request, CITATION, GOVERNANCE, dependabot, release.yml и метрика community health. Загружать, когда репозиторий открывается для внешних участников, когда GitHub показывает неполный community profile, когда приходят неполные issue или когда нужно оформить политику безопасности и порядок приёма правок.
+description: GitHub community files — CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, SUPPORT, issue and pull request templates, CITATION, GOVERNANCE, dependabot, release.yml and the community health score. Load when a repository opens to outside contributors, when GitHub shows an incomplete community profile, when issues arrive without the needed details, or when a security policy must be written.
 ---
 
-# Сообщество: файлы, которые GitHub читает
+# Community: the files GitHub reads
 
-## Что проверяет GitHub
+## What GitHub checks
 
-`GET /repos/{owner}/{repo}/community/profile` отдаёт `health_percentage` и список
-найденных файлов. Файл ищется в нескольких местах: корень, `.github/`, `docs/`.
+`GET /repos/{owner}/{repo}/community/profile` returns `health_percentage` and the files it found.
+A file is looked up in several places: the root, `.github/`, `docs/`.
 
-| Файл | Зачем | Где ищется |
+| File | Purpose | Looked up in |
 |---|---|---|
-| `README.md` | вход | корень, `.github/`, `docs/` |
-| `LICENSE` | юридическая возможность использовать | корень |
-| `CONTRIBUTING.md` | как присылать правки | корень, `.github/`, `docs/` |
-| `CODE_OF_CONDUCT.md` | правила поведения | корень, `.github/`, `docs/` |
-| `SECURITY.md` | как сообщить об уязвимости приватно | корень, `.github/`, `docs/` |
-| `SUPPORT.md` | куда писать с вопросом | корень, `.github/`, `docs/` |
-| `ISSUE_TEMPLATE/*` | структура обращений | `.github/ISSUE_TEMPLATE/` |
-| `PULL_REQUEST_TEMPLATE.md` | структура правки | корень, `.github/`, `docs/` |
-| `CODEOWNERS` | кто ревьюит | `.github/`, корень, `docs/` |
-| `CITATION.cff` | как цитировать | корень |
-| `GOVERNANCE.md` | кто принимает решения | корень, `.github/`, `docs/` |
+| `README.md` | the entrance | root, `.github/`, `docs/` |
+| `LICENSE` | the legal permission to use the code | root |
+| `CONTRIBUTING.md` | how to send changes | root, `.github/`, `docs/` |
+| `CODE_OF_CONDUCT.md` | behaviour rules | root, `.github/`, `docs/` |
+| `SECURITY.md` | how to report a vulnerability privately | root, `.github/`, `docs/` |
+| `SUPPORT.md` | where to ask a question | root, `.github/`, `docs/` |
+| `ISSUE_TEMPLATE/*` | the shape of a report | `.github/ISSUE_TEMPLATE/` |
+| `PULL_REQUEST_TEMPLATE.md` | the shape of a change | root, `.github/`, `docs/` |
+| `CODEOWNERS` | who reviews | `.github/`, root, `docs/` |
+| `CITATION.cff` | how to cite the project | root |
+| `GOVERNANCE.md` | who decides | root, `.github/`, `docs/` |
 
-Галочка в профиле появляется у шаблонов issue только тогда, когда они лежат **именно**
-в `.github/ISSUE_TEMPLATE/` и содержат валидные ключи: `name` и `about` для markdown-
-шаблонов, `name` и `description` для YAML-форм.
+The checklist tick for issue templates appears only when the templates sit **exactly** in
+`.github/ISSUE_TEMPLATE/` and carry valid keys: `name` and `about` for markdown templates,
+`name` and `description` for YAML forms.
 
-## Как писать CONTRIBUTING
+## Writing CONTRIBUTING
 
-Порядок, который работает:
+1. Verification commands in the first code block. Not "run the tests" — the exact command.
+2. Acceptance rules: one change, one reason; new behaviour with a test; a new check with a
+   fixture that fails without it.
+3. Prohibitions: dependencies, secrets, real domains and addresses in examples.
+4. Commit message convention and where the changelog lives.
+5. What to attach to a bug report: version, environment, command, exit code, output without
+   secrets.
 
-1. Команды проверки — в первом же блоке кода. Не «запустите тесты», а точная команда.
-2. Правила приёма: одна правка — одна причина; новое поведение с тестом; новая проверка
-   с фикстурой, которая без неё падает.
-3. Чего не делать: зависимости, секреты, реальные домены и адреса в примерах.
-4. Как писать сообщения коммитов (Conventional Commits) и где журнал изменений.
-5. Что приложить к сообщению об ошибке: версия, окружение, команда, код возврата, вывод
-   без секретов.
+## Writing SECURITY
 
-## Как писать SECURITY
+- A supported-versions table first: it is what a reader looks for.
+- A private channel (Security → Report a vulnerability), never a public issue.
+- What to include, and the answer time.
+- A threat model: which places are dangerous and how each is protected. That turns the policy
+  from a formality into a document the product can be checked against.
+- What the product does not do (send data, store credentials).
 
-- Таблица поддерживаемых версий — первое, что смотрит читатель.
-- Канал — приватный (Security → Report a vulnerability), не публичный issue.
-- Что приложить и в какой срок ответ.
-- Модель угроз: какие места опасны и чем защищены. Это превращает политику из формальности
-  в документ, по которому можно проверить продукт.
-- Чего продукт не делает (не отправляет данные, не хранит учётные данные).
+## Issue forms
 
-## Шаблоны issue
+- A YAML form beats free text: required fields force the version and the command.
+- Three or four forms are enough: bug, feature request, application question, audit request.
+- `config.yml` disables blank issues (`blank_issues_enabled: false`) and points at the security
+  policy and support page.
 
-- Форма (YAML) лучше свободного текста: обязательные поля заставляют приложить версию и
-  команду.
-- Три-четыре формы достаточно: ошибка, предложение, вопрос по применению, аудит.
-- `config.yml` отключает пустые обращения (`blank_issues_enabled: false`) и выносит
-  ссылки на политику безопасности и поддержку.
-
-## Проверка
+## Verification
 
 ```bash
 python <pack>/tools/ghagent.py audit .
 python <pack>/tools/ghagent.py audit --repo owner/name
 ```
 
-`audit` показывает, каких файлов нет (`repo.code-of-conduct`, `repo.support`,
-`repo.issue-forms`, `repo.pr-template`, `repo.codeowners`, `repo.dependabot`), а
-`audit --repo` — процент community health из API.
+`audit` names the missing files (`repo.code-of-conduct`, `repo.support`, `repo.issue-forms`,
+`repo.pr-template`, `repo.codeowners`, `repo.dependabot`); `audit --repo` prints the community
+health percentage from the API.
 
-## Ловушки
+## Traps
 
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| Шаблон issue в `docs/` | галочки в профиле нет | перенести в `.github/ISSUE_TEMPLATE/` |
-| YAML-форма без `description` | форма не появляется в выборе | добавить `name` и `description` |
-| CODE_OF_CONDUCT без контакта | правила есть, сообщить некуда | указать приватный канал |
-| SECURITY без таблицы версий | непонятно, что поддерживается | добавить таблицу |
-| Политика обещает то, чего нет | заявлено, но не выполняется | писать только то, что проверяется |
+| A template in `docs/` | no tick in the profile | move it to `.github/ISSUE_TEMPLATE/` |
+| A YAML form without `description` | the form never appears | add `name` and `description` |
+| A code of conduct without a contact | rules exist, nowhere to report | name a private channel |
+| SECURITY without a versions table | nobody knows what is supported | add the table |
+| A policy promising what the code does not do | a statement that cannot be verified | write only what holds |
 
-## Критерий готовности
+## Done means
 
-- `community/profile` — `health_percentage` не ниже 80%.
-- Формы issue появляются в интерфейсе и требуют версию и команду.
-- SECURITY.md содержит канал, срок ответа и модель угроз.
-- CONTRIBUTING.md начинается с команд проверки, а не с благодарности.
+- `community/profile` reports at least 80%.
+- Issue forms appear in the interface and require a version and a command.
+- `SECURITY.md` names the channel, the answer time and the threat model.
+- `CONTRIBUTING.md` starts with verification commands, not with thanks.

@@ -20,6 +20,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import assets as assets_module
 from . import config as cfg
 from . import mdcheck
 from .util import (
@@ -188,6 +189,28 @@ def audit_local(root: Path, *, config: cfg.Config | None = None, doc_report: Rep
     else:
         result.items.append(Item(ident="wiki-source", title=f"{config.wiki_dir}/", weight=3,
                                  status="fail", detail="no wiki source directory"))
+
+    assets_report = assets_module.check(root, report=report)
+    reference_item = Item(ident="assets.banner", title="README banner", weight=4)
+    if assets_report.data.get("readme_references"):
+        reference_item.status = "pass"
+        reference_item.detail = f"{assets_report.data['readme_references']} image(s)"
+    else:
+        reference_item.status = "fail"
+        reference_item.detail = "no image in README"
+    result.items.append(reference_item)
+
+    social_item = Item(ident="assets.social-preview", title="social preview 1280x640", weight=4)
+    if assets_report.data.get("social_preview_ready"):
+        social_item.status = "pass"
+        social_item.detail = str(assets_report.data.get("social_preview_dimensions"))
+    elif assets_report.data.get("social_preview_file"):
+        social_item.status = "warn"
+        social_item.detail = str(assets_report.data.get("social_preview_dimensions"))
+    else:
+        social_item.status = "warn"
+        social_item.detail = "no assets/social-preview.*"
+    result.items.append(social_item)
 
     if doc_report is None:
         options = mdcheck.DocCheckOptions(ignore=set(config.ignore_rules))

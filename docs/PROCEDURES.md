@@ -1,44 +1,46 @@
-# Процедуры
+# Procedures
 
-Пять работ, которые повторяются в каждом репозитории. Для каждой: когда выполняется, какие
-команды, что считается успехом и что делать при провале.
+Six jobs that repeat in every repository. For each: when it runs, which commands, what counts as
+success, and what a failure means.
 
-## 1. Аудит репозитория
+## 1. Auditing a repository
 
-**Когда:** проект опубликован, README писался давно, метаданные заполнялись «на глаз».
+**When:** the project is published, the README was written long ago, metadata was filled in by
+feel.
 
 ```bash
 python tools/ghagent.py audit . --json > audit.json
-python tools/ghagent.py audit --repo owner/name
+python tools/ghagent.py audit --repo owner/name --http
 python tools/ghagent.py report . --out AUDIT.md
 ```
 
-**Успех:** оценка не ниже 80%, блокирующих находок нет, число осмотренных пунктов больше
-двадцати. Оценка ниже порога — не приговор, а порядок работы: сначала `error`, потом
-`warn`, `info` не трогаем.
+**Success:** score at least 80%, no blocking findings, more than twenty items examined. A low
+score is not a verdict but a work order: fix `error` first, `warn` second, leave `info`.
 
-**Провал:** `remote.unavailable` — нет `gh` и нет `GITHUB_TOKEN`. Это не «всё хорошо»:
-метаданные не осмотрены, и отчёт об этом говорит.
+**Failure:** `remote.unavailable` means neither `gh` nor `GITHUB_TOKEN` is present. That is not
+"all good": the metadata was not examined, and the report says so.
 
-## 2. README и AGENTS.md
+## 2. README, AGENTS.md and images
 
-**Когда:** новый проект, либо README перестал отвечать на вопрос «как запустить».
+**When:** a new project, or the README stopped answering "how do I run this".
 
-1. Взять каркасы: `reference/readme-template.md`, `reference/agents-template.md`.
-2. Заполнить фактами: команды, пути, версии, числа с источником.
-3. Проверить: `python tools/ghagent.py doc --root .`.
+1. Start from `reference/readme-template.md` and `reference/agents-template.md`.
+2. Fill in facts: commands, paths, versions, numbers with a source.
+3. Render the banner: `python tools/ghagent.py assets render --write`, then place the image
+   above the first section and run `assets check`.
+4. Verify: `python tools/ghagent.py doc --root .`.
 
-**Успех:** `md.h1` — один заголовок, `readme.summary` — абзац описания,
-`readme.badges` — не меньше трёх бейджей, `readme.install`/`readme.usage`/`readme.license`
-на месте, ссылки живые.
+**Success:** one `H1`, a summary paragraph, at least three badges, installation, usage and
+license sections present, every link alive, the banner referenced and the social preview
+1280×640.
 
-**Провал:** `md.toc` — оглавление разошлось с заголовками. Правится не руками, а
-пересборкой списка: якорь = заголовок в нижнем регистре, знаки препинания удалены,
-пробелы заменены дефисами.
+**Failure:** `md.toc` means the table of contents drifted from the headings. Do not fix it by
+hand — an anchor is the heading lowercased with punctuation dropped and spaces turned into
+hyphens.
 
-## 3. Выпуск версии
+## 3. Releasing a version
 
-**Когда:** накопились изменения в `[Unreleased]`.
+**When:** `[Unreleased]` has accumulated changes.
 
 ```bash
 python tools/ghagent.py changelog check
@@ -48,37 +50,57 @@ python tools/ghagent.py changelog notes 1.2.0 > release-body.md
 gh release create v1.2.0 --notes-file release-body.md --title v1.2.0
 ```
 
-**Успех:** новая версия с ISO-датой, `[Unreleased]` снова пустой, ссылки сравнения
-обновлены, `changelog check` без ошибок, текст релиза прочитан человеком.
+**Success:** the new version has an ISO date, `[Unreleased]` is empty again, comparison links are
+updated, `changelog check` is clean, and a human has read the release body.
 
-**Провал:** `changelog.duplicate` — версия уже есть; `changelog.empty-version` — в
-`[Unreleased]` нет записей. Выпускать пустую версию нельзя: журнал перестаёт что-либо
-значить.
+**Failure:** `changelog.duplicate` means the version exists; `changelog.empty-version` means
+there is nothing to release. An empty release makes the changelog meaningless.
 
-## 4. Вики
+## 4. The wiki
 
-**Когда:** документация переросла README, либо вики существует, но навигации в ней нет.
+**When:** documentation outgrew the README, or a wiki exists without navigation.
 
 ```bash
-python tools/ghagent.py wiki init --repo owner/name --title "Имя проекта"   # если вики нет
+python tools/ghagent.py wiki init --repo owner/name --title "Project name"   # when there is none
 python tools/ghagent.py wiki build
 python tools/ghagent.py wiki verify
-python tools/ghagent.py wiki publish --repo owner/name                     # сухой прогон
-python tools/ghagent.py wiki publish --repo owner/name --push              # публикация
+python tools/ghagent.py wiki publish --repo owner/name                      # dry run
+python tools/ghagent.py wiki publish --repo owner/name --push               # publish
 ```
 
-**Успех:** `wiki build` без ошибок, `wiki verify` без ошибок, сухой прогон показывает
-только ожидаемые файлы, список `kept` просмотрен, после `--push` страница открывается.
+The very first publication needs one manual step: `<repo>.wiki.git` is created by GitHub only
+when a first page is saved in the web interface. Until then the command answers
+`wiki.remote-missing` with that instruction instead of failing on a push.
 
-**Провал:** `wiki.page-unlisted` — файл есть, в манифесте его нет. Такая страница
-невидима, поэтому это ошибка, а не замечание. `wiki.image-relative` — картинка лежит
-внутри вики-исходников; её нужно перенести в дерево репозитория и подключить абсолютным
-URL.
+**Success:** `build` and `verify` clean, the dry run shows only expected files, the `kept` list
+has been read, and after `--push` the page opens.
 
-## 5. Метаданные и публикация
+**Failure:** `wiki.page-unlisted` means a file exists that the manifest does not list; such a
+page is invisible, which is why it is an error. `wiki.image-relative` means the image lives
+inside the wiki sources: move it into the repository tree and reference it by absolute URL.
 
-**Когда:** репозиторий публикуется, либо описание и темы перестали соответствовать
-содержимому.
+## 5. Images
+
+**When:** the repository has no picture, the link card looks empty, or a chart is needed in the
+README.
+
+```bash
+python tools/ghagent.py assets suggest
+python tools/ghagent.py assets render --title "Project" --tagline "What it does." --command "project --help" --write
+python tools/ghagent.py assets check
+```
+
+**Success:** `assets/social-preview.png` is 1280×640, under 1 MB, referenced from the README with
+alt text, and `assets check` exits `0`. Then upload the same file in **Settings → Social
+preview** — that step is manual and the check prints it.
+
+**Failure:** `assets.social-dimensions` means the image is smaller than 640×320 or not 1280×640;
+`assets.svg-social` means an SVG was offered as a social preview, which the platform rejects;
+`assets.missing-file` means the README points at a file that is not committed.
+
+## 6. Metadata and publication
+
+**When:** the repository is published, or the description and topics no longer match the content.
 
 ```bash
 python tools/ghagent.py meta suggest
@@ -87,16 +109,17 @@ python tools/ghagent.py meta apply --repo owner/name --description "…" --topic
 python tools/ghagent.py audit --repo owner/name --http
 ```
 
-**Успех:** описание до 200 символов и начинается с категории, тем 8–20, все в нижнем
-регистре через дефис, домашняя страница отвечает `200`, чтение после записи совпало с
-запрошенным.
+**Success:** the description is under 200 characters and starts with the category noun, topics
+number 8–20 and are lowercase-hyphenated, the homepage answers `200`, and reading back after the
+write matches the request.
 
-**Провал:** `meta.topics-overflow` — больше двадцати тем, API сохранит только двадцать.
-`meta.verify` — запись не применилась; читать ответ, а не верить вызову.
+**Failure:** `meta.topics-overflow` means more than twenty topics were requested and only twenty
+are stored. `meta.verify` means the write did not land — read the response instead of trusting
+the call.
 
-## Порядок, если всё сломалось
+## When everything is broken
 
-1. `python tests/run_tests.py` — работает ли сам пакет.
-2. `python tools/ghagent.py verify-install --profile <профиль>` — та ли копия.
-3. `python tools/ghagent.py doc --root . --json` — что именно нарушено, с файлом и строкой.
-4. Только после этого — правка файлов. Правка «по ощущению» возвращает те же дефекты.
+1. `python tests/run_tests.py` — does the pack itself work.
+2. `python tools/ghagent.py verify-install --profile <profile>` — is it the right copy.
+3. `python tools/ghagent.py doc --root . --json` — what exactly is wrong, with file and line.
+4. Only then edit files. Editing by feel restores the same defects.

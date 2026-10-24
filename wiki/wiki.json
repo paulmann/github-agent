@@ -1,13 +1,20 @@
 {
-  "_comment": "Order and navigation for this wiki. Every page here must exist in wiki/, every file in wiki/ must be listed here.",
+  "_comment": "Order and navigation for this wiki. English pages are canonical; *.ru.md are translations, published as <Page>.ru. Every page here must exist in wiki/, and every file in wiki/ must be listed here.",
   "repo": "paulmann/github-agent",
   "branch": "main",
   "title": "github-agent",
   "footer": "MIT",
   "groups": [
-    {"title": "Начало", "pages": ["Home.md", "01-Why.md", "02-Install.md"]},
-    {"title": "Работа", "pages": ["03-Repository-Contract.md", "04-Wiki-Workflow.md"]},
-    {"title": "Релиз и поддержка", "pages": ["05-Release.md", "06-Traps.md"]},
-    {"title": "Интеграция", "pages": ["07-Import.md"]}
+    {"title": "Start", "pages": ["Home.md", "01-Why.md", "02-Install.md"]},
+    {"title": "Work", "pages": ["03-Repository-Contract.md", "04-Wiki-Workflow.md"]},
+    {"title": "Release and support", "pages": ["05-Release.md", "06-Traps.md"]},
+    {"title": "Integration", "pages": ["07-Import.md"]},
+    {"title": "Русский", "pages": ["Home.ru.md", "01-Why.ru.md", "02-Install.ru.md",
+                                  "03-Repository-Contract.ru.md", "04-Wiki-Workflow.ru.md",
+                                  "05-Release.ru.md", "06-Traps.ru.md", "07-Import.ru.md"],
+     "labels": {"Home.ru.md": "Home (RU)", "01-Why.ru.md": "01 · Зачем", "02-Install.ru.md": "02 · Установка",
+                "03-Repository-Contract.ru.md": "03 · Контракты", "04-Wiki-Workflow.ru.md": "04 · Вики",
+                "05-Release.ru.md": "05 · Выпуск", "06-Traps.ru.md": "06 · Ловушки",
+                "07-Import.ru.md": "07 · Импорт"}}
   ]
 }

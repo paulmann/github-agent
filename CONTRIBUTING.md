@@ -1,42 +1,48 @@
-# Участие в проекте
+# Contributing
 
-Спасибо за интерес. Проект небольшой, поэтому правила короткие и проверяемые.
+Thanks for the interest. The project is small, so the rules are short and verifiable.
 
-## Перед pull request
+## Before a pull request
 
 ```bash
 python tests/run_tests.py
 python tools/ghagent.py doc --root .
 python tools/ghagent.py audit .
+python tools/ghagent.py assets check
 ```
 
-Все три команды должны вернуть код `0`. Если правка меняет правило проверки — в том же
-pull request добавляется фикстура, которая без этой правки падает, и приманка, на
-которой правило не должно срабатывать.
+All four commands must exit `0`. If the change touches a rule, the same pull request adds a
+fixture that fails without it and a decoy on which the rule must stay quiet.
 
-## Правила
+## Rules
 
-- Один pull request — одна логическая причина. Опишите мотивацию и сценарий проверки.
-- Новая проверка без фикстуры не принимается: правило, которое нельзя подтвердить,
-  удаляется, а не документируется.
-- Ложный `FAIL` хуже отсутствия проверки, ложный `PASS` хуже ложного `FAIL`. Проверка,
-  осмотревшая ноль объектов, обязана сообщить об этом.
-- Никаких внешних зависимостей. Пакет работает на стандартной библиотеке Python: чужой
-  агент должен поставить его одним `git clone`.
-- Текстовые файлы — UTF-8 без BOM, переводы строк LF, отступ четыре пробела.
-- Не коммитьте токены, пароли, личные адреса и абсолютные пути машины. В примерах —
+- One pull request, one logical reason. Describe the motivation and the verification scenario.
+- A check without a fixture is not accepted: a rule that cannot be proven is removed, not
+  documented.
+- A false `FAIL` is worse than no check; a false `PASS` is worse than a false `FAIL`. A rule that
+  examined zero objects must say so.
+- No external dependencies. The pack runs on the Python standard library, so another agent can
+  install it with a single `git clone`. Pillow stays optional and only affects PNG rendering.
+- Text files are UTF-8 without BOM, LF line endings, four-space indentation.
+- Do not commit tokens, passwords, personal addresses or absolute machine paths. Use
   `<placeholder>`, `example.com`, `user@users.noreply.github.com`.
-- Документация обновляется вместе с кодом: изменили поведение команды — поправьте
-  [AGENTS.md](AGENTS.md) и [README.md](README.md).
+- Documentation changes with the code: if a command behaves differently, update
+  [AGENTS.md](AGENTS.md) and [README.md](README.md).
 
-## Сообщения коммитов
+## Language of documentation
 
-Conventional Commits: `feat:`, `fix:`, `docs:`, `perf:`, `refactor:`, `test:`, `chore:`.
-Ломающее изменение помечается `!` или строкой `BREAKING CHANGE:` в теле. Журнал изменений
-собирается из этих сообщений командой `ghagent changelog suggest`, но запись в
-`CHANGELOG.md` пишется человеком.
+English files are canonical. Russian translations carry the `.ru.md` suffix and are updated in
+the same commit as the original — a translation that silently lags is a defect, not a backlog
+item. New pages follow the same pattern: `NAME.md` plus `NAME.ru.md`.
 
-## Сообщения об ошибках
+## Commit messages
 
-Приложите: версию Python, операционную систему, команду целиком, вывод с `--json`, код
-возврата. Если команда работает с репозиторием — фрагмент дерева без секретов.
+Conventional Commits: `feat:`, `fix:`, `docs:`, `perf:`, `refactor:`, `test:`, `chore:`. A
+breaking change is marked with `!` in the header or `BREAKING CHANGE:` in the body. The changelog
+draft is produced by `ghagent changelog suggest`, but the entry itself is written by a human.
+
+## Reporting a bug
+
+Include the Python version, the operating system, the exact command, the exit code, and the
+output of `--json`. For repository-specific problems, attach the relevant tree fragment without
+secrets.

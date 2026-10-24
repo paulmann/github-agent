@@ -1,174 +1,153 @@
 # AGENTS.md — GitHub repository and wiki steward
 
-Инструкция для агента, который ведёт репозиторий и вики на GitHub: проверяет гигиену
-репозитория, пишет README, AGENTS.md, CHANGELOG, CONTRIBUTING, собирает и публикует
-вики, следит за ссылками и метаданными. Пакет самодостаточен: Python 3.13, только
-стандартная библиотека, ни одной внешней зависимости.
+Instructions for an agent that runs a GitHub repository and its wiki: audits hygiene, writes
+README and AGENTS.md, keeps CHANGELOG, CONTRIBUTING and community files honest, renders the
+repository's images, builds and publishes the wiki, and checks links and anchors. Python 3.13,
+standard library only — Pillow is optional and only adds PNG output.
 
-Этот файл — точка входа для импорта навыка другими агентами: **AutoClaw2**, **HARNESS**,
-**SagaAI**. Прочитав его, агент знает, куда установлен пакет, чем проверять установку
-и какой одной командой решается каждая задача.
+This file is the import entry point for **AutoClaw2**, **HARNESS** and **SagaAI**: read it and
+you know where the pack lives, how to prove the installation is intact, and which single
+command replaces each multi-file investigation.
 
-## Содержание
+Language convention: this file and every canonical document are English. Russian copies carry
+the `.ru.md` suffix (`README.ru.md`, `AGENTS.ru.md`, `wiki/01-Why.ru.md`). Never edit both and
+let them drift — change the English file, then update the translation in the same commit.
 
-- [Что это и зачем](#что-это-и-зачем)
-- [Быстрый старт](#быстрый-старт)
-- [Импорт в другой агент](#импорт-в-другой-агент)
-- [Правила, которые нельзя нарушать](#правила-которые-нельзя-нарушать)
-- [Команды](#команды)
-- [Контракты файлов](#контракты-файлов)
-- [Рабочий цикл](#рабочий-цикл)
-- [Ловушки платформы](#ловушки-платформы)
-- [Проверка перед сдачей](#проверка-перед-сдачей)
-- [Чего не делать](#чего-не-делать)
-- [Структура пакета](#структура-пакета)
-- [Лицензия](#лицензия)
+## Contents
 
-## Что это и зачем
+- [What the pack does](#what-the-pack-does)
+- [Quick start](#quick-start)
+- [Import into another agent](#import-into-another-agent)
+- [Non-negotiable rules](#non-negotiable-rules)
+- [Commands](#commands)
+- [File contracts](#file-contracts)
+- [Images](#images)
+- [Workflows](#workflows)
+- [Platform traps](#platform-traps)
+- [Before you finish](#before-you-finish)
+- [Do not](#do-not)
+- [Pack layout](#pack-layout)
+- [License](#license)
 
-Один и тот же дефект повторяется в каждом втором репозитории: README без установки,
-CHANGELOG без дат, вики из трёх страниц без навигации, ссылки, ведущие в никуда,
-описание из одного слова. Причина не в лени, а в том, что проверок нет: глазом это
-не видно, а `git push` проходит.
+## What the pack does
 
-Пакет превращает шесть повторяющихся работ в шесть команд:
+The same defect repeats in most repositories: a README with no installation section, a
+CHANGELOG with no dates, a wiki of three unlinked pages, images that render as broken boxes,
+a one-word description. Nothing fails, because `git push` succeeds and no check exists.
 
-| Работа | Команда | Что проверяется |
+The pack turns thirteen recurring jobs into thirteen commands, each returning `0` clean,
+`1` with errors, `2` on a usage or environment problem:
+
+| Job | Command | What it examines |
 |---|---|---|
-| Аудит репозитория | `ghagent.py audit` | обязательные файлы, README-контракт, CHANGELOG-контракт, оценка гигиены |
-| Документы | `ghagent.py doc` | BOM/CRLF, заголовки, таблицы, ссылки, якоря, оглавление, приватность |
-| Вики | `ghagent.py wiki build\|verify\|publish` | манифест, `_Sidebar`, `_Footer`, переписывание ссылок, push |
-| Журнал изменений | `ghagent.py changelog check\|release\|suggest` | Keep a Changelog 2.0.0, даты, порядок версий, ссылки сравнения |
-| Метаданные | `ghagent.py meta suggest\|apply` | описание, темы, домашняя страница |
-| Установка навыка | `ghagent.py install\|verify-install\|selftest` | копия пакета совпадает с проверенной |
+| Repository hygiene | `ghagent.py audit` | required files, README and changelog contracts, score |
+| Documents | `ghagent.py doc` | BOM/CRLF, headings, tables, links, anchors, TOC |
+| Secrets and privacy | `ghagent.py privacy` | tokens, machine paths, personal addresses |
+| Images | `ghagent.py assets` | banner, social preview, dimensions, references |
+| Wiki | `ghagent.py wiki` | manifest, sidebar, footer, link rewriting, publication |
+| Changelog and release | `ghagent.py changelog` | Keep a Changelog conformance, release, notes |
+| Metadata | `ghagent.py meta` | description, topics, homepage |
+| Skill installation | `ghagent.py install` | copy, sha256 manifest, drift, removal |
 
-Каждая команда печатает находки со ссылкой `файл:строка` и возвращает код: `0` — чисто,
-`1` — есть ошибки, `2` — ошибка вызова или окружения. Поэтому агенту не нужно читать
-файлы, чтобы понять состояние: достаточно одной команды и её кода возврата.
-
-## Быстрый старт
+## Quick start
 
 ```bash
-# 1. проверить сам пакет (не сеть, не репозиторий — только код пакета)
-python tools/ghagent.py selftest
-
-# 2. посмотреть состояние репозитория
+python tools/ghagent.py selftest          # 134 checks, no network
 python tools/ghagent.py audit .
-
-# 3. проверить все markdown-файлы
 python tools/ghagent.py doc --root .
+python tools/ghagent.py assets check
 ```
 
-Ожидаемый результат `selftest` — строка `ghagent <версия> selftest: PASS` и код `0`.
-Если тесты падают, работать этим пакетом нельзя: сначала чинится копия.
+`selftest` must print `PASS` and exit `0`. If it does not, the copy is not the one that was
+tested: reinstall before doing any repository work.
 
-## Импорт в другой агент
+## Import into another agent
 
-Пакет ставится в каталог навыков агента и запоминается манифестом с sha256 каждого
-файла. Три потребителя, два из них — с измеренным каталогом навыков:
-
-| Агент | Каталог навыков | Команда |
+| Agent | Skill root | Command |
 |---|---|---|
 | AutoClaw2 | `%USERPROFILE%\.pi\agent\skills` | `python tools/ghagent.py install --profile autoclaw --write` |
 | HARNESS | `%USERPROFILE%\.dsh\skills` | `python tools/ghagent.py install --profile harness --write` |
-| SagaAI | задаётся вручную | `python tools/ghagent.py install --target <каталог> --write` |
+| SagaAI | supplied by hand | `python tools/ghagent.py install --target <dir> --write` |
 
-После установки агент получает каталог `<skills>\github-agent\` и должен добавить в
-свой `AGENTS.md` (или в файл правил) блок, который печатает сама команда:
-
-```bash
-python tools/ghagent.py snippet --profile harness
-```
-
-Блок содержит путь к пакету, требование прочитать этот файл, команду проверки
-установки и правило «одна задача — одна команда».
-
-Проверка установки в любой момент:
+The command copies the pack, writes `.install.json` with a sha256 per file, and prints the rules
+block to paste into the agent's own `AGENTS.md`. Verify at any time:
 
 ```bash
 python tools/ghagent.py verify-install --profile autoclaw
 ```
 
-`verify-install` сравнивает sha256 установленных файлов с манифестом `.install.json`.
-Расхождение — ошибка: значит установленная копия не та, что тестировали.
+`verify-install` answers one question: is the installed copy still the one that passed the
+tests. Missing or changed files are errors with names, not a vague warning.
 
-## Правила, которые нельзя нарушать
+## Non-negotiable rules
 
-1. **Числа только измеренные.** В README, CHANGELOG и вики попадает число, у которого
-   есть источник: команда, файл, ответ API. «Много», «быстро», «удобно» — не факт.
-2. **Секретов в публикуемых файлах нет.** Токены, пароли, приватные ключи, абсолютные
-   пути машины, личные адреса — блокирующая ошибка `privacy.*`, а не замечание.
-3. **Эмодзи в метаданных не бывает.** Описание репозитория, темы, заголовки — обычный
-   текст: метаданные читают поиск и парсеры.
-4. **Вики — плоское пространство.** Подкаталогов нет; страница — это файл в корне
-   вики-репозитория, ссылка на неё пишется без `.md`.
-5. **`_Sidebar.md` и `_Footer.md` обязательны.** Без них вики из десяти страниц
-   становится свалкой: читатель не знает, что там ещё есть.
-6. **Относительные картинки в вики не работают.** Вики — отдельный git-репозиторий и
-   дерева основного репозитория не видит. Картинка либо лежит в основном репозитории и
-   подключена абсолютным URL, либо её нет.
-7. **CHANGELOG — по Keep a Changelog 2.0.0.** Шесть типов изменений, дата `YYYY-MM-DD`,
-   версия сверху вниз от новой к старой, `Unreleased` сверху, ссылки сравнения внизу.
-8. **Темы — не больше 20 и только в нижнем регистре через дефис.** `PUT /topics`
-   заменяет список целиком: перед вызовом список сливается с существующим.
-9. **Публикация — только по явному флагу.** `wiki publish` без `--push` — сухой прогон;
-   `--prune` (удаление страниц на сервере) — отдельное решение человека.
-10. **Коммит подписывается владельцем, а не агентом.** Имя и адрес берутся из настроек
-    репозитория или из истории; `zwork`, `bot`, `agent` в публичной истории недопустимы.
-11. **Ложный PASS хуже ложного FAIL.** Проверка, осмотревшая ноль объектов, докладывает
-    `doc.no-text-files` или `coverage.skipped`, а не зелёный результат.
+1. **Only measured numbers.** Every figure in a README, changelog or wiki page names its
+   source: a command, a file, an API response. "Fast" and "powerful" are not measurements.
+2. **No secrets in published files.** Tokens, keys, absolute machine paths and personal
+   addresses are blocking errors (`privacy.*`), not remarks.
+3. **No emoji in metadata.** Descriptions, topics and headings are read by search and parsers.
+4. **The wiki is a flat namespace.** A page is a file in the wiki repository root; links carry
+   no `.md` suffix.
+5. **`_Sidebar.md` and `_Footer.md` are mandatory.** Without them a ten-page wiki is a pile.
+6. **A relative image cannot work in a wiki.** The wiki is a separate repository and cannot see
+   the project tree: commit the image and reference it by absolute URL.
+7. **CHANGELOG follows Keep a Changelog 2.0.0.** Six change types, ISO dates, newest first,
+   `[Unreleased]` on top, comparison links at the bottom.
+8. **Topics: 8–20, lowercase, hyphenated.** `PUT /topics` replaces the whole list — merge with
+   the existing set and re-read the response.
+9. **Publication only on an explicit flag.** `wiki publish` without `--push` is a dry run;
+   `--prune` (deleting remote pages) is a separate human decision.
+10. **Commits are signed by the owner**, never by the agent or a bot identity.
+11. **A false PASS is worse than a false FAIL.** A rule that examined zero objects says so in
+    `coverage.skipped`; an empty tree is `doc.no-text-files`, not success.
+12. **English is canonical, Russian is a translation.** `.ru.md` files mirror the English ones
+    in the same commit; a translation that lags is a defect.
 
-## Команды
+## Commands
 
-Все команды вызываются из корня пакета или по абсолютному пути к `tools/ghagent.py`.
-Общие флаги: `--json` (машинный вывод), `--root <каталог>`.
+Every command accepts `--json` and `--root <dir>`. Exit codes: `0` clean, `1` findings at
+error level, `2` usage or environment problem.
 
-| Задача | Команда | Флаги, которые меняют поведение |
+| Task | Command | Flags that change behaviour |
 |---|---|---|
-| Оценить гигиену локального репозитория | `ghagent.py audit .` | `--min-score 80` — упасть ниже порога, `--json` |
-| Оценить метаданные на GitHub | `ghagent.py audit --repo owner/name` | `--http` — проверить, что домашняя страница отвечает |
-| Проверить markdown | `ghagent.py doc --root .` | `--ignore rule1,rule2`, `--no-privacy`, `--include-wiki` |
-| Найти утечки и личные данные | `ghagent.py privacy --root .` | — |
-| Собрать вики | `ghagent.py wiki build` | `--out <каталог>` |
-| Проверить собранную вики | `ghagent.py wiki verify` | `--out <каталог>` |
-| Опубликовать вики | `ghagent.py wiki publish --repo owner/name --push` | `--prune`, `--force`, `--author-name`, `--author-email` |
-| Создать каркас вики | `ghagent.py wiki init --repo owner/name --title "Имя"` | `--no-docs` |
-| Проверить CHANGELOG | `ghagent.py changelog check` | `--repo owner/name` — сверить ссылки |
-| Выпустить версию | `ghagent.py changelog release 1.2.0 --write` | `--date 2026-10-24` |
-| Собрать записи из коммитов | `ghagent.py changelog suggest --since v1.1.0` | `--include-noise` |
-| Текст релиза | `ghagent.py changelog notes 1.2.0` | — |
-| Предложить метаданные | `ghagent.py meta suggest` | `--json` |
-| Применить метаданные | `ghagent.py meta apply --repo owner/name --description "…" --topics a,b --write` | `--replace-topics` |
-| Один отчёт по всем проверкам | `ghagent.py report .` | `--out report.md` |
+| Score a local tree | `ghagent.py audit .` | `--min-score 80` |
+| Score GitHub metadata | `ghagent.py audit --repo owner/name` | `--http` checks the homepage |
+| Lint markdown | `ghagent.py doc --root .` | `--ignore r1,r2`, `--no-privacy`, `--include-wiki` |
+| Scan for leaks | `ghagent.py privacy --root .` | — |
+| Render the banner and social preview | `ghagent.py assets render --write` | `--title`, `--tagline`, `--command`, `--chips`, `--size 1280x640` |
+| Check images | `ghagent.py assets check` | — |
+| Recommend the image set | `ghagent.py assets suggest` | — |
+| Build the wiki | `ghagent.py wiki build` | `--out <dir>` |
+| Verify the built wiki | `ghagent.py wiki verify` | — |
+| Publish the wiki | `ghagent.py wiki publish --repo owner/name --push` | `--prune`, `--force`, `--author-name`, `--author-email` |
+| Scaffold a wiki | `ghagent.py wiki init --repo owner/name --title "Name"` | `--no-docs` |
+| Check the changelog | `ghagent.py changelog check` | `--repo owner/name` |
+| Release a version | `ghagent.py changelog release 1.2.0 --write` | `--date 2026-10-24` |
+| Draft entries from commits | `ghagent.py changelog suggest --since v1.1.0` | `--include-noise` |
+| Release body | `ghagent.py changelog notes 1.2.0` | — |
+| Suggest metadata | `ghagent.py meta suggest` | — |
+| Apply metadata | `ghagent.py meta apply --repo owner/name --description "…" --topics a,b --write` | `--replace-topics` |
+| One combined report | `ghagent.py report .` | `--out REPORT.md` |
 
-## Контракты файлов
+## File contracts
 
-### README.md
+**README.md** — one `H1` under 60 characters; a summary paragraph directly after it; 3–8
+badges; a table of contents once the file passes 200 lines; `Installation` (or `Установка`),
+`Usage` (or `Быстрый старт`) and `License` sections; a language tag on every code fence; a
+column naming the measurement source in every numbers table.
 
-1. Один `H1` — название проекта, до 60 символов.
-2. Абзац-описание сразу после заголовка: что это и для кого, одно-два предложения.
-3. Блок из 3–8 бейджей: CI, релиз, лицензия, среда выполнения.
-4. Оглавление, если README длиннее 200 строк.
-5. Обязательные разделы: `Installation` (или `Установка`), `Usage` (или `Быстрый старт`),
-   `License`. Остальное — по смыслу: архитектура, настройка, разработка, FAQ.
-6. Каждый блок кода — с языком. Каждая ссылка ведёт на существующий файл.
-7. Таблица «В цифрах» с колонкой «источник измерения», если проект заявляет числа.
+**AGENTS.md** — one `H1`, a purpose paragraph, a table of contents, copy-paste commands, an
+explicit verification section, an explicit prohibitions section, and a traps table whose rows
+name the symptom that identifies the trap.
 
-### AGENTS.md
-
-1. Один `H1`, абзац о назначении, оглавление.
-2. Копируемые команды в блоках `bash`/`powershell` — агент не должен догадываться.
-3. Явный раздел проверки: чем убедиться, что работа сделана.
-4. Раздел запретов: что нельзя делать и почему.
-5. Таблица ловушек с признаком, по которому ловушка узнаётся.
-
-### CHANGELOG.md
+**CHANGELOG.md**
 
 ```markdown
 # Changelog
 
-All notable changes are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+All notable changes to this project are documented here. The format is
+[Keep a Changelog](https://keepachangelog.com/en/2.0.0/) 2.0.0, and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
@@ -182,139 +161,136 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.1.0]: https://github.com/owner/repo/compare/v1.0.0...v1.1.0
 ```
 
-Формат проверяется `changelog check`: версия без даты, версия без записей, повтор
-версии, нарушенный порядок, неизвестный тип раздела — ошибки или предупреждения.
-
-### wiki/wiki.json
-
-Манифест вики — единственный источник порядка страниц. Файл в `wiki/`, которого нет в
-манифесте, — ошибка `wiki.page-unlisted`: невидимая в навигации страница считается
-потерянной.
+**wiki/wiki.json** — the only ordering authority. A page missing from the manifest is
+`wiki.page-unlisted` (error): an unlisted page is invisible in navigation and therefore lost.
 
 ```json
 {
   "repo": "owner/name",
   "branch": "main",
-  "title": "Имя проекта",
+  "title": "Project name",
   "footer": "MIT",
   "groups": [
-    {"title": "Начало", "pages": ["Home.md", "01-Install.md"]},
-    {"title": "Справочник", "pages": ["02-API.md"]}
+    {"title": "Start", "pages": ["Home.md", "01-Install.md"]},
+    {"title": "Reference", "pages": ["02-API.md"]}
   ]
 }
 ```
 
-`wiki build` создаёт `.ghagent/wiki/` с переписанными ссылками, `_Sidebar.md` и
-`_Footer.md`. Внутренние ссылки теряют `.md`, ссылки в дерево репозитория становятся
-абсолютными `github.com/<owner>/<repo>/blob/<branch>/…`, относительные картинки —
-ошибка.
+## Images
 
-## Рабочий цикл
-
-### Аудит существующего репозитория
+A repository with no picture reads as abandoned, and the social preview is what link cards
+show. The pack renders both from the repository's own metadata and then verifies them.
 
 ```bash
-python tools/ghagent.py audit . --json > audit.json
-python tools/ghagent.py audit --repo owner/name
-python tools/ghagent.py report . --out AUDIT.md
+python tools/ghagent.py assets render --title "Project" --tagline "What it does, for whom." \
+    --command "project --help" --chips "python,github" --write
+python tools/ghagent.py assets check
+python tools/ghagent.py assets suggest
 ```
 
-Порядок исправления: сначала блокирующие (`error`), потом предупреждения. Оценка
-считается только по осмотренным пунктам: недоступный пункт попадает в `skipped` и не
-поднимает процент.
+`assets render` writes `assets/social-preview.svg` always and `assets/social-preview.png` when
+Pillow is installed. Reference it at the top of the README:
 
-### Выпуск версии
+```markdown
+<img src="https://github.com/<owner>/<repo>/raw/main/assets/social-preview.png"
+     alt="<Project> — <what it does>" width="100%">
+```
+
+Rules the checker enforces: the platform accepts PNG, JPG or GIF under 1 MB, at least 640×320,
+1280×640 for best display; an SVG works in a README but cannot be uploaded as a social
+preview; every referenced file must exist; every image needs alt text; images over `http://`
+are warned. The repository copy of the image is *not* the social preview automatically — that
+file is uploaded once in **Settings → Social preview**, and the check prints that reminder.
+
+## Workflows
 
 ```bash
+# audit a repository
+python tools/ghagent.py audit . --json > audit.json
+python tools/ghagent.py audit --repo owner/name --http
+python tools/ghagent.py report . --out AUDIT.md
+
+# release a version
 python tools/ghagent.py changelog suggest --since v1.1.0
 python tools/ghagent.py changelog release 1.2.0 --write
 python tools/ghagent.py changelog check
 python tools/ghagent.py changelog notes 1.2.0 > release-body.md
-```
 
-`release` переносит `[Unreleased]` в новую версию, ставит дату, обновляет ссылки
-сравнения и сразу перепроверяет файл. Если после записи появились ошибки — они
-печатаются: молча «полувыпущенного» CHANGELOG не бывает.
-
-### Публикация вики
-
-```bash
+# publish the wiki
 python tools/ghagent.py wiki build
 python tools/ghagent.py wiki verify
-python tools/ghagent.py wiki publish --repo owner/name            # сухой прогон
-python tools/ghagent.py wiki publish --repo owner/name --push     # публикация
+python tools/ghagent.py wiki publish --repo owner/name            # dry run
+python tools/ghagent.py wiki publish --repo owner/name --push     # publish
 ```
 
-Страницы, которых нет в манифесте, но которые есть на сервере, по умолчанию
-**сохраняются** — печатается список `kept`. Удаление — только `--prune`.
+`wiki publish` keeps every remote page that the build does not contain and lists them as
+`kept`; deletion happens only with `--prune`.
 
-Первый раз вики требует одного действия руками: `<repo>.wiki.git` не существует, пока в
-интерфейсе не сохранена первая страница (Wiki → New page), и `git push` его не создаёт.
-До этого шага `wiki publish --push` возвращает `wiki.remote-missing` с подсказкой.
+The first publication needs one manual step: `<repo>.wiki.git` does not exist until a first
+page is saved in the web interface (Wiki → New page), and a push cannot create it. Until then
+`wiki publish --push` returns `wiki.remote-missing` with that instruction.
 
-## Ловушки платформы
+## Platform traps
 
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| Вики не индексируется поисковиками | страница есть, в поиске её нет | по документации индексируются только вики с 500+ звёзд и запретом публичного редактирования; для поиска — GitHub Pages |
-| Приватная вики требует платного плана | вики нет в приватном репозитории | на бесплатном плане приватная вики недоступна; не обещать её |
-| Вики-репозиторий не создаётся пушем | `remote: Repository not found` на `<repo>.wiki.git` | GitHub создаёт его только при сохранении первой страницы в интерфейсе (Wiki → New page); после этого `wiki publish --push` работает |
-| Вики — плоское пространство | ссылка на `docs/page` не работает | все страницы в корне вики-репозитория |
-| Относительные картинки в вики | картинка не отображается | абсолютный URL на файл в основном репозитории |
-| `.md` в ссылке вики | ссылка открывает сырой файл или 404 | ссылки на страницы вики — без расширения |
-| Кириллические якоря | `#установка` не находится | знаки препинания удаляются, пробелы становятся дефисами, регистр приводится к нижнему; проверять сравнением без учёта регистра |
-| Тире в заголовке | двойной дефис в якоре | тире удаляется, два соседних пробела дают два дефиса |
-| `PUT /topics` заменяет список | пропали темы, которых не касались | слить с существующими и перечитать ответ |
-| Больше 20 тем | часть тем исчезла | API хранит не больше 20 |
-| Страницы Pages для приватного репозитория | `422 Your current plan does not support GitHub Pages for this repository` | бесплатный план не даёт Pages в приватном репозитории |
-| Сборка Pages асинхронна | сразу после включения адрес отдаёт 404 | ждать сборку, потом проверять URL |
-| `gh api --jq .content` для README | base64 с переводами строк | `-H 'Accept: application/vnd.github.raw'` |
-| Якорь в документации GitHub | пример с заглавной греческой буквой не совпадает с правилами | сравнивать якоря без учёта регистра: документация сама себе противоречит |
+| The wiki repository is not created by a push | `remote: Repository not found` | save the first page in the web interface, then publish |
+| Wikis are barely indexed | a page exists but search never shows it | only wikis with 500+ stars and public editing disabled are indexed; use GitHub Pages for discovery |
+| A private wiki needs a paid plan | no wiki in a private repository | do not promise it |
+| Flat namespace | a link to `docs/page` fails | every page lives in the wiki root |
+| Relative image in a wiki | image does not render | commit it and use an absolute raw URL |
+| `.md` in a wiki link | raw file or 404 | drop the extension |
+| Cyrillic anchors | `#Установка` not found | punctuation is dropped, spaces become hyphens, case is lowered |
+| An em dash in a heading | double hyphen in the anchor | the dash is removed; two spaces become two hyphens |
+| `PUT /topics` replaces the list | topics you did not touch disappear | merge first, then re-read |
+| More than 20 topics | some topics vanish | the API stores 20 |
+| Pages for a private repository | `422 Your current plan does not support GitHub Pages for this repository` | the free plan does not allow it |
+| Pages builds are asynchronous | 404 right after enabling | poll the build, then the URL |
+| `gh api --jq .content` | base64 with line breaks | `-H 'Accept: application/vnd.github.raw'` |
+| An SVG as a social preview | upload rejected or blank card | PNG, JPG or GIF only |
+| The platform's own anchor example | a lowercase rule contradicted by a capital Greek letter | compare anchors case-insensitively |
 
-## Проверка перед сдачей
+## Before you finish
 
 ```bash
-python tools/ghagent.py selftest          # тесты самого пакета
-python tools/ghagent.py doc --root .      # документы пакета
-python tools/ghagent.py audit .           # гигиена репозитория
-python tools/ghagent.py changelog check   # журнал изменений
-python tools/ghagent.py privacy --root .  # утечки и личные данные
+python tools/ghagent.py selftest
+python tools/ghagent.py doc --root .
+python tools/ghagent.py audit .
+python tools/ghagent.py changelog check
+python tools/ghagent.py assets check
+python tools/ghagent.py privacy --root .
 ```
 
-Все пять команд должны вернуть код `0`. Код `1` — есть находки уровня `error`, их
-печатает сама команда. Код `2` — ошибка вызова: неверный путь, отсутствующий файл.
+All six must exit `0`. `1` means findings at error level and the command prints them with
+`file:line`. `2` means a wrong path or a missing file.
 
-## Чего не делать
+## Do not
 
-- **Не публиковать вики без `wiki verify`.** Ссылка, ведущая в никуда, хуже пустой
-  страницы: читатель считает, что документация есть.
-- **Не удалять страницы на сервере «для порядка».** `--prune` удаляет, обычный
-  публикатор сохраняет чужое.
-- **Не переписывать CHANGELOG из лога коммитов автоматически.** `changelog suggest`
-  готовит черновик; назначение записи в журнале — сказать пользователю, что изменилось,
-  а не пересказать коммиты.
-- **Не подставлять в метаданные числа, которых нет в README.** Описание, обещающее
-  больше кода, читается как обман.
-- **Не хранить в репозитории токены, пароли и личные адреса.** Даже в примерах: заменить
-  на `<token>`, `user@users.noreply.github.com`, `example.com`.
-- **Не коммитить от имени агента.** Подпись коммита — идентичность владельца.
-- **Не добавлять зависимости ради проверки ссылок.** Пакет работает на стандартной
-  библиотеке; внешняя зависимость ломает установку у чужого агента.
+- Publish a wiki without `wiki verify` and without reading the dry run.
+- Delete remote wiki pages for tidiness; `--prune` is a decision, not a habit.
+- Rewrite the changelog from the commit log; `changelog suggest` drafts, a human writes.
+- Claim numbers the README does not contain.
+- Keep tokens, passwords or personal addresses anywhere in the tree, including examples.
+- Sign a commit as the agent.
+- Add a dependency to check links. The pack runs on the standard library; Pillow is optional
+  and only affects PNG rendering.
+- Edit a `.ru.md` file alone and leave the English original behind.
 
-## Структура пакета
+## Pack layout
 
 ```text
-AGENTS.md          этот файл: правила, команды, контракты
-README.md          описание проекта для человека
-skills/            навыки: репозиторий, вики, changelog, сообщество, импорт
-tools/ghagent.py   единственная точка входа CLI
-tools/ghalib/      библиотека: audit, mdcheck, wiki, changelog, meta, install, report
-reference/         шаблоны README, AGENTS, CHANGELOG, CONTRIBUTING, вики, чек-листы
-wiki/              исходники вики: страницы и манифест
-tests/             самопроверка: фикстуры, приманки, регрессы
-docs/              процедуры и импорт
+AGENTS.md          this file: rules, commands, contracts
+README.md          the project as a product (English); README.ru.md mirrors it
+skills/            repository, wiki, changelog, community, import, images (SKILL.md + .ru.md)
+tools/ghagent.py   the single CLI entry point
+tools/ghalib/      audit, mdcheck, assets, wiki, changelog, meta, install, report, config
+reference/         README, AGENTS, CHANGELOG, CONTRIBUTING, wiki templates and checklists
+wiki/              wiki sources: English pages plus .ru.md translations
+tests/             self-tests: fixtures, decoys, regressions
+docs/              import instructions and procedures
 ```
 
-## Лицензия
+## License
 
-MIT — см. [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).

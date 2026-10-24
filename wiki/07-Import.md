@@ -1,76 +1,73 @@
-# Импорт в другой агент
+# Import into another agent
 
-Пакет импортируется двумя действиями: копия в каталоге навыков агента и строка правил,
-которая говорит, где эта копия и чем проверить её целостность.
+The pack is imported with two actions: a copy in the agent's skill root, and a rules line that
+says where that copy is and how to prove it is intact.
 
-## Каталоги
+## Skill roots
 
-| Агент | Каталог навыков | Файл правил |
+| Agent | Skill root | Rules file |
 |---|---|---|
 | AutoClaw2 | `%USERPROFILE%\.pi\agent\skills` | `%USERPROFILE%\.pi\agent\AGENTS.md` |
 | HARNESS | `%USERPROFILE%\.dsh\skills` | `%USERPROFILE%\.dsh\AGENTS.md` |
-| SagaAI | задаётся вручную | `AGENTS.md` проекта |
+| SagaAI | supplied by hand | the project `AGENTS.md` |
 
-## Установка
+## Install
 
 ```bash
 python tools/ghagent.py install --profile autoclaw --write
 python tools/ghagent.py install --profile harness  --write
-python tools/ghagent.py install --target <каталог>  --write
+python tools/ghagent.py install --target <dir>     --write
 ```
 
-Команда копирует пакет (включая `tests/`, чтобы `selftest` работал на месте), пишет
-манифест `.install.json` с sha256 каждого файла и печатает блок правил.
+The command copies the pack (tests included, so `selftest` works in place), writes
+`.install.json` with a sha256 per file, and prints the rules block.
 
-## Блок правил
-
-Его печатает команда `snippet`:
+## The rules block
 
 ```bash
 python tools/ghagent.py snippet --profile harness
 ```
 
-Содержимое блока: путь к пакету, требование прочитать файл правил пакета, команда проверки
-установки и правило «одна задача — одна команда». Файлы правил агента команда не правит:
-это решение владельца.
+The block names the pack path, requires reading the pack's own rules file, gives the verification
+command and states one rule: one job, one command. The agent's rules files are not edited by the
+command — that decision belongs to the owner.
 
-## Проверка
+## Verify
 
 ```bash
 python tools/ghagent.py verify-install --profile harness
 python tools/ghagent.py selftest
 ```
 
-| Исход | Код | Значение |
+| Outcome | Exit | Meaning |
 |---|---|---|
-| `verify.ok` | 0 | копия совпадает с установленной |
-| `verify.changed` | 1 | файл изменён после установки |
-| `verify.missing` | 1 | файл удалён |
-| `verify.manifest` | 1 | каталог ставил не пакет |
+| `verify.ok` | 0 | the copy matches the installation |
+| `verify.changed` | 1 | a file changed after installation |
+| `verify.missing` | 1 | a file was deleted |
+| `verify.manifest` | 1 | the directory was not installed by this pack |
 
-## Обновление и удаление
+## Update and remove
 
 ```bash
-git -C <каталог пакета> pull
-python tools/ghagent.py install --profile <профиль> --write
-python tools/ghagent.py verify-install --profile <профиль>
+git -C <pack dir> pull
+python tools/ghagent.py install --profile <profile> --write
+python tools/ghagent.py verify-install --profile <profile>
 
-python tools/ghagent.py uninstall --profile <профиль> --write
+python tools/ghagent.py uninstall --profile <profile> --write
 ```
 
-`uninstall` отказывается удалять каталог без манифеста: он не имеет права сносить то, что
-ставил кто-то другой.
+`uninstall` refuses a directory without a manifest: it must not delete what another tool created.
 
-## Ловушки
+## Traps
 
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| Навык не виден агенту | каталог есть, агент его не знает | список навыков читается при старте сессии — перезапустить сессию |
-| Копию правили руками | `verify.changed` | переустановить |
-| Установка в чужой каталог | `uninstall` отказывается | указать `--target` явно |
-| Тестов нет в поставке | `selftest` не находит раннер | копировать `tests/` вместе с `tools/` |
+| The agent does not see the skill | the directory exists, the agent ignores it | the skill list is read at session start — restart the session |
+| The copy was edited by hand | `verify.changed` | reinstall |
+| Installing into a foreign directory | `uninstall` refuses | pass `--target` explicitly |
+| No tests in the distribution | `selftest` cannot find the runner | copy `tests/` with `tools/` |
 
-## Дальше
+## Next
 
-- [Установка](02-Install).
-- [Работа с вики](04-Wiki-Workflow).
+- [Installation](02-Install).
+- [Wiki workflow](04-Wiki-Workflow).

@@ -1,28 +1,30 @@
 <!-- ghagent: template -->
 # <Project name>
 
-<Одно предложение: что за проект и кому эта вики адресована.>
+<One sentence: what the project is and whom this wiki is for.>
 
-## С чего начать
+## Start here
 
-| Шаг | Страница | Зачем |
+| Step | Page | Why |
 |---|---|---|
-| 1 | [Установка](01-Install) | поставить и проверить |
-| 2 | [Настройка](02-Setup) | подключить <сервис> |
-| 3 | [Эксплуатация](03-Operations) | обновление, резервные копии, журналы |
+| 1 | [Installation](01-Install) | install and verify |
+| 2 | [Configuration](02-Setup) | connect <service> |
+| 3 | [Operations](03-Operations) | upgrades, backups, logs |
 
-## Справочник
+## Reference
 
-| Тема | Страница |
+| Topic | Page |
 |---|---|
 | API | [API](04-API) |
-| Ошибки | [Диагностика](05-Troubleshooting) |
+| Errors | [Troubleshooting](05-Troubleshooting) |
+| Русская версия | [Home (RU)](Home.ru) |
 
-## Ссылки
+## Links
 
-- [Репозиторий](https://github.com/<owner>/<repo>)
-- [Релизы](https://github.com/<owner>/<repo>/releases)
+- [Repository](https://github.com/<owner>/<repo>)
+- [Releases](https://github.com/<owner>/<repo>/releases)
 - [Issues](https://github.com/<owner>/<repo>/issues)
 
 > [!TIP]
-> Каждая страница заканчивается ссылкой на соседнюю: читатель не должен упираться в тупик.
+> Every page ends with a link to a neighbouring page: a reader must not hit a dead end.
+> Translations live next to the original as `<page>.ru.md` and are published as `<Page>.ru`.

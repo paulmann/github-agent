@@ -1,44 +1,46 @@
-# Зачем это нужно
+# Why this exists
 
-Репозиторий проваливается не на коде, а на документации. `git push` проходит, тесты
-зелёные, а читатель не понимает, как проект запустить. Дефект живёт годами, потому что
-его не видно: ни компилятор, ни CI о нём не сообщают.
+A repository rarely fails on code. It fails on documentation: `git push` succeeds, the tests are
+green, and a reader cannot find out how to start. The defect lives for years because nothing
+reports it — neither the compiler nor CI.
 
-## Пять дефектов, которые встречаются чаще всего
+## Five defects that appear most often
 
-| Дефект | Как выглядит | Чем опасен |
+| Defect | How it looks | Why it hurts |
 |---|---|---|
-| README без установки | сразу архитектура и философия | читатель уходит на втором абзаце |
-| Журнал изменений без дат | `## 1.1.0` и всё | версии нельзя сравнить и связать |
-| Вики без навигации | десять страниц, ссылок нет | страницы существуют, но не находятся |
-| Ссылка в никуда | `[API](docs/api.md)` при `docs/API.md` | документация «есть», но не открывается |
-| Описание из трёх слов | «panel», «tools» | поиск не показывает проект |
+| A README with no installation | architecture and philosophy first | the reader leaves at the second paragraph |
+| A changelog with no dates | `## 1.1.0` and nothing else | versions cannot be compared or linked |
+| A wiki with no navigation | ten pages, no links | the pages exist and cannot be found |
+| A link to nowhere | `[API](docs/api.md)` when the file is `docs/API.md` | documentation "exists" and does not open |
+| A three-word description | "panel", "tools" | search never shows the project |
+| A repository with no picture | an empty link card | it reads as abandoned |
 
-Ни один из них не ловится запуском кода. Все пять ловятся сверкой: файл против контракта,
-ссылка против дерева, якорь против заголовка.
+None of these is caught by running the code. All of them are caught by comparison: a file against
+a contract, a link against the tree, an anchor against a heading.
 
-## Почему это работа для агента
+## Why this is a job for an agent
 
-Проверка механическая, но требует внимания к деталям, которых человек не держит в голове:
-шестнадцать обязательных файлов, правила якорей с кириллицей, порядок типов изменений,
-лимит тем в API. Агент с одной командой делает это за секунды и не забывает про исключения.
+The checks are mechanical, but they need attention to details a human does not hold in mind:
+sixteen required files, anchor rules with Cyrillic, the order of change types, the twenty-topic
+limit in the API, the 1280×640 rule for a social preview. An agent with one command does this in
+seconds and does not forget the exceptions.
 
-Обратная сторона: агент без проверки выдумывает. Он напишет «быстрая панель» вместо
-измеренного числа и «см. документацию» вместо ссылки. Поэтому пакет устроен так, что
-каждое утверждение либо проверяется, либо отклоняется.
+The other side of that coin: an agent without checks invents. It writes "fast panel" instead of a
+measured number, and "see the documentation" instead of a link. That is why the pack is built so
+that every claim is either verified or rejected.
 
-## Что считается провалом
+## What counts as failure
 
-| Ситуация | Почему провал |
+| Situation | Why it is a failure |
 |---|---|
-| Проверка осмотрела ноль файлов и вернула «успех» | зелёный результат ничего не значит |
-| Ссылка на несуществующую страницу вики | читатель считает, что документация есть |
-| Публикация вики удалила чужую страницу | потеря данных без предупреждения |
-| Выпуск версии без записей | журнал перестаёт что-либо значить |
-| Число в README без источника | проверить нельзя, доверять нельзя |
+| A check examined zero files and returned success | the green result means nothing |
+| A link to a wiki page that does not exist | the reader believes the documentation exists |
+| A wiki publication deleted a foreign page | data loss without a warning |
+| A release with no entries | the changelog stops meaning anything |
+| A number in the README with no source | it cannot be verified, so it cannot be trusted |
 
-## Дальше
+## Next
 
-- [Установка](02-Install) — поставить и проверить.
-- [Ловушки платформы](06-Traps) — места, где поведение GitHub отличается от ожидаемого.
-- [Контракты файлов](03-Repository-Contract) — что именно проверяется.
+- [Installation](02-Install) — install and verify.
+- [Platform traps](06-Traps) — where GitHub behaves unexpectedly.
+- [File contracts](03-Repository-Contract) — what exactly is checked.

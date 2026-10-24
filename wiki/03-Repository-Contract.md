@@ -1,36 +1,39 @@
-# Контракты файлов
+# File contracts
 
-Проверка возможна только там, где есть контракт. Ниже — что именно пакет считает
-правильным и как это проверяется.
+A check is possible only where a contract exists. Below is what the pack considers correct, and
+how each part is verified.
 
 ## README.md
 
-| Пункт | Правило | Правило проверки |
+| Item | Rule | Rule id |
 |---|---|---|
-| Заголовок | один `H1`, до 60 символов | `readme.h1` |
-| Описание | абзац сразу после заголовка: что это и для кого | `readme.summary` |
-| Бейджи | 3–8 штук: CI, релиз, лицензия, среда | `readme.badges` |
-| Оглавление | обязательно, если документ длиннее 200 строк | `readme.toc` |
-| Установка | раздел `Installation` или `Установка` | `readme.install` |
-| Использование | раздел `Usage` или `Быстрый старт` | `readme.usage` |
-| Лицензия | раздел `License` или `Лицензия` | `readme.license` |
-| Код | каждый блок с языком | `readme.code-fence` |
+| Title | one `H1`, under 60 characters | `readme.h1` |
+| Summary | a paragraph right after the title: what it is, for whom | `readme.summary` |
+| Badges | 3–8: CI, release, license, runtime | `readme.badges` |
+| Banner | an image above the first section, with alt text | `assets.readme-banner` |
+| Table of contents | required once the file passes 200 lines | `readme.toc` |
+| Installation | a section named `Installation` or `Установка` | `readme.install` |
+| Usage | a section named `Usage` or `Быстрый старт` | `readme.usage` |
+| License | a section named `License` or `Лицензия` | `readme.license` |
+| Code | every fence carries a language | `readme.code-fence` |
 
 ## AGENTS.md
 
-| Пункт | Зачем |
+| Item | Why |
 |---|---|
-| Копируемые команды | агент не должен догадываться о синтаксисе |
-| Раздел проверки | чем убедиться, что работа сделана |
-| Раздел запретов | что нельзя и почему |
-| Таблица ловушек | признак, по которому ловушка узнаётся |
+| Copy-paste commands | the agent must not guess the syntax |
+| A verification section | how to prove the work is done |
+| A prohibitions section | what not to do, and why |
+| A traps table | the symptom that identifies each trap |
 
 ## CHANGELOG.md
 
 ```markdown
 # Changelog
 
-All notable changes are documented here. Format: Keep a Changelog 2.0.0, SemVer 2.0.0.
+All notable changes to this project are documented here. The format is
+[Keep a Changelog](https://keepachangelog.com/en/2.0.0/) 2.0.0, and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
@@ -44,53 +47,61 @@ All notable changes are documented here. Format: Keep a Changelog 2.0.0, SemVer 
 [1.1.0]: https://github.com/owner/repo/compare/v1.0.0...v1.1.0
 ```
 
-Шесть типов: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`. Дата —
-ISO. Новые версии выше старых. `Unreleased` сверху.
+Six types: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`. Dates are ISO. Newer
+versions sit above older ones. `Unreleased` stays on top.
 
 ## wiki/wiki.json
 
-Манифест задаёт порядок и навигацию. Файл, которого нет в манифесте, — ошибка: страница
-существует, но не находится.
+The manifest sets order and navigation. A file missing from the manifest is an error: the page
+exists but cannot be found.
 
 ```json
 {
   "repo": "owner/name",
   "branch": "main",
-  "title": "Имя проекта",
+  "title": "Project name",
   "footer": "MIT",
   "groups": [
-    {"title": "Начало", "pages": ["Home.md", "01-Install.md"]}
+    {"title": "Start", "pages": ["Home.md", "01-Install.md"]},
+    {"title": "Русский", "pages": ["Home.ru.md"], "labels": {"Home.ru.md": "Home (RU)"}}
   ]
 }
 ```
 
-## Что делает `doc`
+## Images
 
-```bash
-python tools/ghagent.py doc --root .
-```
-
-| Группа | Правила |
+| Rule | Rule id |
 |---|---|
-| Текст | `doc.bom`, `doc.crlf`, `doc.final-newline`, `doc.tab-indent` |
-| Структура | `md.h1`, `md.heading-skip`, `md.fence` |
-| Таблицы | `md.table` |
-| Ссылки | `md.link-local`, `md.link-anchor`, `md.link-dir` |
-| Оглавление | `md.toc` |
-| Разметка | `md.alert`, `md.image-alt`, `md.hard-break` |
-| Приватность | `privacy.secret`, `privacy.abs-path`, `privacy.email` |
+| The repository has an `assets/` directory with an image | `assets.no-directory` |
+| The README references at least one image | `assets.readme-banner` |
+| Every referenced file exists | `assets.missing-file` |
+| The social preview is PNG/JPG/GIF | `assets.svg-social` |
+| The social preview is under 1 MB | `assets.social-size` |
+| The social preview is at least 640×320, ideally 1280×640 | `assets.social-dimensions` |
+| No image over plain `http://` | `md.image-http` |
 
-Файл с маркером `<!-- ghagent: template -->` освобождается от проверки ссылок: шаблон
-содержит неразрешённые плейсхолдеры намеренно.
+## What `doc` does
 
-## Правило, которое важнее остальных
+| Group | Rules |
+|---|---|
+| Text | `doc.bom`, `doc.crlf`, `doc.final-newline`, `doc.tab-indent` |
+| Structure | `md.h1`, `md.heading-skip`, `md.fence` |
+| Tables | `md.table` |
+| Links | `md.link-local`, `md.link-anchor`, `md.link-dir` |
+| Table of contents | `md.toc` |
+| Markup | `md.alert`, `md.image-alt`, `md.image-http`, `md.hard-break` |
+| Privacy | `privacy.secret`, `privacy.abs-path`, `privacy.email` |
 
-Если правило осмотрело ноль объектов, оно **не** считается пройденным. В отчёте такая
-строка называется `coverage.skipped`, а пустое дерево даёт ошибку `doc.no-text-files`.
-Проверка, которая ничего не проверила, опаснее отсутствия проверки: она создаёт
-уверенность.
+A file carrying `<!-- ghagent: template -->` is exempt from link checks: a template contains
+unresolved placeholders on purpose.
 
-## Дальше
+## The rule that matters most
 
-- [Работа с вики](04-Wiki-Workflow).
-- [Ловушки платформы](06-Traps).
+If a rule examined zero objects it is **not** passed. The report names it in a `coverage.skipped`
+line, and an empty tree produces `doc.no-text-files`. A check that checked nothing is more
+dangerous than no check: it creates confidence.
+
+## Next
+
+- [Wiki workflow](04-Wiki-Workflow).
+- [Platform traps](06-Traps).

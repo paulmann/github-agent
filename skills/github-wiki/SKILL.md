@@ -1,89 +1,83 @@
 ---
 name: github-wiki
-description: Ведение GitHub Wiki как документации проекта — страницы в репозитории, манифест порядка, _Sidebar и _Footer, переписывание ссылок под плоское пространство вики, сборка, проверка и публикация. Загружать, когда документация переросла README, когда вики есть но в ней нет навигации, когда ссылки в вики ведут в никуда или картинки не отображаются.
+description: Running a GitHub wiki as project documentation — pages in the repository, an order manifest, _Sidebar and _Footer, link rewriting for the flat namespace, build, verify and publish. Load when documentation outgrew the README, when a wiki exists without navigation, when links lead nowhere or images do not render.
 ---
 
-# Вики, которая работает
+# A wiki that works
 
-## Что нужно знать до первой страницы
+## What must be known before the first page
 
-| Свойство платформы | Следствие |
+| Platform property | Consequence |
 |---|---|
-| Вики — отдельный git-репозиторий `<repo>.wiki.git` | дерева основного репозитория она не видит |
-| Пространство плоское | подкаталогов нет, страница = файл в корне |
-| Ссылка на страницу — без `.md` | `` `[Установка](01-Install)` `` |
-| `_Sidebar.md` и `_Footer.md` — единственная навигация | без них страницы не находятся |
-| Относительная картинка не работает | картинка в основном репозитории + абсолютный URL |
-| Заголовок страницы = имя файла | переименование файла меняет URL |
-| Индексируются поисковиками только вики с 500+ звёзд и запретом публичного редактирования | для поиска нужен GitHub Pages |
-| Приватная вики требует платного плана | не обещать её на бесплатном |
+| A wiki is a separate git repository, `<repo>.wiki.git` | it cannot see the project tree |
+| The namespace is flat | no subdirectories; a page is a file in the wiki root |
+| A page link carries no `.md` | `[Installation](01-Install)` |
+| `_Sidebar.md` and `_Footer.md` are the only navigation | without them pages are not found |
+| A relative image does not work | commit it to the repository, reference an absolute URL |
+| The page title is the filename | renaming a file changes the URL |
+| Only wikis with 500+ stars and public editing disabled are indexed | use GitHub Pages for discovery |
+| A private wiki needs a paid plan | do not promise it |
+| The wiki repository is not created by a push | save the first page in the web interface first |
 
-## Структура в репозитории
+## Structure in the repository
 
 ```text
 wiki/
-  wiki.json      манифест: порядок, группы, заголовок, ссылка на репозиторий
-  Home.md        первая страница
+  wiki.json      manifest: order, groups, title, repository link
+  Home.md        first page (canonical, English)
+  Home.ru.md     translation, published as Home.ru
   01-Install.md
-  02-Setup.md
 ```
 
-Каждый файл обязан быть в манифесте, каждый пункт манифеста обязан существовать. Иначе
-`wiki build` падает: невидимая страница считается потерянной, а «пустая» ссылка —
-дефектом.
+Every file must be in the manifest, and every manifest entry must exist. Otherwise `wiki build`
+fails: an invisible page is treated as lost, and an empty link as a defect.
 
-## Сборка и проверка
+## Build and verify
 
 ```bash
 python <pack>/tools/ghagent.py wiki build
 python <pack>/tools/ghagent.py wiki verify
 ```
 
-`build` переписывает страницы в `.ghagent/wiki/`: внутренние ссылки теряют `.md`, ссылки
-в дерево репозитория становятся `https://github.com/<owner>/<repo>/blob/<branch>/…`,
-относительная картинка становится ошибкой. `verify` проверяет собранное дерево:
-`Home`/`_Sidebar`/`_Footer` на месте, ссылки ведут на существующие страницы, ни одна
-страница не забыта в навигации, у страницы есть `H1`.
+`build` rewrites pages into `.ghagent/wiki/`: internal links lose `.md`, links into the
+repository tree become `https://github.com/<owner>/<repo>/blob/<branch>/…`, and a relative image
+becomes an error. `verify` checks the built tree: `Home`/`_Sidebar`/`_Footer` exist, links point
+at existing pages, no page is missing from navigation, every page has an `H1`.
 
-## Публикация
+## Publishing
 
 ```bash
-python <pack>/tools/ghagent.py wiki publish --repo owner/name            # сухой прогон
-python <pack>/tools/ghagent.py wiki publish --repo owner/name --push     # публикация
+python <pack>/tools/ghagent.py wiki publish --repo owner/name            # dry run
+python <pack>/tools/ghagent.py wiki publish --repo owner/name --push     # publish
 ```
 
-Правила, которые нельзя нарушать:
+1. **The dry run is mandatory.** It prints what will be added, what changed and what is **kept**.
+2. **Nothing foreign is deleted.** Remote pages absent from the build are kept; deletion requires
+   `--prune` and a look at the list.
+3. **Verification gates publication.** `publish` refuses a tree with errors; `--force` is a
+   deliberate decision, not a workaround.
+4. **`Home.md` is mandatory.** Publication does not start without it.
 
-1. **Сухой прогон обязателен.** Он печатает, что добавится, что изменится и что
-   **сохранится** (`kept`).
-2. **Чужое не удаляется.** Страницы на сервере, которых нет в сборке, сохраняются.
-   Удаление — только `--prune` и только после просмотра списка.
-3. **Проверка перед публикацией.** `publish` отказывается отправлять дерево с ошибками;
-   `--force` — осознанное решение, а не обход.
-4. **`Home.md` обязателен.** Публикация без него не начинается.
+## Anchors and cross-links
 
-## Якоря и перекрёстные ссылки
+- An anchor is the heading lowercased, punctuation dropped, spaces turned into hyphens.
+- An em dash in a heading produces a **double** hyphen: `## Ship — fast` → `#ship--fast`.
+- A repeated heading gets `-1`, `-2`.
+- Compare anchors case-insensitively: the platform's own documentation contradicts itself on a
+  capital Greek letter.
 
-- Якорь = заголовок в нижнем регистре, знаки препинания удалены, пробелы → дефисы.
-- Тире в заголовке даёт **двойной** дефис: `## Помочь — фактами` → `#помочь--фактами`.
-- Повтор заголовка получает `-1`, `-2`.
-- Сравнение якорей делается без учёта регистра: документация GitHub сама себе
-  противоречит в примере с греческой буквой.
+## Traps
 
-## Ловушки
-
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| Вики-репозитория ещё нет | `Repository not found` при публикации | сохранить первую страницу в интерфейсе (Wiki → New page): пушем репозиторий не создаётся |
-| Страница не в манифесте | есть файл, нет ссылки в навигации | добавить в `wiki.json` |
-| Ссылка с `.md` | открывается сырой файл или 404 | убрать расширение |
-| Картинка внутри `wiki/` | не отображается | перенести в дерево репозитория, ссылаться абсолютно |
-| Публикация «для чистоты» с `--prune` | пропала чужая страница | вернуть из истории вики-репозитория |
-| Кириллический якорь | `#Установка` не находится | сравнивать без регистра, писать как в заголовке |
-| Правка прямо на GitHub | расходится с репозиторием | править в `wiki/` и публиковать |
+| The wiki repository does not exist yet | `Repository not found` on publish | save the first page in the web interface (Wiki → New page) |
+| A page missing from the manifest | not reachable from navigation | add it to `wiki.json` |
+| A link with `.md` | raw file or 404 | drop the extension |
+| An image inside `wiki/` | does not render | move it into the repository tree, reference absolutely |
+| `--prune` without reading the list | a foreign page is gone | restore it from the wiki repository history |
 
-## Критерий готовности
+## Done means
 
-- `wiki build` и `wiki verify` — код `0`.
-- Сухой прогон показывает только ожидаемые файлы, `kept` просмотрен.
-- После `--push` страница открывается, навигация работает, ссылки не 404.
+- `wiki build` and `wiki verify` exit `0`.
+- The dry run shows only expected files and the `kept` list has been read.
+- After `--push` the page opens, navigation works, links do not 404.

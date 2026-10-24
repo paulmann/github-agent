@@ -8,54 +8,60 @@
 [![License](https://img.shields.io/badge/license-<SPDX>-blue.svg)](LICENSE)
 [![Runtime](https://img.shields.io/badge/<runtime>-<version>-informational)](<link to runtime>)
 
-> **Status.** Numbers below were measured on <YYYY-MM-DD> against version <x.y.z>.
+<img src="https://github.com/<owner>/<repo>/raw/main/assets/social-preview.png"
+     alt="<Project name> — <what it does>"
+     width="100%">
+
+[**Quick start**](#quick-start) · [**Documentation**](#documentation) · [**Wiki**](https://github.com/<owner>/<repo>/wiki) · [**AGENTS.md**](AGENTS.md) · [**Changelog**](CHANGELOG.md) · [**Русская версия**](README.ru.md)
+
+> **Documentation status.** Numbers below were measured on <YYYY-MM-DD> against version <x.y.z>.
 > Long guides live in the [Wiki](https://github.com/<owner>/<repo>/wiki) and `docs/`.
 
 <Owner name> is not affiliated with <third-party trademark>, if the project mentions one.
 
-## Содержание
+## Contents
 
-- [Что это и зачем](#что-это-и-зачем)
-- [В цифрах](#в-цифрах)
+- [What it is](#what-it-is)
+- [In numbers](#in-numbers)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Настройка](#настройка)
-- [Ограничения](#ограничения)
-- [Документация](#документация)
-- [Разработка](#разработка)
-- [Участие в проекте](#участие-в-проекте)
+- [Configuration](#configuration)
+- [Limitations](#limitations)
+- [Documentation](#documentation)
+- [Development](#development)
+- [Contributing](#contributing)
 - [License](#license)
 
-## Что это и зачем
+## What it is
 
-<Three to six bullets: the concrete jobs the project does. Each bullet names a capability a
-reader can verify, not an adjective.>
+<Three to six bullets: the concrete jobs the project does. Each names a capability a reader can
+verify, not an adjective.>
 
-| Решение | Почему |
+| Decision | Why |
 |---|---|
 | <technical choice> | <the constraint it removes> |
 
-## В цифрах
+## In numbers
 
-Измерено <YYYY-MM-DD> по опубликованному дереву <x.y.z>:
+Measured on <YYYY-MM-DD> against the published tree of <x.y.z>:
 
-| Поверхность | Значение | Источник измерения |
+| Surface | Value | Measurement source |
 |---|---:|---|
-| <Файлы / строки> | <число> | `<command or path>` |
-| <Автотесты> | <число> | `<command>` |
-| <Runtime-зависимости> | <число> | `<manifest>` |
+| <Files / lines> | <number> | `<command or path>` |
+| <Tests> | <number> | `<command>` |
+| <Runtime dependencies> | <number> | `<manifest>` |
 
 ## Installation
 
-### Требования
+### Requirements
 
-| Компонент | Требование |
+| Component | Requirement |
 |---|---|
 | <runtime> | <version> |
 | <database> | <version> |
-| <what is not needed> | **не требуется** |
+| <what is not needed> | **not required** |
 
-### Из исходников
+### From source
 
 ```bash
 git clone https://github.com/<owner>/<repo>.git
@@ -64,7 +70,7 @@ cd <repo>
 <verify command>
 ```
 
-### Проверка первого результата
+### Checking the first result
 
 ```bash
 <command>
@@ -77,32 +83,32 @@ cd <repo>
 <the three commands a new user runs first>
 ```
 
-| Задача | Команда | Результат |
+| Task | Command | Result |
 |---|---|---|
 | <task> | `<command>` | <observable result> |
 
-## Настройка
+## Configuration
 
-| Переменная | Назначение | По умолчанию |
+| Variable | Purpose | Default |
 |---|---|---|
 | `<NAME>` | <what it changes> | `<default>` |
 
-## Ограничения
+## Limitations
 
 - <what the project deliberately does not do>;
-- <what fails and how it fails loudly>;
+- <what fails, and how it fails loudly>;
 - <what needs a paid plan or an external service>.
 
-## Документация
+## Documentation
 
-| Документ | Содержание |
+| Document | Content |
 |---|---|
 | [Wiki](https://github.com/<owner>/<repo>/wiki) | <long guides> |
 | [`docs/ARCHITECTURE.md`](<docs/ARCHITECTURE.md>) | <how it is built> |
 | [`AGENTS.md`](<AGENTS.md>) | <instructions for coding agents> |
 | [CHANGELOG.md](<CHANGELOG.md>) | <version history> |
 
-## Разработка
+## Development
 
 ```bash
 <lint command>
@@ -110,12 +116,12 @@ cd <repo>
 <build command>
 ```
 
-Тесты не требуют сети. Новое поведение приходит с тестом; новая проверка — с фикстурой.
+Tests need no network. New behaviour arrives with a test; a new check arrives with a fixture.
 
-## Участие в проекте
+## Contributing
 
-Перед pull request: <commands>. Правила — [CONTRIBUTING.md](<CONTRIBUTING.md>),
-безопасность — [SECURITY.md](<SECURITY.md>), поддержка — [SUPPORT.md](<SUPPORT.md>).
+Before a pull request: <commands>. Rules: [CONTRIBUTING.md](<CONTRIBUTING.md>), security:
+[SECURITY.md](<SECURITY.md>), support: [SUPPORT.md](<SUPPORT.md>).
 
 ## License
 

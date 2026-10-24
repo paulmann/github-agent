@@ -1,82 +1,82 @@
 ---
 name: import-to-agents
-description: Перенос навыка GitHub-репозитория и вики в другого агента — AutoClaw2, HARNESS, SagaAI: установка пакета в каталог навыков, манифест sha256, проверка целостности, строка правил для AGENTS.md, обновление и удаление. Загружать, когда навык нужно подключить другому агенту, когда установленная копия расходится с проверенной или когда агент «не видит» навык.
+description: Moving the repository-and-wiki skill into another agent — AutoClaw2, HARNESS, SagaAI: installing the pack into a skill root, the sha256 manifest, integrity verification, the rules line for AGENTS.md, updating and removal. Load when a skill must be connected to another agent, when the installed copy drifted from the tested one, or when an agent does not see the skill.
 ---
 
-# Импорт навыка в другого агента
+# Importing the skill into another agent
 
-## Что значит «импортировать»
+## What "import" means
 
-Две вещи, обе проверяемые:
+Two things, both verifiable:
 
-1. Копия пакета лежит в каталоге навыков агента, и рядом записан манифест
-   `.install.json` с sha256 каждого файла.
-2. В правилах агента (`AGENTS.md` или его аналог) есть строка, которая говорит: где копия,
-   чем проверить целостность, и правило «одна задача — одна команда».
+1. A copy of the pack sits in the agent's skill root, with `.install.json` next to it holding a
+   sha256 per file.
+2. The agent's rules (`AGENTS.md` or its equivalent) contain a line naming the copy, the
+   verification command, and the rule "one job, one command".
 
-Пакет самодостаточен: Python 3.11+ и стандартная библиотека. Ни `pip install`, ни
-сборки, ни сети при установке.
+The pack is self-contained: Python 3.11+ and the standard library. No `pip install`, no build, no
+network during installation.
 
-## Каталоги (измерены, не выдуманы)
+## Skill roots (measured, not guessed)
 
-| Агент | Каталог навыков | Правила |
+| Agent | Skill root | Rules |
 |---|---|---|
 | AutoClaw2 | `%USERPROFILE%\.pi\agent\skills` | `%USERPROFILE%\.pi\agent\AGENTS.md` |
 | HARNESS | `%USERPROFILE%\.dsh\skills` | `%USERPROFILE%\.dsh\AGENTS.md` |
-| SagaAI | задаётся вручную | `AGENTS.md` проекта или файл правил агента |
+| SagaAI | supplied by hand | the project `AGENTS.md` or the agent's rules file |
 
-## Установка
+## Install
 
 ```bash
 python <pack>/tools/ghagent.py install --profile autoclaw --write
 python <pack>/tools/ghagent.py install --profile harness  --write
-python <pack>/tools/ghagent.py install --target <каталог> --write     # SagaAI
+python <pack>/tools/ghagent.py install --target <dir>     --write     # SagaAI
 ```
 
-Команда печатает готовый блок правил. Его нужно вставить в файл правил агента — сама
-команда чужие файлы не правит.
+The command prints a ready rules block. Paste it into the agent's rules file — the command does
+not edit foreign files.
 
-## Проверка
+## Verify
 
 ```bash
 python <pack>/tools/ghagent.py verify-install --profile autoclaw
-python <pack>/tools/ghagent.py selftest     # в установленной копии тоже работает
+python <pack>/tools/ghagent.py selftest     # works inside the installed copy too
 ```
 
-| Исход | Код | Значение |
+| Outcome | Exit | Meaning |
 |---|---|---|
-| `verify.ok` | 0 | копия совпадает с установленной |
-| `verify.changed` | 1 | файл изменён после установки |
-| `verify.missing` | 1 | файл удалён |
-| `verify.manifest` | 1 | каталог ставил не пакет — не доверять |
-| `verify.extra` | 0 | в каталоге есть файл вне манифеста (информация) |
+| `verify.ok` | 0 | the copy matches the installation |
+| `verify.changed` | 1 | a file changed after installation |
+| `verify.missing` | 1 | a file was deleted |
+| `verify.manifest` | 1 | the directory was not installed by this pack — do not trust it |
+| `verify.extra` | 0 | a file outside the manifest (information) |
 
-## Обновление и удаление
+## Update and remove
 
 ```bash
-git -C <каталог пакета> pull
-python <pack>/tools/ghagent.py install --profile <профиль> --write
-python <pack>/tools/ghagent.py verify-install --profile <профиль>
+git -C <pack dir> pull
+python <pack>/tools/ghagent.py install --profile <profile> --write
+python <pack>/tools/ghagent.py verify-install --profile <profile>
 
-python <pack>/tools/ghagent.py uninstall --profile <профиль> --write
+python <pack>/tools/ghagent.py uninstall --profile <profile> --write
 ```
 
-`uninstall` отказывается удалять каталог без манифеста: он не имеет права сносить то, что
-ставил кто-то другой. Строку правил из `AGENTS.md` удаляет человек.
+`uninstall` refuses a directory without a manifest: it has no right to delete what another tool
+created. The rules block is removed from `AGENTS.md` by a human.
 
-## Ловушки
+## Traps
 
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| Навык не виден агенту | каталог есть, агент его «не знает» | список навыков читается при старте сессии — перезапустить сессию |
-| `%APPDATA%` пуст в неинтерактивной сессии | путь собирается как `\...` | домашний каталог брать из `USERPROFILE`/`HOME` или через API окружения |
-| Копия правилась руками | `verify.changed` | переустановить, а не «поправить на месте» |
-| Установка в чужой каталог | `uninstall` отказывается | указать `--target` явно |
-| Пакет поставляется без тестов | `selftest` падает с «runner is missing» | копировать `tests/` вместе с `tools/` |
+| The agent does not see the skill | the directory exists, the agent ignores it | the skill list is read at session start — restart the session |
+| `%APPDATA%` is empty in a non-interactive session | a path is built as `\...` | take the home directory from `USERPROFILE`/`HOME` or the platform API |
+| The copy was edited by hand | `verify.changed` | reinstall instead of patching in place |
+| Installing into a foreign directory | `uninstall` refuses | pass `--target` explicitly |
+| The pack ships without tests | `selftest` reports a missing runner | copy `tests/` together with `tools/` |
 
-## Критерий готовности
+## Done means
 
-- `verify-install` — код `0`.
-- `selftest` в установленной копии — `PASS`.
-- Блок правил вставлен и содержит путь к пакету и команду проверки.
-- Новая сессия агента видит навык в списке.
+- `verify-install` exits `0`.
+- `selftest` inside the installed copy prints `PASS`.
+- The rules block is in place and names the pack path and the verification command.
+- A new agent session lists the skill.

@@ -1,78 +1,86 @@
-# Работа с вики
+# Wiki workflow
 
-Вики ведётся из репозитория: страницы лежат в `wiki/`, порядок задаёт `wiki/wiki.json`.
-Публикация — отдельный шаг, который выполняет пакет.
+The wiki is maintained from the repository: pages live in `wiki/`, order is set by
+`wiki/wiki.json`. Publication is a separate step performed by the pack.
 
-## Почему нельзя просто отредактировать вики на GitHub
+## Why not edit the wiki on GitHub
 
-| Подход | Проблема |
+| Approach | Problem |
 |---|---|
-| Правка в веб-интерфейсе вики | расходится с репозиторием, ревью нет |
-| Копия страниц в двух местах | через месяц они разные |
-| Публикация вручную через `git clone .wiki.git` | забывается шаг проверки, чужие страницы теряются |
+| Editing in the wiki web interface | drifts from the repository, no review |
+| Pages copied in two places | a month later they differ |
+| Publishing by hand with `git clone .wiki.git` | the verification step is forgotten and foreign pages are lost |
 
-Пакет держит источник в репозитории, где работает ревью и CI, а вики получает собранное
-дерево.
+The pack keeps the source in the repository, where review and CI work, and the wiki receives a
+built tree.
 
-## Сборка
+## Build
 
 ```bash
 python tools/ghagent.py wiki build
 python tools/ghagent.py wiki verify
 ```
 
-Что делает `build`:
+What `build` does:
 
-1. Читает `wiki/wiki.json`; каждый пункт манифеста обязан существовать.
-2. Каждый файл в `wiki/` обязан быть в манифесте — иначе ошибка «страница невидима».
-3. Переписывает ссылки: внутренние теряют `.md`, ссылки в дерево репозитория становятся
-   абсолютными `https://github.com/<owner>/<repo>/blob/<branch>/…`.
-4. Относительная картинка — ошибка: вики-репозиторий дерева проекта не видит.
-5. Генерирует `_Sidebar.md` по группам манифеста и `_Footer.md` со ссылками на репозиторий.
+1. Reads `wiki/wiki.json`; every manifest entry must exist.
+2. Every file in `wiki/` must be listed — otherwise "the page is invisible", which is an error.
+3. Rewrites links: internal ones lose `.md`, links into the repository tree become absolute
+   `https://github.com/<owner>/<repo>/blob/<branch>/…`.
+4. A relative image is an error: the wiki repository cannot see the project tree.
+5. Generates `_Sidebar.md` from the manifest groups and `_Footer.md` with repository links.
 
-`verify` проверяет собранное дерево: обязательные файлы, ссылки на существующие страницы,
-отсутствие `.md` во внутренних ссылках, отсутствие относительных картинок, наличие `H1`,
-достижимость каждой страницы из навигации.
+`verify` checks the built tree: required files, links to existing pages, no `.md` inside internal
+links, no relative images, an `H1` per page, every page reachable from navigation.
 
-## Публикация
+## Publish
 
 ```bash
-python tools/ghagent.py wiki publish --repo owner/name            # сухой прогон
-python tools/ghagent.py wiki publish --repo owner/name --push     # публикация
+python tools/ghagent.py wiki publish --repo owner/name            # dry run
+python tools/ghagent.py wiki publish --repo owner/name --push     # publish
 ```
 
-| Флаг | Что делает | Когда нужен |
+| Flag | Effect | When |
 |---|---|---|
-| без флагов | коммит в локальную копию, без отправки | всегда сначала |
-| `--push` | отправляет в `<repo>.wiki.git` | после просмотра сухого прогона |
-| `--prune` | удаляет страницы, которых нет в сборке | только осознанно |
-| `--force` | публикует даже при провале проверки | почти никогда |
-| `--author-name`, `--author-email` | подпись коммита | подпись владельца, не агента |
+| no flags | commits into the local clone, sends nothing | always first |
+| `--push` | sends to `<repo>.wiki.git` | after reading the dry run |
+| `--prune` | deletes remote pages absent from the build | deliberately, never by habit |
+| `--force` | publishes even when verification failed | almost never |
+| `--author-name`, `--author-email` | the commit signature | the owner's identity, not the agent's |
 
-Что печатается: добавленные, изменённые, сохранённые (`kept`) страницы и хеш коммита.
-Страницы на сервере, которых нет в сборке, по умолчанию **сохраняются** — потеря чужих
-страниц не происходит молча.
+Output: added, modified, kept pages and the commit hash. Pages on the server that the build does
+not contain are **kept** by default, so foreign work is never lost silently.
 
-## Что писать на странице
+The first publication needs one manual step: `<repo>.wiki.git` is created by GitHub only when a
+first page is saved in the web interface, and `git push` cannot create it. Until then the command
+returns `wiki.remote-missing` with that instruction.
 
-1. `H1` — название, совпадает с именем файла без `.md`.
-2. Абзац: зачем эта страница.
-3. Таблица или список: конкретика, не рассуждения.
-4. Блок кода с языком для каждой команды.
-5. В конце — ссылка на соседнюю страницу или репозиторий.
+## What to write on a page
 
-## Ловушки
+1. `H1` — the page name, matching the filename without `.md`.
+2. A paragraph: why this page exists.
+3. A table or a list: specifics, not reasoning.
+4. A language-tagged code block for every command.
+5. At the end, a link to the next page or the repository.
 
-| Ловушка | Признак | Что делать |
+## Translations
+
+English pages are canonical. A Russian translation is a separate page with the `.ru.md` suffix and
+appears in navigation under its own group. Build and verify treat both exactly the same way: a
+translation gets no exemption from link and image rules.
+
+## Traps
+
+| Trap | Symptom | Action |
 |---|---|---|
-| Вики-репозитория ещё нет | `remote: Repository not found` при публикации | сохранить первую страницу в интерфейсе (Wiki → New page): пушем репозиторий не создаётся |
-| Ссылка с `.md` | открывается сырой файл | убрать расширение |
-| Картинка внутри `wiki/` | не отображается | положить в дерево репозитория, ссылаться абсолютно |
-| Страница не в манифесте | нет в навигации | добавить в `wiki.json` |
-| Кириллический якорь | `#Установка` не находится | сравнение без учёта регистра, писать как в заголовке |
-| `--prune` не посмотрев список | пропала страница | вернуть из истории вики-репозитория |
+| The wiki repository does not exist | `remote: Repository not found` on publish | save the first page in the web interface, then publish |
+| A link with `.md` | raw file or 404 | drop the extension |
+| An image inside `wiki/` | does not render | move it into the repository tree, reference absolutely |
+| A page missing from the manifest | absent from navigation | add it to `wiki.json` |
+| A Cyrillic anchor | `#Установка` is not found | compare case-insensitively, write it as the heading reads |
+| `--prune` without reading the list | a page is gone | restore it from the wiki repository history |
 
-## Дальше
+## Next
 
-- [Выпуск версии](05-Release).
-- [Ловушки платформы](06-Traps).
+- [Release](05-Release).
+- [Platform traps](06-Traps).

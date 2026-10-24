@@ -1,9 +1,9 @@
-# Установка
+# Installation
 
-Требуется Python 3.11 или новее (проверено на 3.13.15). Ни `pip install`, ни сборки, ни
-системных пакетов.
+Python 3.11 or newer is required (verified on 3.13.15). No `pip install`, no build step, no
+system packages. Pillow is optional and only adds PNG rendering.
 
-## Из репозитория
+## From the repository
 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
@@ -13,57 +13,58 @@ python tools/ghagent.py --version
 python tools/ghagent.py selftest
 ```
 
-`selftest` запускает тесты пакета и печатает `selftest: PASS` при коде `0`. Если тесты
-падают — работать этой копией нельзя, нужно взять чистую.
+`selftest` runs the pack's own tests and prints `selftest: PASS` with exit `0`. If the tests fail,
+do not work with this copy: take a clean one.
 
-## Первый аудит
+## First audit
 
 ```bash
-cd <ваш репозиторий>
-python <путь>/github-agent/tools/ghagent.py audit .
+cd <your repository>
+python <path>/github-agent/tools/ghagent.py audit .
 ```
 
-Команда печатает оценку гигиены, список пунктов со статусом и находки с `файл:строка`.
+The command prints the hygiene score, items with their status, and findings as `file:line`.
 
-| Код возврата | Значение |
+| Exit code | Meaning |
 |---|---|
-| `0` | блокирующих находок нет |
-| `1` | есть находки уровня `error` |
-| `2` | ошибка вызова: неверный путь, нет файла |
+| `0` | no blocking findings |
+| `1` | findings at error level |
+| `2` | usage error: wrong path, missing file |
 
-## Установка навыка агенту
+## Install the skill into an agent
 
 ```bash
 python tools/ghagent.py install --profile autoclaw --write   # AutoClaw2
 python tools/ghagent.py install --profile harness  --write   # HARNESS
-python tools/ghagent.py install --target <каталог> --write   # SagaAI
+python tools/ghagent.py install --target <dir>     --write   # SagaAI
 ```
 
-Команда копирует пакет в каталог навыков, пишет манифест `.install.json` с sha256 каждого
-файла и печатает блок правил для `AGENTS.md`. Подробности — [Импорт в другой агент](07-Import).
+The command copies the pack into the skill root, writes `.install.json` with a sha256 per file,
+and prints the rules block for `AGENTS.md`. Details: [Import into another agent](07-Import).
 
-## Проверка установки
+## Verify the installation
 
 ```bash
 python tools/ghagent.py verify-install --profile autoclaw
 ```
 
-`verify.ok` и код `0` означают, что установленная копия совпадает с проверенной. Любое
-расхождение печатается с именем файла.
+`verify.ok` with exit `0` means the installed copy matches the tested one. Any drift is printed
+with the file name.
 
-## Требования к окружению
+## Environment
 
-| Что | Требование |
+| What | Requirement |
 |---|---|
 | Python | 3.11+ |
-| `git` | нужен для `changelog suggest` и `wiki publish` |
-| `gh` CLI или `GITHUB_TOKEN` | нужен только для `audit --repo`, `meta`, `wiki publish` |
-| Сеть | только для команд, работающих с GitHub |
+| `git` | needed by `changelog suggest` and `wiki publish` |
+| `gh` CLI or `GITHUB_TOKEN` | needed only by `audit --repo`, `meta`, `wiki publish` |
+| Network | only for the commands that talk to GitHub |
+| Pillow | optional, enables PNG rendering in `assets render` |
 
-Остальные команды работают без сети: `doc`, `audit .`, `changelog check`,
-`changelog release`, `wiki build`, `wiki verify`.
+The rest works offline: `doc`, `audit .`, `changelog check`, `changelog release`, `wiki build`,
+`wiki verify`, `assets check`.
 
-## Дальше
+## Next
 
-- [Контракты файлов](03-Repository-Contract) — что проверяется.
-- [Работа с вики](04-Wiki-Workflow) — сборка и публикация.
+- [File contracts](03-Repository-Contract) — what is checked.
+- [Wiki workflow](04-Wiki-Workflow) — build and publish.

@@ -700,6 +700,121 @@ def test_cli(tmp: Path) -> None:
     check("cli: audit --json returns a score", '"score"' in proc.stdout, proc.stdout[:200] + proc.stderr[:200])
 
 
+def test_assets(tmp: Path) -> None:
+    from ghalib import assets as assets_module
+
+    # Header parsing is dependency-free and must be exact.
+    png = assets_module.make_header_png(1280, 640)
+    probe = tmp / "probe.png"
+    probe.write_bytes(png)
+    check("assets: PNG size is read from the header", assets_module.image_size(probe) == (1280, 640),
+          str(assets_module.image_size(probe)))
+    check("assets: an unknown file yields no size", assets_module.image_size(tmp / "nope.bin") is None)
+
+    spec = assets_module.BannerSpec(title="github-agent", tagline="Repository and wiki steward for AI agents.",
+                                    command="ghagent.py audit .", chips=["python", "github"], footer="MIT")
+    svg = assets_module.render_svg(spec)
+    check("assets: SVG carries the title and the dimensions",
+          "github-agent" in svg and 'width="1280"' in svg and svg.strip().endswith("</svg>"))
+    check("assets: SVG escapes angle brackets",
+          "a &lt;b&gt; c" in assets_module.render_svg(assets_module.BannerSpec(title="a <b> c", tagline="x")),
+          assets_module.render_svg(assets_module.BannerSpec(title="a <b> c", tagline="x"))[:200])
+    png_bytes = assets_module.render_png(spec)
+    if png_bytes is None:
+        check("assets: PNG rendering reports the missing dependency", True)
+    else:
+        out = tmp / "rendered.png"
+        out.write_bytes(png_bytes)
+        check("assets: rendered PNG is 1280x640", assets_module.image_size(out) == (1280, 640),
+              str(assets_module.image_size(out)))
+        check("assets: rendered PNG stays under 1 MB", len(png_bytes) < assets_module.SOCIAL_MAX_BYTES,
+              f"{len(png_bytes)} bytes")
+
+    # check(): no README image at all is an error, not a quiet pass.
+    bare = tmp / "assets-bare"
+    bare.mkdir()
+    write_text(bare / "README.md", "# Title\n\nText without pictures.\n")
+    report = assets_module.check(bare)
+    expect_rule(report, "assets.readme-banner", "assets: README without an image is reported")
+    check("assets: an absent assets/ directory is a warning",
+          any(f.rule == "assets.no-directory" for f in report.findings))
+
+    # A correct pair: PNG at 1280x640 referenced from the README.
+    good = tmp / "assets-good"
+    (good / "assets").mkdir(parents=True)
+    (good / "assets" / "social-preview.png").write_bytes(png)
+    write_text(good / "README.md", "# Title\n\nText.\n\n![banner](assets/social-preview.png)\n")
+    report = assets_module.check(good)
+    check("assets: a 1280x640 preview is accepted", report.data.get("social_preview_ready") is True,
+          str(report.data))
+    check("assets: the upload hint is stated", any(f.rule == "assets.upload-hint" for f in report.findings))
+
+    # Wrong size, oversized file, SVG as the preview, missing file in the README.
+    small = tmp / "assets-small"
+    (small / "assets").mkdir(parents=True)
+    (small / "assets" / "social-preview.png").write_bytes(assets_module.make_header_png(320, 180))
+    write_text(small / "README.md", "# T\n\n![b](assets/social-preview.png)\n")
+    expect_rule(assets_module.check(small), "assets.social-dimensions",
+                "assets: a preview below 640x320 is an error")
+
+    big = tmp / "assets-big"
+    (big / "assets").mkdir(parents=True)
+    payload = png + b"\x00" * (assets_module.SOCIAL_MAX_BYTES + 1)
+    (big / "assets" / "social-preview.png").write_bytes(payload)
+    write_text(big / "README.md", "# T\n\n![b](assets/social-preview.png)\n")
+    expect_rule(assets_module.check(big), "assets.social-size", "assets: a file over 1 MB is an error")
+
+    vector = tmp / "assets-svg"
+    (vector / "assets").mkdir(parents=True)
+    (vector / "assets" / "social-preview.svg").write_bytes(svg.encode("utf-8"))
+    write_text(vector / "README.md", "# T\n\n![b](assets/social-preview.svg)\n")
+    report = assets_module.check(vector)
+    expect_rule(report, "assets.svg-social", "assets: SVG cannot be a social preview")
+    check("assets: SVG preview is not reported as ready", report.data.get("social_preview_ready") is False)
+
+    missing = tmp / "assets-missing"
+    (missing / "assets").mkdir(parents=True)
+    write_text(missing / "README.md", "# T\n\n![b](assets/absent.png)\n")
+    expect_rule(assets_module.check(missing), "assets.missing-file",
+                "assets: a reference to a missing image is an error")
+
+    # Decoy: an image inside node_modules must not count as the repository preview.
+    decoy = tmp / "assets-decoy"
+    (decoy / "node_modules" / "pkg").mkdir(parents=True)
+    (decoy / "node_modules" / "pkg" / "social-preview.png").write_bytes(png)
+    write_text(decoy / "README.md", "# T\n\n![b](node_modules/pkg/social-preview.png)\n")
+    report = assets_module.check(decoy)
+    check("assets: a preview inside node_modules is not accepted",
+          report.data.get("social_preview_ready") is False, str(report.data))
+
+    # http image, alt text and suggest()
+    write_text(good / "http.md", "# T\n\n![](http://example.com/x.png)\n")
+    report = Report(title="doc", root=str(good))
+    checker = mdcheck.DocChecker(good, report, mdcheck.DocCheckOptions())
+    checker.check_file(good / "http.md")
+    expect_rule(report, "md.image-http", "assets: an image over plain http is reported")
+    check("assets: an image without alt text is reported",
+          any(f.rule == "md.image-alt" for f in report.findings))
+
+    suggestion = assets_module.suggest(good)
+    kinds = [entry["kind"] for entry in suggestion.data.get("recommended", [])]
+    check("assets: suggest recommends a banner", "banner" in kinds, str(kinds))
+
+    # The CLI writes both files and reports the size it produced.
+    cli_root = tmp / "assets-cli"
+    cli_root.mkdir()
+    write_text(cli_root / "README.md", "# Cli Demo\n\n**A demo repository for the assets command.**\n")
+    write_text(cli_root / "demo.py", "print('ok')\n")
+    proc = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets", "render",
+                           "--root", str(cli_root), "--title", "Cli Demo", "--command", "demo --help",
+                           "--write"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    check("assets: CLI render exits 0 and writes the SVG",
+          proc.returncode == 0 and (cli_root / "assets" / "social-preview.svg").exists(),
+          proc.stdout[-300:] + proc.stderr[-200:])
+    check("assets: CLI render also writes a PNG when Pillow is present",
+          assets_module.render_png(spec) is None or (cli_root / "assets" / "social-preview.png").exists())
+
+
 def test_pack_hygiene() -> None:
     """The pack must ship without BOM, CRLF, machine paths or personal addresses."""
     offenders: list[str] = []
@@ -745,6 +860,7 @@ def main() -> int:
             ("install", lambda: test_install(tmp)),
             ("meta", lambda: test_meta()),
             ("report", lambda: test_report(tmp)),
+            ("assets", lambda: test_assets(tmp)),
             ("cli", lambda: test_cli(tmp)),
             ("pack-hygiene", lambda: test_pack_hygiene()),
         ]:

@@ -1,41 +1,42 @@
 # github-agent
 
-Пакет для агента, который ведёт репозиторий и вики на GitHub: проверяет гигиену,
-собирает и публикует вики, выпускает версии, следит за метаданными. Python 3, только
-стандартная библиотека, ни одной внешней зависимости.
+The pack for an agent that runs a GitHub repository and its wiki: audits hygiene, renders the
+repository's images, builds and publishes the wiki, releases versions, keeps metadata honest.
+Python 3, standard library only, no external dependencies.
 
-## С чего начать
+## Start here
 
-| Шаг | Страница | Зачем |
+| Step | Page | Why |
 |---|---|---|
-| 1 | [Зачем это нужно](01-Why) | какие дефекты ловятся и почему глазами их не видно |
-| 2 | [Установка](02-Install) | поставить пакет и проверить его тестами |
-| 3 | [Контракты файлов](03-Repository-Contract) | что именно проверяется в README, AGENTS.md, CHANGELOG |
-| 4 | [Работа с вики](04-Wiki-Workflow) | сборка, проверка и публикация без потери чужих страниц |
-| 5 | [Выпуск версии](05-Release) | перенос Unreleased, ссылки сравнения, текст релиза |
-| 6 | [Ловушки платформы](06-Traps) | тринадцать мест, где GitHub ведёт себя не так, как ждёшь |
-| 7 | [Импорт в другой агент](07-Import) | AutoClaw2, HARNESS, SagaAI |
+| 1 | [Why this exists](01-Why) | which defects are caught, and why eyes cannot see them |
+| 2 | [Installation](02-Install) | install the pack and prove it with its own tests |
+| 3 | [File contracts](03-Repository-Contract) | what is checked in README, AGENTS.md, CHANGELOG |
+| 4 | [Wiki workflow](04-Wiki-Workflow) | build, verify and publish without losing foreign pages |
+| 5 | [Release](05-Release) | promote Unreleased, comparison links, release body |
+| 6 | [Platform traps](06-Traps) | fifteen places where GitHub behaves unexpectedly |
+| 7 | [Import into another agent](07-Import) | AutoClaw2, HARNESS, SagaAI |
 
-## Что делает пакет
+## What the pack does
 
-| Задача | Команда |
+| Job | Command |
 |---|---|
-| Аудит репозитория | `ghagent.py audit .` |
-| Документы и ссылки | `ghagent.py doc --root .` |
-| Вики: сборка, проверка, публикация | `ghagent.py wiki build`, `verify`, `publish --push` |
-| Журнал изменений | `ghagent.py changelog check`, `release`, `suggest` |
-| Метаданные | `ghagent.py meta suggest`, `apply` |
-| Установка навыка | `ghagent.py install`, `verify-install` |
+| Audit a repository | `ghagent.py audit .` |
+| Documents and links | `ghagent.py doc --root .` |
+| Images: banner and social preview | `ghagent.py assets render`, `check` |
+| Wiki: build, verify, publish | `ghagent.py wiki build`, `verify`, `publish --push` |
+| Changelog | `ghagent.py changelog check`, `release`, `suggest` |
+| Metadata | `ghagent.py meta suggest`, `apply` |
+| Install the skill | `ghagent.py install`, `verify-install` |
 
-Все команды возвращают код: `0` — чисто, `1` — есть ошибки, `2` — ошибка вызова.
+Every command returns an exit code: `0` clean, `1` findings at error level, `2` a usage problem.
 
-## Ссылки
+## Links
 
-- [Репозиторий](https://github.com/paulmann/github-agent)
-- [Релизы](https://github.com/paulmann/github-agent/releases)
+- [Repository](https://github.com/paulmann/github-agent)
+- [Releases](https://github.com/paulmann/github-agent/releases)
 - [Issues](https://github.com/paulmann/github-agent/issues)
+- Русская версия: [Домой](Home.ru)
 
 > [!TIP]
-> Эта вики собрана и опубликована самим пакетом: `wiki build`, `wiki verify`,
-> `wiki publish --push`. Если страница открывается, а ссылка в ней ведёт на соседнюю —
-> значит проверка работает.
+> This wiki is built and verified by the pack itself: `wiki build` and `wiki verify`. If a page
+> opens and its links lead to neighbouring pages, the checks work.

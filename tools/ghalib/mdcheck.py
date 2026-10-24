@@ -267,6 +267,12 @@ class DocChecker:
             if link.kind != "inline":
                 continue
             target = link.target.strip()
+            if link.is_image and target.startswith(("http://", "//")):
+                if self._rule("md.image-http"):
+                    self._hit("md.image-http")
+                    self.report.warn("md.image-http", f"image loaded over plain http: {target}",
+                                     path=relative, line=link.line,
+                                     hint="use https: a mixed-content image is blocked by browsers")
             if not target or target.startswith(("http://", "https://", "mailto:", "tel:", "ftp://")):
                 continue
             if any(token in target for token in ("<", ">", "{{", "}}", "${")):
@@ -282,8 +288,10 @@ class DocChecker:
         if anchorless:
             candidate = (path.parent / unquote(anchorless)).resolve()
             if candidate.is_dir():
-                self.report.warn("md.link-dir", f"link points to a directory: {target}",
-                                 path=relative, line=link.line)
+                level = "info" if anchorless.endswith("/") else "warn"
+                self.report.add(level, "md.link-dir", f"link points to a directory: {target}",
+                                path=relative, line=link.line,
+                                hint="a trailing slash is a browsable directory on GitHub; a file link is better for readers")
                 return
             if not candidate.exists():
                 self.report.error("md.link-local", f"target does not exist: {target}",

@@ -1,23 +1,23 @@
 <!-- ghagent: template -->
 # AGENTS.md — <what an agent may do here>
 
-Одна страница, из которой агент узнаёт, как поставить проект, чем проверить работу и чего
-не делать. Расчёт на то, что файл прочитают до первой команды, а не после первой ошибки.
+One page from which an agent learns how to install the project, how to prove the work is done,
+and what not to touch. Written to be read before the first command, not after the first error.
 
-## Содержание
+## Contents
 
-- [Что это](#что-это)
-- [Быстрый старт](#быстрый-старт)
-- [Проверки](#проверки)
-- [Правила](#правила)
-- [Ловушки](#ловушки)
-- [Чего не делать](#чего-не-делать)
+- [What it is](#what-it-is)
+- [Quick start](#quick-start)
+- [Checks](#checks)
+- [Rules](#rules)
+- [Traps](#traps)
+- [Do not](#do-not)
 
-## Что это
+## What it is
 
-<Два-три предложения: назначение проекта и что именно здесь автоматизировано.>
+<Two or three sentences: the purpose of the project and what exactly is automated here.>
 
-## Быстрый старт
+## Quick start
 
 ```bash
 <clone>
@@ -25,39 +25,38 @@
 <verify>
 ```
 
-Ожидаемый результат последней команды: `<one line>`, код возврата `0`.
+The last command must print `<one line>` and exit `0`.
 
-## Проверки
+## Checks
 
-| Что проверяем | Команда | Ожидание |
+| What | Command | Expectation |
 |---|---|---|
 | <tests> | `<command>` | exit 0 |
 | <lint> | `<command>` | exit 0 |
 | <contract> | `<command>` | exit 0 |
 
-Любая проверка, осмотревшая ноль объектов, считается непройденной: пустой результат — это
-не «всё хорошо».
+A check that examined zero objects counts as failed: an empty result is not "all good".
 
-## Правила
+## Rules
 
-1. <Правило с проверяемым следствием, а не с пожеланием.>
-2. Числа только измеренные: команда или файл, откуда взято.
-3. Секретов в репозитории нет: значения заменяются на `<placeholder>`.
-4. Текстовые файлы — UTF-8 без BOM, LF.
-5. <Правило ветвления и коммитов проекта.>
+1. <A rule with a verifiable consequence, not a wish.>
+2. Numbers are measured only: a command or a file, named.
+3. No secrets in the repository: values become `<placeholder>`.
+4. Text files are UTF-8 without BOM, LF line endings.
+5. <The project's branching and commit rule.>
 
-## Ловушки
+## Traps
 
-| Ловушка | Признак | Что делать |
+| Trap | Symptom | Action |
 |---|---|---|
-| <trap> | <how you notice it> | <the fix> |
+| <trap> | <how it is noticed> | <the fix> |
 
-## Чего не делать
+## Do not
 
-- <запрет и его причина>;
-- <запрет и его причина>.
+- <prohibition and its reason>;
+- <prohibition and its reason>.
 
-## Структура
+## Layout
 
 ```text
 <dir>/    <purpose>

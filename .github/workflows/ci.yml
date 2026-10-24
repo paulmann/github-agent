@@ -49,6 +49,9 @@ jobs:
       - name: Changelog conformance
         run: python tools/ghagent.py changelog check --repo paulmann/github-agent
 
+      - name: Banner and social preview
+        run: python tools/ghagent.py assets check
+
       - name: Wiki builds and verifies
         run: |
           python tools/ghagent.py wiki build

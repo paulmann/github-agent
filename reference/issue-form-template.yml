@@ -1,0 +1,41 @@
+name: <Form name>
+description: <One sentence shown in the issue chooser>
+title: "<prefix>: "
+labels: ["<label>"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        <Hint shown before the fields; keep it one or two lines.>
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of the command that prints the version
+      placeholder: <package> <x.y.z>
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of problem
+      options:
+        - <option one>
+        - <option two>
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and output
+      description: The exact command, its exit code and its output without secrets
+      render: shell
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: The output contains no tokens, passwords or personal data
+          required: true

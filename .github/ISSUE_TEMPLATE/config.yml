@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security policy
+    url: https://github.com/paulmann/github-agent/security/policy
+    about: Report a vulnerability privately, not in a public issue.
+  - name: Support
+    url: https://github.com/paulmann/github-agent/blob/main/SUPPORT.md
+    about: What to include in a question so it can be answered once.

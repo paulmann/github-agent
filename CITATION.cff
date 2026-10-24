@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this pack in research or in a published workflow, cite it as below."
+title: "github-agent"
+abstract: "Repository and wiki steward for AI agents: audits README, CHANGELOG and community health, builds and publishes the GitHub wiki, checks links, anchors and metadata. Python 3, standard library only."
+type: software
+authors:
+  - name: "github-agent contributors"
+version: 1.0.0
+date-released: 2026-10-24
+license: MIT
+repository-code: "https://github.com/paulmann/github-agent"
+keywords:
+  - github
+  - github-wiki
+  - documentation
+  - changelog
+  - repository-hygiene
+  - ai-agents

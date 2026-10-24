@@ -1,0 +1,13 @@
+{
+  "_comment": "Order and navigation for this wiki. Every page here must exist in wiki/, every file in wiki/ must be listed here.",
+  "repo": "paulmann/github-agent",
+  "branch": "main",
+  "title": "github-agent",
+  "footer": "MIT",
+  "groups": [
+    {"title": "Начало", "pages": ["Home.md", "01-Why.md", "02-Install.md"]},
+    {"title": "Работа", "pages": ["03-Repository-Contract.md", "04-Wiki-Workflow.md"]},
+    {"title": "Релиз и поддержка", "pages": ["05-Release.md", "06-Traps.md"]},
+    {"title": "Интеграция", "pages": ["07-Import.md"]}
+  ]
+}

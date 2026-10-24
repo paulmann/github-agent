@@ -1,0 +1,12 @@
+{
+  "_comment": "Order and navigation for the wiki. Every page in wiki/ must be listed, and every listed page must exist; `ghagent wiki build` fails otherwise.",
+  "repo": "<owner>/<repo>",
+  "branch": "main",
+  "title": "<Project name>",
+  "footer": "<SPDX>",
+  "groups": [
+    {"title": "Начало", "pages": ["Home.md", "01-Install.md", "02-Setup.md"]},
+    {"title": "Работа", "pages": ["03-Operations.md", "04-API.md"]},
+    {"title": "Поддержка", "pages": ["05-Troubleshooting.md", "06-FAQ.md"]}
+  ]
+}

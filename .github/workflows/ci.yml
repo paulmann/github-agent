@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    name: Self-tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Run the pack self-tests
+        run: python tests/run_tests.py
+
+      - name: The CLI answers
+        run: python tools/ghagent.py --version
+
+  documents:
+    name: Documents and repository contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Markdown, links, anchors, privacy
+        run: python tools/ghagent.py doc --root .
+
+      - name: Repository hygiene and file contracts
+        run: python tools/ghagent.py audit . --min-score 80
+
+      - name: Changelog conformance
+        run: python tools/ghagent.py changelog check --repo paulmann/github-agent
+
+      - name: Wiki builds and verifies
+        run: |
+          python tools/ghagent.py wiki build
+          python tools/ghagent.py wiki verify
+
+      - name: No BOM, no CRLF, no machine paths
+        run: python tools/ghagent.py privacy --root .

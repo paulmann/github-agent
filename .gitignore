@@ -1,0 +1,19 @@
+# agent work directories
+.ghagent/
+.install.json
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# editors and OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+
+# local reports
+AUDIT.md
+report.md
+audit.json

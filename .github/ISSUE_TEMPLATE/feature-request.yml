@@ -1,0 +1,29 @@
+name: Feature request
+description: A check, a command or a template the pack does not have
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve
+      description: A concrete repository situation, not a general wish
+    validations:
+      required: true
+  - type: textarea
+    id: proof
+    attributes:
+      label: How it can be proven
+      description: Which fixture should fail without the change, and which decoy must stay quiet
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of change
+      options:
+        - New check
+        - New command
+        - Template or reference
+        - Documentation
+    validations:
+      required: true

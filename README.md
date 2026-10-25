@@ -1,5 +1,8 @@
 # github-agent
 
+<!-- md-i18n:switcher -->
+**Read this in:** English · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md) · [Español](README.es.md) · [Русский](README.ru.md)
+
 **GitHub repository and wiki steward for AI agents: audits README, CHANGELOG and community health, renders the banner and social preview, builds and publishes the wiki, checks links, anchors and topics — one command per job. Python 3, standard library only.**
 
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)

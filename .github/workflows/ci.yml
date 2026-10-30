@@ -152,3 +152,21 @@ jobs:
           VENV="$RUNNER_TEMP/pkg-venv"
           "$VENV/bin/ghagent" doc --root .
           "$VENV/bin/ghagent" audit . --min-score 80
+
+  container:
+    name: Container image (build and run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image from the Dockerfile
+        run: docker build --tag ghagent:ci .
+
+      - name: The entry point answers
+        run: docker run --rm ghagent:ci --version
+
+      - name: The image audits this checkout
+        run: docker run --rm --volume "$PWD:/repo" ghagent:ci audit . --min-score 80
+
+      - name: The image lints the documents
+        run: docker run --rm --volume "$PWD:/repo" ghagent:ci doc --root .

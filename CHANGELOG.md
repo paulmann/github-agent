@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+### Changed
+
+- `github-agent-cli` 1.2.1 is published on PyPI (2026-10-30). The six READMEs carry the PyPI badge
+  and state that the wheel ships the CLI only, while the pack comes from the clone;
+  `docs/PACKAGING.md` records the published hashes, why the PyPI files differ from the GitHub
+  release assets, how the first upload was authenticated and how to move the workflow to OIDC and
+  drop the long-lived token.
+
 ## [1.2.1] - 2026-10-30
 
 ### Changed

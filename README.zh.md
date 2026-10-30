@@ -8,6 +8,7 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 **其他语言：** [English](README.md) · [Deutsch](README.de.md) · 中文 · [हिन्दी](README.hi.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/github-agent-cli)](https://pypi.org/project/github-agent-cli/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![许可证：MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![运行时依赖](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
@@ -26,7 +27,7 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 本工具包为上述每一处都建立了可验证的约定，并把这项工作压缩到一条命令。它不写营销文案，
 也不编造数字：它检查人写下的内容，并拒绝发布已经损坏的东西。
 
-> **文档状态。** 本 README 中的每个数字都在 2026-10-30 针对 1.2.0 版本、用表格中列出的命令
+> **文档状态。** 本 README 中的每个数字都在 2026-10-30 针对 1.2.1 版本、用表格中列出的命令
 > 实测得出。较长的指南放在
 > [维基](https://github.com/paulmann/github-agent/wiki) 与 [`docs/`](docs/IMPORT.md) 中；面向
 > 智能体的协议是 [`AGENTS.md`](AGENTS.md)，打包与迁移说明见
@@ -69,9 +70,9 @@ pip install github-agent-cli            # pip 装入当前环境
 ghagent --version
 ```
 
-> **PyPI 状态。** 这些命令在首次发布之后才可用：Trusted Publishing 由仓库所有者配置，`Publish`
-> 工作流需要手动触发。在此之前，请从[最新发布](https://github.com/paulmann/github-agent/releases/latest)
-> 下载 wheel，或使用下方的源码克隆——两者提供相同的 `ghagent` 命令。
+> **已发布到 PyPI。** `github-agent-cli` 1.2.1 自 2026-10-30 起可用:
+> <https://pypi.org/project/github-agent-cli/>。wheel 只包含 CLI；完整包
+> (skills、tests、reference、wiki 源) 从下方克隆安装。
 
 控制台脚本名为 `ghagent`；PyPI 上的包名为 `github-agent`。
 
@@ -227,7 +228,7 @@ CLI 共有 13 条命令；表格列出的是日常使用的那几条。其余命
 
 ## 数据一览
 
-在本仓库中于 2026-10-30 针对 1.2.0 版本实测：
+在本仓库中于 2026-10-30 针对 1.2.1 版本实测：
 
 | 项目 | 数值 | 测量来源 |
 |---|---:|---|

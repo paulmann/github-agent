@@ -9,6 +9,7 @@ CHANGELOG और समुदाय के अनुबंधों को अ�
 **अन्य भाषाओं में:** [English](README.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · हिन्दी · [Español](README.es.md) · [Русский](README.ru.md)
 
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/github-agent-cli)](https://pypi.org/project/github-agent-cli/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![लाइसेंस: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![रनटाइम निर्भरताएँ](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
@@ -71,10 +72,9 @@ pip install github-agent-cli            # सक्रिय वातावर�
 ghagent --version
 ```
 
-> **PyPI स्थिति।** ये कमांड पहली बार प्रकाशित होने के बाद ही काम करेंगे: Trusted Publishing रिपॉज़िटरी
-> के मालिक द्वारा सेट किया जाता है और `Publish` वर्कफ़्लो मैन्युअल रूप से चलाया जाता है। तब तक
-> [नवीनतम रिलीज़](https://github.com/paulmann/github-agent/releases/latest) से wheel इंस्टॉल करें या
-> नीचे दिए सोर्स क्लोन का उपयोग करें — दोनों से वही `ghagent` कमांड मिलता है।
+> **PyPI पर प्रकाशित।** `github-agent-cli` 1.2.1 2026-10-30 से उपलब्ध है:
+> <https://pypi.org/project/github-agent-cli/>. wheel में केवल CLI है; पूरा पैक
+> (skills, tests, reference, wiki स्रोत) नीचे दिए क्लोन से आता है।
 
 कंसोल स्क्रिप्ट का नाम `ghagent` है; PyPI पर पैकेज का नाम `github-agent` है।
 

@@ -22,7 +22,7 @@ written for a POSIX shell; the PowerShell equivalents are in
 - [Docker image](#docker-image)
 - [pre-commit hooks](#pre-commit-hooks)
 - [Release procedure](#release-procedure)
-- [PyPI Trusted Publishing](#pypi-trusted-publishing)
+- [PyPI publication](#pypi-publication)
 - [Deferred: Homebrew and Scoop](#deferred-homebrew-and-scoop)
 - [Deferred: mypy and ruff](#deferred-mypy-and-ruff)
 - [Failure modes](#failure-modes)
@@ -301,38 +301,51 @@ because each command examines a tree, not a list of changed files.
 The release assets are the durable artefact: PyPI forbids re-uploading the same version, so a
 mistake is a new patch version, never a silently replaced file.
 
-## PyPI Trusted Publishing
+## PyPI publication
 
-The `publish` workflow is manual (`workflow_dispatch`) because Trusted Publishing does not
-exist for this repository yet. A `release: published` trigger added today would fail red: no
-trusted publisher, no OIDC exchange, no upload. Set it up once:
+`github-agent-cli` 1.2.1 was published on 2026-10-30. Measured facts:
 
-1. On PyPI, add a **pending publisher** for the project `github-agent`: owner `paulmann`,
-   repository `github-agent`, workflow `publish.yml`, environment `pypi`. A pending publisher
-   removes the chicken-and-egg problem of publishing before the project exists.
-2. In the GitHub repository, create the environment `pypi` (Settings, Environments) and
-   optionally require a reviewer; the workflow declares `environment: pypi` and
-   `id-token: write` and needs no password secret.
-3. Run the workflow manually: `gh workflow run publish.yml -f confirm=publish`, or Actions,
-   Publish, Run workflow, after typing `publish` in the confirmation input.
-4. Verify the upload on `https://pypi.org/project/github-agent/` and with
-   `pip index versions github-agent`.
-5. Once that works, extend the trigger in [publish.yml](../.github/workflows/publish.yml) with
-   `release: types: [published]` and remove the `if:` guard on the publish job, so a published
-   release becomes the only publication event.
+| Fact | Value |
+|---|---|
+| Project page | <https://pypi.org/project/github-agent-cli/> |
+| Wheel on PyPI | `github_agent_cli-1.2.1-py3-none-any.whl`, sha256 `8cc2d1a28eee11d5be29bb60b8f8b35ce859167b6e1760db9e9bfcc292aea0ee` |
+| sdist on PyPI | `github_agent_cli-1.2.1.tar.gz`, sha256 `28926c81880c92ff59fbafa4b0d15b65e8c4b90fb43de920d0240fdf28a1ab03` |
+| Installed check | `pip install github-agent-cli` in a clean venv → `ghagent --version` prints `github-agent 1.2.1`; only that one package is installed |
+
+The PyPI files are built by the `Publish` workflow on the runner, so their hashes differ from the
+GitHub release assets, which are built locally from the tagged tree. Both are legitimate builds of
+the same commit; if you need bit-identical files, download the release asset or the PyPI file and
+compare it against its own hash, not against the other one.
+
+The first upload used the `PYPI_API_TOKEN` repository secret because the local network reset the
+connection to `upload.pypi.org` while the GitHub runner could reach it. The workflow therefore
+passes `password: ${{ secrets.PYPI_API_TOKEN }}` and sets `skip-existing: true`, which makes a
+retry after a partial transfer idempotent.
+
+### Moving to OIDC (recommended, no long-lived secret)
+
+The project now exists, so a trusted publisher can be attached to it instead of using a token:
+
+1. PyPI → the `github-agent-cli` project → **Publishing** → *Add a trusted publisher* with owner
+   (your PyPI username), repository `github-agent`, workflow `publish.yml`, environment `pypi`.
+2. In [publish.yml](../.github/workflows/publish.yml) delete the `password:` line; keep
+   `environment: pypi` and `id-token: write`.
+3. Delete the `PYPI_API_TOKEN` secret (`gh secret delete PYPI_API_TOKEN -R owner/repo`) and revoke
+   the token on PyPI.
+4. Run the workflow once to prove the OIDC exchange works, then extend the trigger with
+   `release: types: [published]` and drop the `if:` guard, so a published release becomes the only
+   publication event.
 
 ## Deferred: Homebrew and Scoop
 
 A Homebrew formula and a Scoop manifest are deliberately **not** in this repository yet. Both
-need a real, immutable download URL and a real SHA-256, and neither exists until the sdist is
-on PyPI and a release has uploaded it. A formula written now would carry a placeholder hash,
-which violates the project rule that every number names its source, and would install nothing
-or the wrong bytes.
+need a real, immutable download URL and a real SHA-256. The first PyPI release now provides them:
+the sdist URL and hash above are real, so a formula can be written without inventing anything.
 
-When the first PyPI release exists:
+When the formula is written:
 
-- a formula belongs in a separate tap repository, with `url` pointing at the PyPI sdist and
-  `sha256` copied from `sha256sum dist/github_agent_cli-X.Y.Z.tar.gz`;
+- it belongs in a separate tap repository, with `url` pointing at the PyPI sdist and `sha256`
+  copied from `sha256sum github_agent_cli-X.Y.Z.tar.gz`;
 - a Scoop manifest uses the release asset URL and its measured hash, with `checkver` and
   `autoupdate` reading the PyPI JSON API;
 - both gain a bump procedure that recomputes the hash after every release.

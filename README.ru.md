@@ -8,6 +8,7 @@ CHANGELOG и контракты сообщества, проверяет док�
 **На других языках:** [English](README.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md) · [Español](README.es.md) · Русский
 
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/github-agent-cli)](https://pypi.org/project/github-agent-cli/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Лицензия: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Зависимости при запуске](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
@@ -71,10 +72,9 @@ pip install github-agent-cli            # pip в текущее окружени
 ghagent --version
 ```
 
-> **Статус PyPI.** Эти команды начнут работать после первой публикации: Trusted Publishing
-> настраивает владелец репозитория, а workflow `Publish` запускается вручную. До этого ставьте
-> колесо из [последнего релиза](https://github.com/paulmann/github-agent/releases/latest) или
-> используйте клон ниже — команда `ghagent` получается одна и та же.
+> **Опубликовано на PyPI.** `github-agent-cli` 1.2.1 доступен с 2026-10-30:
+> <https://pypi.org/project/github-agent-cli/>. Колесо содержит только CLI; пакет
+> (скиллы, тесты, шаблоны, исходники вики) ставится из клона ниже.
 
 Консольная команда — `ghagent`; имя дистрибутива — `github-agent`.
 

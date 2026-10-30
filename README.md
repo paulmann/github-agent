@@ -9,6 +9,7 @@ the repository — one command per job.
 **Read this in:** English · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/github-agent-cli)](https://pypi.org/project/github-agent-cli/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Runtime dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
@@ -72,10 +73,9 @@ pip install github-agent-cli            # pip into the active environment
 ghagent --version
 ```
 
-> **PyPI status.** These commands resolve after the first publication. Trusted Publishing is
-> configured by the repository owner and the `Publish` workflow is triggered manually, so until
-> then install the wheel from the [latest release](https://github.com/paulmann/github-agent/releases/latest)
-> or use the source checkout below — both provide the same `ghagent` command.
+> **Published on PyPI.** `github-agent-cli` 1.2.1 has been available since 2026-10-30:
+> <https://pypi.org/project/github-agent-cli/>. The wheel ships the CLI only; the pack
+> (skills, tests, reference, wiki sources) comes from the clone below.
 
 The console script is `ghagent`; the distribution name is `github-agent`.
 

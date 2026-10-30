@@ -1,23 +1,24 @@
 # github-agent
 
+github-agent, GitHub रिपॉज़िटरी और उनकी विकि के लिए एक Python कमांड-लाइन संचालक है: यह README,
+CHANGELOG और समुदाय के अनुबंधों को अंक देता है, दस्तावेज़, लिंक, एंकर और तालिकाओं का लिंट करता है,
+लीक हुए सीक्रेट खोजता है, बैनर और सोशल प्रीव्यू रेंडर करता है और विकि को रिपॉज़िटरी में रखता है —
+हर काम के लिए एक कमांड।
+
 <!-- md-i18n:switcher -->
 **अन्य भाषाओं में:** [English](README.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · हिन्दी · [Español](README.es.md) · [Русский](README.ru.md)
 
-**AI एजेंटों के लिए GitHub रिपॉज़िटरी और विकि का संचालक: README, CHANGELOG और समुदाय-स्वास्थ्य
-का ऑडिट करता है, बैनर और सोशल प्रीव्यू रेंडर करता है, विकि बनाता और प्रकाशित करता है, लिंक,
-एंकर और विषयों की जाँच करता है — हर काम के लिए एक कमांड। Python 3, केवल मानक लाइब्रेरी।**
-
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![लाइसेंस: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-3776AB)](https://www.python.org/)
-[![निर्भरताएँ](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](tools/ghagent.py)
-[![जाँचें](https://img.shields.io/badge/self--tests-134%20checks-brightgreen)](tests/run_tests.py)
+[![रनटाइम निर्भरताएँ](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
+[![स्वयं-परीक्षण](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — AI एजेंटों के लिए रिपॉज़िटरी और विकि का संचालक"
      width="100%">
 
-[**इंस्टॉलेशन**](#इंस्टॉलेशन) · [**उपयोग**](#उपयोग) · [**चित्र**](#चित्र) · [**विकि**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**Changelog**](CHANGELOG.md) · [**मुद्दे**](https://github.com/paulmann/github-agent/issues) · [**सुरक्षा**](SECURITY.md) · [**Русская версия**](README.ru.md)
+[**इंस्टॉलेशन**](#इंस्टॉलेशन) · [**उपयोग**](#उपयोग) · [**विकि**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**MIGRATION.md**](MIGRATION.md) · [**पैकेजिंग**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**मुद्दे**](https://github.com/paulmann/github-agent/issues) · [**सुरक्षा**](SECURITY.md) · [**Русская версия**](README.ru.md)
 
 रिपॉज़िटरी कोड पर कम ही विफल होती है; वह दस्तावेज़ पर विफल होती है। README में इंस्टॉलेशन खंड
 नहीं है, changelog में तारीखें नहीं हैं, विकि नेविगेशन के बिना तीन पृष्ठों की है, बैनर एक टूटी हुई छवि है,
@@ -27,17 +28,21 @@
 देता है। यह मार्केटिंग कॉपी नहीं लिखता और संख्याएँ नहीं गढ़ता: यह जाँचता है कि मनुष्य ने क्या
 लिखा, और जो टूटा है उसे प्रकाशित करने से मना कर देता है।
 
-> **दस्तावेज़ की स्थिति।** इस README का हर आँकड़ा 2026-10-24 को संस्करण 1.1.0 के विरुद्ध, तालिका
+> **दस्तावेज़ की स्थिति।** इस README का हर आँकड़ा 2026-10-30 को संस्करण 1.2.0 के विरुद्ध, तालिका
 > में नामित कमांडों से मापा गया। विस्तृत मार्गदर्शिकाएँ
-> [Wiki](https://github.com/paulmann/github-agent/wiki) और [`docs/`](docs/) में रहती हैं; एजेंटों
-> के लिए प्रोटोकॉल [`AGENTS.md`](AGENTS.md) है।
+> [Wiki](https://github.com/paulmann/github-agent/wiki) और [`docs/`](docs/IMPORT.md) में रहती हैं;
+> एजेंटों के लिए प्रोटोकॉल [`AGENTS.md`](AGENTS.md) है, और पैकेजिंग व माइग्रेशन के नोट
+> [`docs/PACKAGING.md`](docs/PACKAGING.md) तथा [`MIGRATION.md`](MIGRATION.md) में हैं।
+
+> **एजेंटों के लिए।** [`AGENTS.md`](AGENTS.md) से शुरू करें: पैक कहाँ रहता है, इंस्टॉलेशन का
+> अक्षुण्ण होना कैसे सिद्ध करें, और कौन-सा एक कमांड हर बहु-फ़ाइल जाँच का स्थान लेता है।
 
 ## विषय-सूची
 
-- [यह पैक क्या करता है](#यह-पैक-क्या-करता-है)
-- [संख्याओं में](#संख्याओं-में)
 - [इंस्टॉलेशन](#इंस्टॉलेशन)
 - [उपयोग](#उपयोग)
+- [यह पैक क्या करता है](#यह-पैक-क्या-करता-है)
+- [संख्याओं में](#संख्याओं-में)
 - [कौन-सी जाँचें चलती हैं](#कौन-सी-जाँचें-चलती-हैं)
 - [चित्र](#चित्र)
 - [दूसरे एजेंट में आयात](#दूसरे-एजेंट-में-आयात)
@@ -51,104 +56,152 @@
 
 ---
 
-## यह पैक क्या करता है
-
-| काम | एक कमांड |
-|---|---|
-| रिपॉज़िटरी को अंक देना | `ghagent.py audit .` |
-| दस्तावेज़ों, लिंकों और एंकरों का लिंट | `ghagent.py doc --root .` |
-| सीक्रेट और मशीन पथ खोजना | `ghagent.py privacy --root .` |
-| बैनर और सोशल प्रीव्यू रेंडर करना | `ghagent.py assets render --write` |
-| विकि बनाना, सत्यापित करना और प्रकाशित करना | `ghagent.py wiki build`, `verify`, `publish --push` |
-| संस्करण जारी करना | `ghagent.py changelog release 1.2.0 --write` |
-| विवरण और विषय ठीक करना | `ghagent.py meta apply --repo owner/name --write` |
-| स्किल को दूसरे एजेंट में इंस्टॉल करना | `ghagent.py install --profile harness --write` |
-
-हर कमांड निष्कर्ष `file:line` के रूप में नियम-आईडी के साथ छापता है, और लौटाता है `0` — स्वच्छ,
-`1` — त्रुटियों के साथ, `2` — कॉल में गड़बड़ी पर। इसलिए एजेंट को अपनी स्थिति जानने के लिए पूरा
-ट्री पढ़ने की ज़रूरत नहीं: एक कमांड और एक एग्ज़िट कोड पर्याप्त हैं।
-
-## संख्याओं में
-
-इस ट्री में 2026-10-24 को मापा गया:
-
-| पक्ष | मान | माप का स्रोत |
-|---|---:|---|
-| स्वयं-परीक्षण | 134 | `tests/run_tests.py` |
-| CLI कमांड | 13 | `tools/ghagent.py --help` |
-| लाइब्रेरी मॉड्यूल | 11 | `tools/ghalib/*.py` |
-| इस ट्री पर जाँचे गए नियम | 17 | `doc --json`, फ़ील्ड `rules_examined` |
-| रनटाइम निर्भरताएँ | 0 | `tools/` में आयात |
-| दर्ज किए गए प्लेटफ़ॉर्म जाल | 15 | [AGENTS.md](AGENTS.md#platform-traps) |
-| Python पंक्तियाँ | 3400 | `tools/**/*.py` |
-
 ## इंस्टॉलेशन
 
-केवल Python 3.11+ चाहिए (3.13.15 पर सत्यापित)। कोई `pip install` नहीं, कोई बिल्ड चरण नहीं।
-Pillow वैकल्पिक है: उसके साथ `assets render` PNG भी बनाता है, उसके बिना केवल SVG।
+Python 3.11 या नया चाहिए; CI सुइट को 3.11 और 3.13 पर चलाता है। कोई रनटाइम निर्भरता नहीं है। चार
+इंस्टॉलेशन पथ हैं, और वे एक-दूसरे के विकल्प नहीं हैं: पैकेज प्रबंधक CLI इंस्टॉल करते हैं, जबकि
+क्लोन वह है जो `ghagent install --profile ... --write` को चाहिए, क्योंकि wheel में केवल CLI होती है।
+
+### पैकेज प्रबंधक
+
+```bash
+uv tool install github-agent        # uv, अलग टूल वातावरण
+pipx install github-agent           # pipx, अलग आभासी वातावरण
+pip install github-agent            # सक्रिय वातावरण में pip
+ghagent --version
+```
+
+कंसोल स्क्रिप्ट का नाम `ghagent` है; PyPI पर पैकेज का नाम `github-agent` है।
+
+### वैकल्पिक PNG समर्थन
+
+`assets render` हमेशा SVG लिखता है। PNG आउटपुट के लिए Pillow चाहिए, जो एक वैकल्पिक अतिरिक्त है:
+
+```bash
+pip install "github-agent[png]"
+uv tool install --with pillow github-agent
+```
+
+Pillow के बिना कमांड बताता है कि PNG क्यों नहीं बना, सोशल प्रीव्यू को तैयार दिखाने के बजाय।
+
+### स्रोत से (क्लोन)
+
+क्लोन दूसरा इंस्टॉलेशन पथ है और अकेला ऐसा है जिसमें `tests/`, `skills/`, `reference/`, `wiki/`
+और टेम्पलेट होते हैं; इसलिए `install`, `verify-install`, `snippet` और `uninstall` को यही चाहिए।
+एडिटेबल इंस्टॉल चेकआउट में `ghagent` कमांड जोड़ देता है:
 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-
+pip install -e .
 python tools/ghagent.py selftest
 ```
 
-किसी एजेंट में स्किल इंस्टॉल करने पर यह पैक उस एजेंट के स्किल रूट में कॉपी हो जाता है, sha256
-मैनिफ़ेस्ट के साथ:
+### Docker
+
+रिपॉज़िटरी में `Dockerfile` है; इसे स्थानीय रूप से बनाएँ और जाँची जाने वाली रिपॉज़िटरी को `/repo`
+पर माउंट करें, जो इमेज की कार्य निर्देशिका है:
 
 ```bash
-python tools/ghagent.py install --profile autoclaw --write   # AutoClaw2
-python tools/ghagent.py install --profile harness  --write   # HARNESS
-python tools/ghagent.py install --target <dir>     --write   # SagaAI and anything else
+docker build -t ghagent .
+docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
-सत्यापन और वापसी:
+Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` है। एंट्री पॉइंट `ghagent` है, इसलिए इमेज के
+नाम के बाद पहला आर्ग्युमेंट ही कमांड है। 1.2.0 के भाग के रूप में कोई रजिस्ट्री इमेज प्रकाशित नहीं
+होती और CI कंटेनर नहीं बनाता: टैग एक स्थानीय परंपरा है। देखें
+[examples/docker.md](examples/docker.md)।
+
+### GitHub Action
+
+यह कंपोज़िट action पैक को अपने ही चेकआउट से इंस्टॉल करता है, इसलिए यह PyPI रिलीज़ पर निर्भर नहीं है
+और टैग मौजूद होते ही काम करता है:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: paulmann/github-agent@v1.2.0    # रिलीज़ टैग पिन करें
+  with:
+    command: audit .
+    min-score: "80"
+```
+
+| इनपुट | डिफ़ॉल्ट | उद्देश्य |
+|---|---|---|
+| `command` | `audit . --min-score 80` | कोई भी `ghagent` कमांड, प्रोग्राम का नाम छोड़कर |
+| `min-score` | `80` | स्कोर सीमा, केवल तब लागू जब `command` `audit` से शुरू हो और कोई फ़्लैग न दे |
+| `working-directory` | `.` | वह रिपॉज़िटरी निर्देशिका जिसमें कमांड चलता है, `$GITHUB_WORKSPACE` के सापेक्ष |
+| `python-version` | `3.13` | `actions/setup-python` द्वारा इंस्टॉल किया गया इंटरप्रेटर |
+| `github-token` | `${{ github.token }}` | मेटाडेटा कमांडों के लिए `GITHUB_TOKEN` के रूप में निर्यात |
+
+गैर-audit कमांड के लिए action ठीक वही आर्ग्युमेंट स्ट्रिंग चलाता है, उदाहरण के लिए
+`command: doc --root .`। कोई आउटपुट नहीं होता: चरण का एग्ज़िट कोड ही परिणाम है (`0` स्वच्छ,
+`1` निष्कर्ष, `2` उपयोग या वातावरण की समस्या)। एक पूरा वर्कफ़्लो, जिसमें `doc` चलाने वाला दूसरा
+जॉब और Docker विकल्प शामिल है, [examples/ci-usage.md](examples/ci-usage.md) में है।
+
+### pre-commit
+
+यह रिपॉज़िटरी pre-commit हुक का स्रोत भी है; हुक हैं `ghagent-doc`, `ghagent-audit`,
+`ghagent-privacy` और `ghagent-changelog`:
+
+```yaml
+repos:
+  - repo: https://github.com/paulmann/github-agent
+    rev: v1.2.0     # प्लेसहोल्डर: वह रिलीज़ टैग पिन करें जिस पर आप भरोसा करते हैं
+    hooks:
+      - id: ghagent-doc
+      - id: ghagent-audit
+      - id: ghagent-privacy
+      - id: ghagent-changelog
+```
+
+`pre-commit install` से हुक को उपभोक्ता रिपॉज़िटरी में इंस्टॉल करें। पूरी उपभोक्ता फ़ाइल
+[examples/pre-commit-config.yaml](examples/pre-commit-config.yaml) है; हुक परिभाषाएँ
+[.pre-commit-hooks.yaml](.pre-commit-hooks.yaml) में हैं। हुक को प्रकाशित टैग चाहिए, क्योंकि
+pre-commit टूल को टैग किए गए ट्री से बनाता है।
+
+### सत्यापित इंस्टॉलेशन
+
+किसी भी इंस्टॉल के बाद एक कमांड बताता है कि CLI जारी किया गया बिल्ड है या नहीं:
 
 ```bash
-python tools/ghagent.py verify-install --profile autoclaw
-python tools/ghagent.py uninstall --profile autoclaw --write
+ghagent --version     # संस्करण छापता है, उदाहरण के लिए github-agent 1.2.0
+ghagent audit .       # 0 स्वच्छ, 1 त्रुटि-स्तर के निष्कर्ष, 2 उपयोग या वातावरण की समस्या
 ```
 
-`uninstall` ऐसी निर्देशिका हटाने से मना कर देता है जिसमें `.install.json` नहीं है: उसे वह नहीं
-हटाना चाहिए जो किसी दूसरे उपकरण ने इंस्टॉल किया हो।
+क्लोन में पूरा स्वयं-परीक्षण सुइट चलता है; wheel में केवल CLI होती है, इसलिए वहाँ
+`ghagent selftest` `2` के साथ बंद होता है और क्लोन की ओर संकेत देता है, झूठा `PASS` नहीं दिखाता:
+
+```bash
+git clone https://github.com/paulmann/github-agent.git
+cd github-agent
+python tools/ghagent.py selftest    # 173/173 जाँचें पास
+```
 
 ## उपयोग
 
 ```bash
-# 1. state of a local repository (exit 1 means errors)
-python tools/ghagent.py audit .
-
-# 2. the same for GitHub metadata
-python tools/ghagent.py audit --repo owner/name --http
-
-# 3. documents: BOM, CRLF, headings, tables, links, anchors, table of contents
-python tools/ghagent.py doc --root .
-
-# 4. images: render from metadata, then verify size, format and references
-python tools/ghagent.py assets render --title "Project" --tagline "What it does." --write
-python tools/ghagent.py assets check
-
-# 5. wiki: build, verify, publish (without --push it is a dry run)
-python tools/ghagent.py wiki build
-python tools/ghagent.py wiki verify
-python tools/ghagent.py wiki publish --repo owner/name --push
-
-# 6. changelog
-python tools/ghagent.py changelog check
-python tools/ghagent.py changelog suggest --since v1.0.0
-python tools/ghagent.py changelog release 1.1.0 --write
-python tools/ghagent.py changelog notes 1.1.0
-
-# 7. metadata: description and topics
-python tools/ghagent.py meta suggest
-python tools/ghagent.py meta apply --repo owner/name --description "…" --topics a,b --write
-
-# 8. one combined report
-python tools/ghagent.py report . --out AUDIT.md
+ghagent audit .                    # रिपॉज़िटरी स्वच्छता को अंक दें, त्रुटि पर एग्ज़िट 1
+ghagent doc --root .               # markdown, लिंक, एंकर, तालिकाएँ, विषय-सूची
+ghagent privacy --root .           # टोकन, निजी कुंजियाँ, मशीन पथ, व्यक्तिगत पते
+ghagent assets render --write      # रिपॉज़िटरी मेटाडेटा से बैनर और सोशल प्रीव्यू
+ghagent assets check               # प्रारूप, माप, alt टेक्स्ट, संदर्भित फ़ाइलें
+ghagent wiki build                 # विकि नेमस्पेस के लिए लिंक फिर से लिखें
+ghagent wiki verify                # हर आंतरिक लिंक खुलता है
+ghagent changelog check            # Keep a Changelog और SemVer
+ghagent changelog release 1.2.0 --write
+ghagent meta suggest               # विवरण और विषय
 ```
 
-`audit` के आउटपुट का उदाहरण:
+हर कमांड `--json` स्वीकार करता है; निष्कर्ष `file:line` के रूप में नियम-आईडी के साथ छपते हैं,
+इसलिए कॉलर को गद्य पढ़ने की ज़रूरत नहीं।
+
+| एग्ज़िट कोड | अर्थ |
+|---|---|
+| `0` | त्रुटि-स्तर पर कोई निष्कर्ष नहीं |
+| `1` | त्रुटि-स्तर के निष्कर्ष, हर एक `file:line` के साथ छपा |
+| `2` | उपयोग या वातावरण की समस्या: गलत पथ, गायब फ़ाइल, गायब `gh` या टोकन |
+
+`audit` के आउटपुट का उदाहरण, एक जान-बूझकर विफल रिपॉज़िटरी से, इस ट्री से नहीं:
 
 ```text
 [ERROR] repo.contributing        CONTRIBUTING.md is absent  hint: add CONTRIBUTING.md
@@ -156,6 +209,38 @@ python tools/ghagent.py report . --out AUDIT.md
 [ERROR] changelog.date-missing   version 1.1.0 has no ISO date  CHANGELOG.md:14
 score: 72.5% (22 scored, 1 skipped)
 ```
+
+## यह पैक क्या करता है
+
+| काम | एक कमांड |
+|---|---|
+| रिपॉज़िटरी को अंक देना | `ghagent audit .` |
+| दस्तावेज़ों, लिंकों और एंकरों का लिंट | `ghagent doc --root .` |
+| सीक्रेट और मशीन पथ खोजना | `ghagent privacy --root .` |
+| बैनर और सोशल प्रीव्यू रेंडर करना | `ghagent assets render --write` |
+| विकि बनाना, सत्यापित करना और प्रकाशित करना | `ghagent wiki build`, `verify`, `publish --push` |
+| संस्करण जारी करना | `ghagent changelog release 1.2.0 --write` |
+| विवरण और विषय ठीक करना | `ghagent meta apply --repo owner/name --write` |
+| स्किल को दूसरे एजेंट में इंस्टॉल करना | `ghagent install --profile harness --write` |
+
+CLI में 13 कमांड हैं; तालिका रोज़ काम आने वाले कमांड बताती है। बाकी (`report`, `snippet`,
+`verify-install`, `uninstall`, `selftest`, `assets suggest`, `changelog suggest`,
+`changelog notes`, `meta suggest`, `wiki init`, `wiki publish`) अपने फ़्लैग के साथ
+[`AGENTS.md`](AGENTS.md) में सूचीबद्ध हैं।
+
+## संख्याओं में
+
+इस ट्री में 2026-10-30 को संस्करण 1.2.0 के विरुद्ध मापा गया:
+
+| पक्ष | मान | माप का स्रोत |
+|---|---:|---|
+| स्वयं-परीक्षण | 173 | `python tests/run_tests.py` |
+| CLI कमांड | 13 | `ghagent --help` |
+| लाइब्रेरी मॉड्यूल | 11 | `tools/ghalib/*.py` |
+| इस ट्री पर जाँचे गए दस्तावेज़ नियम | 17 | `ghagent doc --json`, फ़ील्ड `rules_examined` |
+| रनटाइम निर्भरताएँ | 0 | `pyproject.toml`, `dependencies = []` |
+| दर्ज किए गए प्लेटफ़ॉर्म जाल | 15 | [docs/RULES.md](docs/RULES.md#platform-traps) में जाल तालिका |
+| Python पंक्तियाँ | 4176 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## कौन-सी जाँचें चलती हैं
 
@@ -171,6 +256,7 @@ score: 72.5% (22 scored, 1 skipped)
 | चित्र | बैनर संदर्भित है, प्रीव्यू PNG/JPG/GIF है, 1 MB से कम, कम से कम 640×320 |
 | विकि | मैनिफ़ेस्ट और फ़ाइलें सहमत, `Home`/`_Sidebar`/`_Footer` मौजूद, `.md` लिंक नहीं, सापेक्ष छवि नहीं |
 | CHANGELOG | हर संस्करण पर SemVer और ISO तारीख, नवीनतम सबसे ऊपर, ज्ञात प्रकार, खाली संस्करण नहीं, तुलना लिंक |
+| एजेंट फ़ाइल | रूट की मानक `AGENTS.md` एक नक्शे के रूप में रहती है: 120 पंक्तियों से अधिक पर चेतावनी, विवरण `docs/` में |
 | मेटाडेटा | विवरण 200 अक्षरों से कम, बिना बेकार उपसर्ग, 8–20 छोटे-अक्षर हाइफ़न-युक्त विषय |
 
 जिस नियम ने एक भी ऑब्जेक्ट नहीं देखा, वह पास नहीं माना जाता: उसे `coverage.skipped` के रूप में दर्ज
@@ -181,9 +267,9 @@ score: 72.5% (22 scored, 1 skipped)
 इस फ़ाइल के शीर्ष पर बैनर पैक स्वयं बनाता है:
 
 ```bash
-python tools/ghagent.py assets render --title "github-agent" \
+ghagent assets render --title "github-agent" \
     --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent.py audit ." --chips "python,github,wiki,lint" --write
+    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
 ```
 
 - `assets/social-preview.png` — 1280×640, 1 MB से कम, **Settings → Social preview** के लिए तैयार।
@@ -202,7 +288,8 @@ python tools/ghagent.py assets render --title "github-agent" \
 
 `snippet` ब्लॉक पैक का पथ, सत्यापन कमांड और एक नियम बताता है: एक काम, एक कमांड। आयात के बाद
 एजेंट को `verify-install` चलाकर `0` पाना चाहिए; कुछ और मिलने का अर्थ है कि इंस्टॉल की गई प्रति
-परीक्षित प्रति नहीं है। विवरण: [docs/IMPORT.md](docs/IMPORT.md)।
+परीक्षित प्रति नहीं है। यही एक ऐसा वर्कफ़्लो है जिसे wheel के बजाय क्लोन चाहिए, क्योंकि wheel में
+केवल CLI होती है। विवरण: [docs/IMPORT.md](docs/IMPORT.md)।
 
 ## दस्तावेज़ के रूप में विकि
 
@@ -213,7 +300,8 @@ python tools/ghagent.py assets render --title "github-agent" \
 
 पैक के अपने कमांडों से बनाई और सत्यापित। प्रकाशन के लिए GitHub इंटरफ़ेस में एक क्रिया चाहिए:
 पहला पृष्ठ सहेजे जाने तक `<repo>.wiki.git` मौजूद नहीं होता, और `git push` उसे बना नहीं सकता —
-तब `wiki publish` उस चरण के साथ `wiki.remote-missing` लौटाता है।
+तब `wiki publish` उस चरण के साथ `wiki.remote-missing` लौटाता है। पूरा वर्कफ़्लो
+[docs/WIKI.md](docs/WIKI.md) में है।
 
 ## दस्तावेज़ की भाषाएँ
 
@@ -260,11 +348,13 @@ flowchart LR
 | `tools/ghalib/changelog.py` | Keep a Changelog 2.0.0, रिलीज़, कमिटों से मसौदा |
 | `tools/ghalib/meta.py` | विवरण, विषय, होमपेज |
 | `tools/ghalib/install.py` | स्किल इंस्टॉलेशन, sha256 मैनिफ़ेस्ट, विचलन, हटाना |
-| `tests/run_tests.py` | फ़िक्स्चर और जाल-फ़ाइलों सहित 134 स्वयं-परीक्षण |
+| `tools/ghalib/report.py` | निष्कर्ष, गंभीरता, Markdown और `--json` आउटपुट |
+| `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, पथ, टेक्स्ट इनपुट/आउटपुट, एंकर |
+| `tests/run_tests.py` | फ़िक्स्चर और जाल-फ़ाइलों सहित 173 स्वयं-परीक्षण |
 
 एंकर GitHub के नियमों का पालन करते हैं: छोटे अक्षर, विराम-चिह्न हटते हैं, स्थान हाइफ़न बनते हैं,
 दोहराया गया शीर्षक `-1` पाता है। यह नियम जीवंत विषय-सूची पर जाँचा गया: शीर्षक में em dash दोहरा
-हाइफ़न बनाता है।
+हाइफ़न बनाता है। आर्किटेक्चर नोट्स: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)।
 
 ## सीमाएँ
 
@@ -276,8 +366,8 @@ flowchart LR
   और सार्वजनिक संपादन बंद वाली विकियाँ अनुक्रमित होती हैं। खोजे जाने के लिए GitHub Pages का
   उपयोग करें।
 - `changelog suggest` एक मसौदा है। यह नहीं जानता कि उपयोगकर्ता के लिए क्या महत्वपूर्ण है।
-- PNG रेंडरिंग के लिए Pillow चाहिए। उसके बिना SVG बनता है और जाँच बताती है कि PNG क्यों नहीं है,
-  बजाय यह दिखाने के कि सोशल प्रीव्यू तैयार है।
+- PNG रेंडरिंग के लिए Pillow चाहिए। उसके बिना SVG बनता है और जाँच बताती है कि PNG क्यों नहीं बना,
+  सोशल प्रीव्यू को तैयार दिखाने के बजाय।
 
 ## विकास
 
@@ -291,7 +381,8 @@ python tools/ghagent.py assets check
 
 नया नियम ऐसे फ़िक्स्चर के साथ आता है जो उसके बिना विफल होता है, और ऐसी जाल-फ़ाइल के साथ जो चुप
 रहनी चाहिए। बिना फ़िक्स्चर वाला नियम हटा दिया जाता है: जिस जाँच को सिद्ध न किया जा सके, वह जाँच
-न होने से बुरी है।
+न होने से बुरी है। पैकेजिंग और wheel लेआउट [docs/PACKAGING.md](docs/PACKAGING.md) में वर्णित हैं;
+1.1.0 → 1.2.0 के बदलाव [MIGRATION.md](MIGRATION.md) में हैं।
 
 ## योगदान
 

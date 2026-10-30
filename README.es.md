@@ -1,21 +1,24 @@
 # github-agent
 
+github-agent es un gestor de línea de órdenes escrito en Python para repositorios de GitHub y sus
+wikis: puntúa el README, el CHANGELOG y los contratos de la comunidad, revisa documentos, enlaces,
+anclas y tablas, busca secretos filtrados, genera el banner y la vista previa social y mantiene la
+wiki en el repositorio — una orden por tarea.
+
 <!-- md-i18n:switcher -->
 **En otros idiomas:** [English](README.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md) · Español · [Русский](README.ru.md)
 
-**Gestor de repositorios y wikis de GitHub para agentes de IA: audita el README, el CHANGELOG y la salud de la comunidad, genera el banner y la vista previa social, construye y publica la wiki, comprueba enlaces, anclas y temas — una orden por tarea. Python 3, solo biblioteca estándar.**
-
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Licencia: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-3776AB)](https://www.python.org/)
-[![Dependencias](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](tools/ghagent.py)
-[![Comprobaciones](https://img.shields.io/badge/self--tests-134%20checks-brightgreen)](tests/run_tests.py)
+[![Dependencias en tiempo de ejecución](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
+[![Autopruebas](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — gestor de repositorios y wikis para agentes de IA"
      width="100%">
 
-[**Instalación**](#instalación) · [**Uso**](#uso) · [**Imágenes**](#imágenes) · [**Wiki**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Seguridad**](SECURITY.md) · [**Versión en ruso**](README.ru.md)
+[**Instalación**](#instalación) · [**Uso**](#uso) · [**Wiki**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**MIGRATION.md**](MIGRATION.md) · [**Empaquetado**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Seguridad**](SECURITY.md) · [**Versión en ruso**](README.ru.md)
 
 Un repositorio rara vez falla por el código; falla por la documentación. El README no tiene
 sección de instalación, el changelog no tiene fechas, la wiki son tres páginas sin navegación,
@@ -26,17 +29,21 @@ Este paquete impone un contrato verificable en cada uno de esos puntos y reduce 
 orden. No escribe texto de marketing ni inventa cifras: comprueba lo que escribió una persona y
 se niega a publicar lo que está roto.
 
-> **Estado de la documentación.** Cada cifra de este README se midió el 2026-10-24 sobre la
-> versión 1.1.0 con las órdenes indicadas en la tabla. Las guías extensas están en la
-> [Wiki](https://github.com/paulmann/github-agent/wiki) y en [`docs/`](docs/); el protocolo para
-> agentes es [`AGENTS.md`](AGENTS.md).
+> **Estado de la documentación.** Cada cifra de este README se midió el 2026-10-30 sobre la
+> versión 1.2.0 con las órdenes indicadas en la tabla. Las guías extensas están en la
+> [Wiki](https://github.com/paulmann/github-agent/wiki) y en [`docs/`](docs/IMPORT.md); el protocolo
+> para agentes es [`AGENTS.md`](AGENTS.md), y las notas de empaquetado y migración están en
+> [`docs/PACKAGING.md`](docs/PACKAGING.md) y [`MIGRATION.md`](MIGRATION.md).
+
+> **Para agentes.** Empiece por [`AGENTS.md`](AGENTS.md): dónde vive el paquete, cómo demostrar que
+> la instalación está intacta y qué única orden sustituye cada investigación de varios archivos.
 
 ## Contenido
 
-- [Qué hace el paquete](#qué-hace-el-paquete)
-- [En cifras](#en-cifras)
 - [Instalación](#instalación)
 - [Uso](#uso)
+- [Qué hace el paquete](#qué-hace-el-paquete)
+- [En cifras](#en-cifras)
 - [Comprobaciones que se ejecutan](#comprobaciones-que-se-ejecutan)
 - [Imágenes](#imágenes)
 - [Importar en otro agente](#importar-en-otro-agente)
@@ -50,105 +57,156 @@ se niega a publicar lo que está roto.
 
 ---
 
-## Qué hace el paquete
-
-| Tarea | Una orden |
-|---|---|
-| Puntuar un repositorio | `ghagent.py audit .` |
-| Revisar documentos, enlaces y anclas | `ghagent.py doc --root .` |
-| Encontrar secretos y rutas de la máquina | `ghagent.py privacy --root .` |
-| Generar el banner y la vista previa social | `ghagent.py assets render --write` |
-| Construir, verificar y publicar la wiki | `ghagent.py wiki build`, `verify`, `publish --push` |
-| Publicar una versión | `ghagent.py changelog release 1.2.0 --write` |
-| Corregir la descripción y los temas | `ghagent.py meta apply --repo owner/name --write` |
-| Instalar la skill en otro agente | `ghagent.py install --profile harness --write` |
-
-Cada orden imprime los hallazgos como `file:line` con el identificador de la regla y devuelve
-`0` si todo está limpio, `1` si hay errores y `2` ante un problema de uso. Por eso un agente no
-necesita leer el árbol para conocer su estado: bastan una orden y un código de salida.
-
-## En cifras
-
-Medido en este árbol el 2026-10-24:
-
-| Ámbito | Valor | Fuente de la medición |
-|---|---:|---|
-| Autopruebas | 134 | `tests/run_tests.py` |
-| Órdenes de la CLI | 13 | `tools/ghagent.py --help` |
-| Módulos de la biblioteca | 11 | `tools/ghalib/*.py` |
-| Reglas examinadas en este árbol | 17 | `doc --json`, campo `rules_examined` |
-| Dependencias en tiempo de ejecución | 0 | imports en `tools/` |
-| Trampas de la plataforma registradas | 15 | [AGENTS.md](AGENTS.md#platform-traps) |
-| Líneas de Python | 3400 | `tools/**/*.py` |
-
 ## Instalación
 
-Solo se requiere Python 3.11+ (verificado en 3.13.15). Sin `pip install`, sin paso de
-compilación. Pillow es opcional: con él, `assets render` produce además un PNG; sin él, solo el
-SVG.
+Se requiere Python 3.11 o posterior; la CI ejecuta la suite en 3.11 y 3.13. No hay dependencias en
+tiempo de ejecución. Existen cuatro vías de instalación y no son intercambiables: los gestores de
+paquetes instalan la CLI, mientras que el clon es lo que necesita
+`ghagent install --profile ... --write`, porque la wheel solo contiene la CLI.
+
+### Gestores de paquetes
+
+```bash
+uv tool install github-agent        # uv, entorno de herramientas aislado
+pipx install github-agent           # pipx, entorno virtual aislado
+pip install github-agent            # pip en el entorno activo
+ghagent --version
+```
+
+El script de consola es `ghagent`; el paquete en PyPI es `github-agent`.
+
+### Soporte PNG opcional
+
+`assets render` siempre escribe el SVG. La salida PNG necesita Pillow, que es un extra opcional:
+
+```bash
+pip install "github-agent[png]"
+uv tool install --with pillow github-agent
+```
+
+Sin Pillow la orden explica por qué no hay PNG en lugar de fingir que la vista previa social está
+lista.
+
+### Desde el código fuente (clon)
+
+El clon es la segunda vía de instalación y la única que incluye `tests/`, `skills/`, `reference/`,
+`wiki/` y las plantillas, así que también es la que necesitan `install`, `verify-install`, `snippet`
+y `uninstall`. Una instalación editable añade la orden `ghagent` al checkout:
 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-
+pip install -e .
 python tools/ghagent.py selftest
 ```
 
-Instalar la skill en un agente copia el paquete en la raíz de skills del agente, con un
-manifiesto sha256:
+### Docker
+
+El repositorio incluye un `Dockerfile`; constrúyalo en local y monte el repositorio bajo prueba en
+`/repo`, que es el directorio de trabajo de la imagen:
 
 ```bash
-python tools/ghagent.py install --profile autoclaw --write   # AutoClaw2
-python tools/ghagent.py install --profile harness  --write   # HARNESS
-python tools/ghagent.py install --target <dir>     --write   # SagaAI and anything else
+docker build -t ghagent .
+docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
-Verificación y reversión:
+En Windows PowerShell el mismo montaje es `-v "${PWD}:/repo"`. El punto de entrada es `ghagent`,
+así que el primer argumento tras el nombre de la imagen es la orden. No se publica ninguna imagen
+de registro como parte de 1.2.0 y la CI no construye el contenedor: la etiqueta es una convención
+local. Véase [examples/docker.md](examples/docker.md).
+
+### GitHub Action
+
+La acción compuesta instala el paquete desde su propio checkout, así que no depende de una
+publicación en PyPI y funciona en cuanto existe la etiqueta:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: paulmann/github-agent@v1.2.0    # fije la etiqueta de la versión
+  with:
+    command: audit .
+    min-score: "80"
+```
+
+| Entrada | Valor predeterminado | Propósito |
+|---|---|---|
+| `command` | `audit . --min-score 80` | cualquier orden de `ghagent`, sin el nombre del programa |
+| `min-score` | `80` | umbral de puntuación, aplicado solo cuando `command` empieza por `audit` y no pasa ningún indicador |
+| `working-directory` | `.` | directorio del repositorio donde se ejecuta la orden, relativo a `$GITHUB_WORKSPACE` |
+| `python-version` | `3.13` | intérprete instalado por `actions/setup-python` |
+| `github-token` | `${{ github.token }}` | exportado como `GITHUB_TOKEN` para las órdenes de metadatos |
+
+Para una orden que no sea de auditoría, la acción ejecuta exactamente la cadena de argumentos dada,
+por ejemplo `command: doc --root .`. No hay salidas: el código de salida del paso es el resultado
+(`0` limpio, `1` hallazgos, `2` problema de uso o de entorno). Un flujo de trabajo completo, con un
+segundo trabajo que ejecuta `doc` y una alternativa con Docker, está en
+[examples/ci-usage.md](examples/ci-usage.md).
+
+### pre-commit
+
+El repositorio también es fuente de hooks de pre-commit; los hooks son `ghagent-doc`,
+`ghagent-audit`, `ghagent-privacy` y `ghagent-changelog`:
+
+```yaml
+repos:
+  - repo: https://github.com/paulmann/github-agent
+    rev: v1.2.0     # marcador: fije la etiqueta de versión en la que confíe
+    hooks:
+      - id: ghagent-doc
+      - id: ghagent-audit
+      - id: ghagent-privacy
+      - id: ghagent-changelog
+```
+
+Instale los hooks en el repositorio consumidor con `pre-commit install`. El archivo completo del
+consumidor es [examples/pre-commit-config.yaml](examples/pre-commit-config.yaml); las definiciones
+de los hooks están en [.pre-commit-hooks.yaml](.pre-commit-hooks.yaml). Los hooks necesitan una
+etiqueta publicada, porque pre-commit construye la herramienta desde el árbol etiquetado.
+
+### Instalación verificada
+
+Tras cualquier instalación, una orden responde si la CLI es la compilación publicada:
 
 ```bash
-python tools/ghagent.py verify-install --profile autoclaw
-python tools/ghagent.py uninstall --profile autoclaw --write
+ghagent --version     # imprime la versión, por ejemplo github-agent 1.2.0
+ghagent audit .       # 0 limpio, 1 hallazgos de nivel de error, 2 problema de uso o de entorno
 ```
 
-`uninstall` se niega a borrar un directorio que no tenga `.install.json`: no debe eliminar lo que
-instaló otra herramienta.
+En un clon se ejecuta la suite completa de autopruebas; la wheel solo contiene la CLI, así que allí
+`ghagent selftest` termina con `2` y un mensaje que remite al clon, en lugar de informar un `PASS`
+falso:
+
+```bash
+git clone https://github.com/paulmann/github-agent.git
+cd github-agent
+python tools/ghagent.py selftest    # 173/173 pruebas superadas
+```
 
 ## Uso
 
 ```bash
-# 1. state of a local repository (exit 1 means errors)
-python tools/ghagent.py audit .
-
-# 2. the same for GitHub metadata
-python tools/ghagent.py audit --repo owner/name --http
-
-# 3. documents: BOM, CRLF, headings, tables, links, anchors, table of contents
-python tools/ghagent.py doc --root .
-
-# 4. images: render from metadata, then verify size, format and references
-python tools/ghagent.py assets render --title "Project" --tagline "What it does." --write
-python tools/ghagent.py assets check
-
-# 5. wiki: build, verify, publish (without --push it is a dry run)
-python tools/ghagent.py wiki build
-python tools/ghagent.py wiki verify
-python tools/ghagent.py wiki publish --repo owner/name --push
-
-# 6. changelog
-python tools/ghagent.py changelog check
-python tools/ghagent.py changelog suggest --since v1.0.0
-python tools/ghagent.py changelog release 1.1.0 --write
-python tools/ghagent.py changelog notes 1.1.0
-
-# 7. metadata: description and topics
-python tools/ghagent.py meta suggest
-python tools/ghagent.py meta apply --repo owner/name --description "…" --topics a,b --write
-
-# 8. one combined report
-python tools/ghagent.py report . --out AUDIT.md
+ghagent audit .                    # puntúa la higiene del repositorio, salida 1 si hay errores
+ghagent doc --root .               # markdown, enlaces, anclas, tablas, índice
+ghagent privacy --root .           # tokens, claves privadas, rutas de la máquina, direcciones personales
+ghagent assets render --write      # banner y vista previa social a partir de los metadatos del repositorio
+ghagent assets check               # formato, dimensiones, texto alternativo, archivos referenciados
+ghagent wiki build                 # reescribe enlaces para el espacio de nombres de la wiki
+ghagent wiki verify                # todo enlace interno resuelve
+ghagent changelog check            # Keep a Changelog y SemVer
+ghagent changelog release 1.2.0 --write
+ghagent meta suggest               # descripción y temas
 ```
 
-Ejemplo de salida de `audit`:
+Todas las órdenes aceptan `--json`; los hallazgos se imprimen como `file:line` con un identificador
+de regla, así que quien llama no necesita analizar prosa.
+
+| Código de salida | Significado |
+|---|---|
+| `0` | sin hallazgos de nivel de error |
+| `1` | hallazgos de nivel de error, cada uno impreso con `file:line` |
+| `2` | problema de uso o de entorno: ruta incorrecta, archivo ausente, falta `gh` o el token |
+
+Ejemplo de salida de `audit`, de un repositorio que falla a propósito y no de este árbol:
 
 ```text
 [ERROR] repo.contributing        CONTRIBUTING.md is absent  hint: add CONTRIBUTING.md
@@ -156,6 +214,38 @@ Ejemplo de salida de `audit`:
 [ERROR] changelog.date-missing   version 1.1.0 has no ISO date  CHANGELOG.md:14
 score: 72.5% (22 scored, 1 skipped)
 ```
+
+## Qué hace el paquete
+
+| Tarea | Una orden |
+|---|---|
+| Puntuar un repositorio | `ghagent audit .` |
+| Revisar documentos, enlaces y anclas | `ghagent doc --root .` |
+| Encontrar secretos y rutas de la máquina | `ghagent privacy --root .` |
+| Generar el banner y la vista previa social | `ghagent assets render --write` |
+| Construir, verificar y publicar la wiki | `ghagent wiki build`, `verify`, `publish --push` |
+| Publicar una versión | `ghagent changelog release 1.2.0 --write` |
+| Corregir la descripción y los temas | `ghagent meta apply --repo owner/name --write` |
+| Instalar la skill en otro agente | `ghagent install --profile harness --write` |
+
+La CLI tiene 13 órdenes; la tabla nombra las de uso diario. El resto (`report`, `snippet`,
+`verify-install`, `uninstall`, `selftest`, `assets suggest`, `changelog suggest`,
+`changelog notes`, `meta suggest`, `wiki init`, `wiki publish`) se enumera con sus indicadores en
+[`AGENTS.md`](AGENTS.md).
+
+## En cifras
+
+Medido en este árbol el 2026-10-30 sobre la versión 1.2.0:
+
+| Ámbito | Valor | Fuente de la medición |
+|---|---:|---|
+| Autopruebas | 173 | `python tests/run_tests.py` |
+| Órdenes de la CLI | 13 | `ghagent --help` |
+| Módulos de la biblioteca | 11 | `tools/ghalib/*.py` |
+| Reglas de documento examinadas en este árbol | 17 | `ghagent doc --json`, campo `rules_examined` |
+| Dependencias en tiempo de ejecución | 0 | `pyproject.toml`, `dependencies = []` |
+| Trampas de la plataforma registradas | 15 | la tabla de trampas en [docs/RULES.md](docs/RULES.md#platform-traps) |
+| Líneas de Python | 4176 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## Comprobaciones que se ejecutan
 
@@ -171,6 +261,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Imágenes | banner referenciado, la vista previa es PNG/JPG/GIF, menos de 1 MB, al menos 640×320 |
 | Wiki | el manifiesto y los archivos coinciden, `Home`/`_Sidebar`/`_Footer` presentes, sin enlaces `.md`, sin imágenes relativas |
 | CHANGELOG | SemVer y fecha ISO por versión, la más reciente primero, tipos conocidos, sin versión vacía, enlaces de comparación |
+| Archivo de agentes | el `AGENTS.md` canónico de la raíz sigue siendo un mapa: más de 120 líneas es una advertencia y el detalle pertenece a `docs/` |
 | Metadatos | descripción de menos de 200 caracteres sin prefijo inútil, de 8 a 20 temas en minúsculas con guiones |
 
 Una regla que examinó cero objetos no se considera superada: se informa como `coverage.skipped`,
@@ -181,9 +272,9 @@ y un árbol vacío es `doc.no-text-files`.
 El banner de la parte superior de este archivo lo genera el propio paquete:
 
 ```bash
-python tools/ghagent.py assets render --title "github-agent" \
+ghagent assets render --title "github-agent" \
     --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent.py audit ." --chips "python,github,wiki,lint" --write
+    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
 ```
 
 - `assets/social-preview.png` — 1280×640, menos de 1 MB, listo para **Settings → Social preview**.
@@ -202,7 +293,8 @@ python tools/ghagent.py assets render --title "github-agent" \
 
 El bloque `snippet` indica la ruta del paquete, la orden de verificación y una regla: una tarea,
 una orden. Tras la importación, el agente debe ejecutar `verify-install` y obtener `0`; cualquier
-otra cosa significa que la copia instalada no es la probada. Detalles:
+otra cosa significa que la copia instalada no es la probada. Esta es la única vía que necesita el
+clon en lugar de la wheel, porque la wheel solo contiene la CLI. Detalles:
 [docs/IMPORT.md](docs/IMPORT.md).
 
 ## La wiki como documentación
@@ -215,7 +307,7 @@ imagen relativa es un error, porque el repositorio de la wiki no ve el árbol de
 Construida y verificada con las órdenes del propio paquete. La publicación requiere una acción en
 la interfaz de GitHub: `<repo>.wiki.git` no existe hasta que se guarda una primera página, y
 `git push` no puede crearlo — en ese caso `wiki publish` devuelve `wiki.remote-missing` junto con
-ese paso.
+ese paso. El flujo completo está en [docs/WIKI.md](docs/WIKI.md).
 
 ## Idiomas de la documentación
 
@@ -262,11 +354,14 @@ flowchart LR
 | `tools/ghalib/changelog.py` | Keep a Changelog 2.0.0, release, borrador a partir de los commits |
 | `tools/ghalib/meta.py` | descripción, temas, página principal |
 | `tools/ghalib/install.py` | instalación de la skill, manifiesto sha256, deriva, eliminación |
-| `tests/run_tests.py` | 134 autopruebas con fixtures y señuelos |
+| `tools/ghalib/report.py` | hallazgos, gravedades, salida en Markdown y `--json` |
+| `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, rutas, E/S de texto, anclas |
+| `tests/run_tests.py` | 173 autopruebas con fixtures y señuelos |
 
 Las anclas siguen las reglas de GitHub: minúsculas, se elimina la puntuación, los espacios pasan a
 guiones y un encabezado repetido recibe `-1`. La regla se verificó contra un índice real: un guion
-largo en un encabezado produce un doble guion.
+largo en un encabezado produce un doble guion. Notas de arquitectura:
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Limitaciones
 
@@ -293,7 +388,9 @@ python tools/ghagent.py assets check
 
 Una regla nueva llega con un fixture que falla sin ella y un señuelo que debe permanecer en
 silencio. Una regla sin fixture se elimina: una comprobación que no se puede demostrar es peor que
-ninguna.
+ninguna. El empaquetado y el diseño de la wheel se describen en
+[docs/PACKAGING.md](docs/PACKAGING.md); los cambios de 1.1.0 → 1.2.0 están en
+[MIGRATION.md](MIGRATION.md).
 
 ## Contribuir
 

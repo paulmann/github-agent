@@ -23,7 +23,15 @@
 | Копируемые команды | агент не должен догадываться о синтаксисе |
 | Раздел проверки | чем убедиться, что работа сделана |
 | Раздел запретов | что нельзя и почему |
-| Таблица ловушек | признак, по которому ловушка узнаётся |
+| Карта, а не энциклопедия | `agents.md-length` предупреждает после 120 строк; подробности — в `docs/` |
+| Ссылка на таблицу ловушек | признак, по которому ловушка узнаётся, остаётся в подробном документе |
+
+С версии 1.2.0 корневой `AGENTS.md` — карта до 120 строк: каталог правил, контракты файлов и
+таблица из 15 ловушек живут в
+[docs/RULES.md](https://github.com/paulmann/github-agent/blob/main/docs/RULES.md), работа с
+вики — в [docs/WIKI.md](https://github.com/paulmann/github-agent/blob/main/docs/WIKI.md), модули
+и коды выхода — в
+[docs/ARCHITECTURE.md](https://github.com/paulmann/github-agent/blob/main/docs/ARCHITECTURE.md).
 
 ## CHANGELOG.md
 

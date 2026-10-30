@@ -24,7 +24,15 @@ how each part is verified.
 | Copy-paste commands | the agent must not guess the syntax |
 | A verification section | how to prove the work is done |
 | A prohibitions section | what not to do, and why |
-| A traps table | the symptom that identifies each trap |
+| A map, not an encyclopedia | `agents.md-length` warns above 120 lines; detail belongs in `docs/` |
+| A link to the traps table | the symptom that identifies each trap stays in the detailed document |
+
+Since 1.2.0 the root `AGENTS.md` is a map under 120 lines: the rule catalogue, the file contracts
+and the 15-row traps table live in
+[docs/RULES.md](https://github.com/paulmann/github-agent/blob/main/docs/RULES.md), the wiki
+workflow in [docs/WIKI.md](https://github.com/paulmann/github-agent/blob/main/docs/WIKI.md), and
+the modules and exit codes in
+[docs/ARCHITECTURE.md](https://github.com/paulmann/github-agent/blob/main/docs/ARCHITECTURE.md).
 
 ## CHANGELOG.md
 

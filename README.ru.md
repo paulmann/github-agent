@@ -1,23 +1,23 @@
 # github-agent
 
+github-agent — консольный хранитель репозиториев GitHub и их вики на Python: оценивает README,
+CHANGELOG и контракты сообщества, проверяет документы, ссылки, якоря и таблицы, ищет утечки
+секретов, рисует баннер и социальное превью и ведёт вики в репозитории — одна команда на задачу.
+
 <!-- md-i18n:switcher -->
 **На других языках:** [English](README.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md) · [Español](README.es.md) · Русский
 
-**Хранитель репозитория и вики GitHub для ИИ-агентов: проверяет README, CHANGELOG и состояние
-сообщества, рисует баннер и социальное превью, собирает и публикует вики, проверяет ссылки,
-якоря и темы — одна команда на задачу. Python 3, только стандартная библиотека.**
-
 [![CI](https://github.com/paulmann/github-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/github-agent/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Лицензия: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-3776AB)](https://www.python.org/)
-[![Зависимости](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](tools/ghagent.py)
-[![Проверки](https://img.shields.io/badge/self--tests-134%20checks-brightgreen)](tests/run_tests.py)
+[![Зависимости при запуске](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
+[![Самопроверки](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — хранитель репозитория и вики для ИИ-агентов"
      width="100%">
 
-[**Установка**](#установка) · [**Использование**](#использование) · [**Картинки**](#картинки) · [**Вики**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.ru.md) · [**Changelog**](CHANGELOG.ru.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Безопасность**](SECURITY.ru.md) · [**English version**](README.md)
+[**Установка**](#установка) · [**Использование**](#использование) · [**Вики**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.ru.md**](AGENTS.ru.md) · [**MIGRATION.md**](MIGRATION.md) · [**Упаковка**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.ru.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Безопасность**](SECURITY.ru.md) · [**English version**](README.md)
 
 Репозиторий проваливается не на коде, а на документации. В README нет раздела об установке,
 в журнале изменений нет дат, вики — три страницы без навигации, баннер — битая картинка,
@@ -27,17 +27,21 @@
 Он не пишет рекламных текстов и не выдумывает чисел: он проверяет то, что написал человек,
 и отказывается публиковать сломанное.
 
-> **Состояние документации.** Каждое число в этом README измерено 2026-10-24 на версии 1.1.0
+> **Состояние документации.** Каждое число в этом README измерено 2026-10-30 на версии 1.2.0
 > командами, названными в таблице. Подробные руководства лежат в
-> [вики](https://github.com/paulmann/github-agent/wiki) и в [`docs/`](docs/); протокол для
-> агентов — [`AGENTS.md`](AGENTS.ru.md).
+> [вики](https://github.com/paulmann/github-agent/wiki) и в [`docs/`](docs/IMPORT.ru.md);
+> протокол для агентов — [`AGENTS.md`](AGENTS.ru.md), заметки об упаковке и миграции —
+> [`docs/PACKAGING.md`](docs/PACKAGING.md) и [`MIGRATION.md`](MIGRATION.md).
+
+> **Для агентов.** Начните с [`AGENTS.md`](AGENTS.ru.md): где лежит пакет, как доказать
+> целостность установки и какая одна команда заменяет каждое многофайловое исследование.
 
 ## Содержание
 
-- [Что делает пакет](#что-делает-пакет)
-- [В цифрах](#в-цифрах)
 - [Установка](#установка)
 - [Использование](#использование)
+- [Что делает пакет](#что-делает-пакет)
+- [В цифрах](#в-цифрах)
 - [Проверки, которые выполняются](#проверки-которые-выполняются)
 - [Картинки](#картинки)
 - [Импорт в другой агент](#импорт-в-другой-агент)
@@ -51,104 +55,155 @@
 
 ---
 
-## Что делает пакет
-
-| Задача | Одна команда |
-|---|---|
-| Оценить репозиторий | `ghagent.py audit .` |
-| Проверить документы, ссылки и якоря | `ghagent.py doc --root .` |
-| Найти секреты и машинные пути | `ghagent.py privacy --root .` |
-| Нарисовать баннер и социальное превью | `ghagent.py assets render --write` |
-| Собрать, проверить и опубликовать вики | `ghagent.py wiki build`, `verify`, `publish --push` |
-| Выпустить версию | `ghagent.py changelog release 1.2.0 --write` |
-| Привести в порядок описание и темы | `ghagent.py meta apply --repo owner/name --write` |
-| Установить навык другому агенту | `ghagent.py install --profile harness --write` |
-
-Каждая команда печатает находки как `file:line` с идентификатором правила и возвращает `0`
-при чистом результате, `1` при ошибках, `2` при ошибке вызова. Поэтому агенту не нужно читать
-дерево, чтобы узнать его состояние: достаточно одной команды и одного кода возврата.
-
-## В цифрах
-
-Измерено в этом дереве 2026-10-24:
-
-| Поверхность | Значение | Источник измерения |
-|---|---:|---|
-| Самопроверок | 134 | `tests/run_tests.py` |
-| Команд CLI | 13 | `tools/ghagent.py --help` |
-| Модулей библиотеки | 11 | `tools/ghalib/*.py` |
-| Правил осмотрено на этом дереве | 17 | `doc --json`, поле `rules_examined` |
-| Зависимостей при запуске | 0 | импорты в `tools/` |
-| Записанных ловушек платформы | 15 | [AGENTS.ru.md](AGENTS.ru.md#ловушки-платформы) |
-| Строк Python | 3400 | `tools/**/*.py` |
-
 ## Установка
 
-Нужен только Python 3.11+ (проверено на 3.13.15). Ни `pip install`, ни шага сборки. Pillow
-необязателен: с ним `assets render` выпускает ещё и PNG, без него — только SVG.
+Нужен Python 3.11 или новее; CI гоняет набор тестов на 3.11 и 3.13. Зависимостей при запуске
+нет. Есть четыре пути установки, и они не взаимозаменяемы: пакетные менеджеры ставят CLI, а
+клон нужен команде `ghagent install --profile ... --write`, потому что колесо содержит только
+CLI.
+
+### Пакетные менеджеры
+
+```bash
+uv tool install github-agent        # uv, изолированное окружение инструмента
+pipx install github-agent           # pipx, изолированное виртуальное окружение
+pip install github-agent            # pip в текущее окружение
+ghagent --version
+```
+
+Консольная команда — `ghagent`; имя дистрибутива — `github-agent`.
+
+### Необязательная поддержка PNG
+
+`assets render` всегда пишет SVG. Для PNG нужен Pillow, он подключается отдельным extras:
+
+```bash
+pip install "github-agent[png]"
+uv tool install --with pillow github-agent
+```
+
+Без Pillow команда говорит, почему PNG нет, вместо того чтобы выдавать готовое социальное
+превью за существующее.
+
+### Из репозитория (клон)
+
+Клон — второй путь установки и единственный, где есть `tests/`, `skills/`, `reference/`,
+`wiki/` и шаблоны. Поэтому только из клона работают `install`, `verify-install`, `snippet` и
+`uninstall`. Editable-установка добавляет команду `ghagent` из этого дерева:
 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-
+pip install -e .
 python tools/ghagent.py selftest
 ```
 
-Установка навыка в агента копирует пакет в корень навыков этого агента вместе с манифестом
-sha256:
+### Docker
+
+В репозитории есть `Dockerfile`; соберите образ локально и смонтируйте проверяемый репозиторий
+в `/repo` — это рабочий каталог образа:
 
 ```bash
-python tools/ghagent.py install --profile autoclaw --write   # AutoClaw2
-python tools/ghagent.py install --profile harness  --write   # HARNESS
-python tools/ghagent.py install --target <каталог> --write   # SagaAI и любой другой агент
+docker build -t ghagent .
+docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
-Проверка установки и откат:
+В Windows PowerShell тот же монтаж выглядит как `-v "${PWD}:/repo"`. Точка входа — `ghagent`,
+поэтому первый аргумент после имени образа — это команда. В рамках 1.2.0 образ в реестр не
+публикуется, и CI контейнер не собирает: тег — локальная договорённость. См.
+[examples/docker.md](examples/docker.md).
+
+### GitHub Action
+
+Составное действие ставит пакет из своего же checkout, поэтому не зависит от релиза на PyPI и
+работает сразу после появления тега:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: paulmann/github-agent@v1.2.0    # закрепите релизный тег
+  with:
+    command: audit .
+    min-score: "80"
+```
+
+| Вход | По умолчанию | Назначение |
+|---|---|---|
+| `command` | `audit . --min-score 80` | любая команда `ghagent` без имени программы |
+| `min-score` | `80` | порог оценки, применяется только если `command` начинается с `audit` и не передаёт флаг |
+| `working-directory` | `.` | каталог запуска относительно `$GITHUB_WORKSPACE` |
+| `python-version` | `3.13` | интерпретатор, который ставит `actions/setup-python` |
+| `github-token` | `${{ github.token }}` | экспортируется как `GITHUB_TOKEN` для команд, работающих с API |
+
+Для команды, отличной от `audit`, действие запускает ровно переданную строку аргументов,
+например `command: doc --root .`. Выходов нет: результат — код возврата шага (`0` чисто,
+`1` находки, `2` ошибка вызова или окружения). Полный workflow, включая второй job с `doc` и
+вариант с Docker, — в [examples/ci-usage.md](examples/ci-usage.md).
+
+### pre-commit
+
+Репозиторий также служит источником хуков pre-commit; хуки называются `ghagent-doc`,
+`ghagent-audit`, `ghagent-privacy` и `ghagent-changelog`:
+
+```yaml
+repos:
+  - repo: https://github.com/paulmann/github-agent
+    rev: v1.2.0     # заглушка: закрепите релизный тег, которому доверяете
+    hooks:
+      - id: ghagent-doc
+      - id: ghagent-audit
+      - id: ghagent-privacy
+      - id: ghagent-changelog
+```
+
+Установите хуки в потребляющий репозиторий командой `pre-commit install`. Полный файл
+потребителя — [examples/pre-commit-config.yaml](examples/pre-commit-config.yaml); определения
+хуков — в [.pre-commit-hooks.yaml](.pre-commit-hooks.yaml). Хукам нужен релизный тег, потому
+что pre-commit собирает инструмент из помеченного дерева.
+
+### Проверка установки
+
+После любой установки на вопрос, является ли CLI релизной сборкой, отвечает одна команда:
 
 ```bash
-python tools/ghagent.py verify-install --profile autoclaw
-python tools/ghagent.py uninstall --profile autoclaw --write
+ghagent --version     # печатает версию, например github-agent 1.2.0
+ghagent audit .       # 0 чисто, 1 находки уровня error, 2 ошибка вызова или окружения
 ```
 
-`uninstall` отказывается удалять каталог без файла `.install.json`: он не должен сносить то,
-что установил другой инструмент.
+В клоне запускается полный набор самопроверок; колесо содержит только CLI, поэтому
+`ghagent selftest` там завершается кодом `2` с указанием на клон, а не выдаёт ложный `PASS`:
+
+```bash
+git clone https://github.com/paulmann/github-agent.git
+cd github-agent
+python tools/ghagent.py selftest    # 173/173 checks passed
+```
 
 ## Использование
 
 ```bash
-# 1. состояние локального репозитория (код возврата 1 — есть ошибки)
-python tools/ghagent.py audit .
-
-# 2. то же по метаданным на GitHub
-python tools/ghagent.py audit --repo owner/name --http
-
-# 3. документы: BOM, CRLF, заголовки, таблицы, ссылки, якоря, оглавление
-python tools/ghagent.py doc --root .
-
-# 4. картинки: отрисовать по метаданным, затем проверить размер, формат и ссылки
-python tools/ghagent.py assets render --title "Project" --tagline "What it does." --write
-python tools/ghagent.py assets check
-
-# 5. вики: сборка, проверка, публикация (без --push — сухой прогон)
-python tools/ghagent.py wiki build
-python tools/ghagent.py wiki verify
-python tools/ghagent.py wiki publish --repo owner/name --push
-
-# 6. журнал изменений
-python tools/ghagent.py changelog check
-python tools/ghagent.py changelog suggest --since v1.0.0
-python tools/ghagent.py changelog release 1.1.0 --write
-python tools/ghagent.py changelog notes 1.1.0
-
-# 7. метаданные: описание и темы
-python tools/ghagent.py meta suggest
-python tools/ghagent.py meta apply --repo owner/name --description "…" --topics a,b --write
-
-# 8. один сводный отчёт
-python tools/ghagent.py report . --out AUDIT.md
+ghagent audit .                    # оценка гигиены репозитория, код 1 при ошибках
+ghagent doc --root .               # markdown, ссылки, якоря, таблицы, оглавление
+ghagent privacy --root .           # токены, приватные ключи, машинные пути, личные адреса
+ghagent assets render --write      # баннер и социальное превью по метаданным репозитория
+ghagent assets check               # формат, размеры, alt-текст, упомянутые файлы
+ghagent wiki build                 # переписать ссылки под пространство вики
+ghagent wiki verify                # каждая внутренняя ссылка разрешается
+ghagent changelog check            # Keep a Changelog и SemVer
+ghagent changelog release 1.2.0 --write
+ghagent meta suggest               # описание и темы
 ```
 
-Пример вывода `audit`:
+Каждая проверочная команда принимает `--json`; находки печатаются как `файл:строка` с
+идентификатором правила, поэтому вызывающему не нужно разбирать текст. `selftest` запускает
+набор тестов, а `report` пишет сводный markdown-файл, поэтому машиночитаемый формат им не нужен.
+
+| Код возврата | Значение |
+|---|---|
+| `0` | находок уровня `error` нет |
+| `1` | есть находки уровня `error`, каждая печатается с `файл:строка` |
+| `2` | ошибка вызова или окружения: неверный путь, нет файла, нет `gh` или токена |
+
+Пример вывода `audit` — из намеренно сломанного репозитория, а не из этого дерева:
 
 ```text
 [ERROR] repo.contributing        CONTRIBUTING.md is absent  hint: add CONTRIBUTING.md
@@ -156,6 +211,38 @@ python tools/ghagent.py report . --out AUDIT.md
 [ERROR] changelog.date-missing   version 1.1.0 has no ISO date  CHANGELOG.md:14
 score: 72.5% (22 scored, 1 skipped)
 ```
+
+## Что делает пакет
+
+| Задача | Одна команда |
+|---|---|
+| Оценить репозиторий | `ghagent audit .` |
+| Проверить документы, ссылки и якоря | `ghagent doc --root .` |
+| Найти секреты и машинные пути | `ghagent privacy --root .` |
+| Нарисовать баннер и социальное превью | `ghagent assets render --write` |
+| Собрать, проверить и опубликовать вики | `ghagent wiki build`, `verify`, `publish --push` |
+| Выпустить версию | `ghagent changelog release 1.2.0 --write` |
+| Привести в порядок описание и темы | `ghagent meta apply --repo owner/name --write` |
+| Установить навык другому агенту | `ghagent install --profile harness --write` |
+
+В CLI 13 команд; таблица называет те, что нужны каждый день. Остальные (`report`, `snippet`,
+`verify-install`, `uninstall`, `selftest`, `assets suggest`, `changelog suggest`,
+`changelog notes`, `meta suggest`, `wiki init`, `wiki publish`) несут свои флаги в
+`ghagent --help`; повторяющиеся задачи сведены в [`AGENTS.md`](AGENTS.ru.md).
+
+## В цифрах
+
+Измерено в этом дереве 2026-10-30 на версии 1.2.0:
+
+| Поверхность | Значение | Источник измерения |
+|---|---:|---|
+| Самопроверок | 173 | `python tests/run_tests.py` |
+| Команд CLI | 13 | `ghagent --help` |
+| Модулей библиотеки | 11 | `tools/ghalib/*.py` |
+| Правил документов, осмотренных на этом дереве | 17 | `ghagent doc --json`, поле `rules_examined` |
+| Зависимостей при запуске | 0 | `pyproject.toml`, `dependencies = []` |
+| Записанных ловушек платформы | 15 | таблица ловушек в [docs/RULES.md](docs/RULES.md) |
+| Строк Python | 4176 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## Проверки, которые выполняются
 
@@ -171,6 +258,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Картинки | баннер подключён, превью в PNG/JPG/GIF, до 1 МБ, не меньше 640×320 |
 | Вики | манифест и файлы согласованы, `Home`/`_Sidebar`/`_Footer` на месте, ссылки без `.md`, нет относительных картинок |
 | CHANGELOG | SemVer и ISO-дата у каждой версии, новые сверху, известные типы, непустая версия, ссылки сравнения |
+| Файл агентов | корневой `AGENTS.md` остаётся картой: больше 120 строк — предупреждение, детали живут в `docs/` |
 | Метаданные | описание до 200 символов без потраченного впустую префикса, 8–20 тем в нижнем регистре через дефис |
 
 Правило, осмотревшее ноль объектов, не считается пройденным: в отчёте оно попадает
@@ -181,9 +269,9 @@ score: 72.5% (22 scored, 1 skipped)
 Баннер в начале этого файла создаёт сам пакет:
 
 ```bash
-python tools/ghagent.py assets render --title "github-agent" \
+ghagent assets render --title "github-agent" \
     --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent.py audit ." --chips "python,github,wiki,lint" --write
+    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
 ```
 
 - `assets/social-preview.png` — 1280×640, до 1 МБ, готов к загрузке
@@ -203,7 +291,8 @@ python tools/ghagent.py assets render --title "github-agent" \
 
 Блок `snippet` называет путь к пакету, команду проверки установки и одно правило: одна задача —
 одна команда. После импорта агент обязан выполнить `verify-install` и получить `0`; любой
-другой код означает, что установленная копия — не та, которую тестировали. Подробности:
+другой код означает, что установленная копия — не та, которую тестировали. Импорт — единственный
+сценарий, где нужен клон, а не колесо: колесо содержит только CLI. Подробности:
 [docs/IMPORT.ru.md](docs/IMPORT.ru.md).
 
 ## Вики как документация
@@ -216,7 +305,7 @@ python tools/ghagent.py assets render --title "github-agent" \
 Вики собрана и проверена собственными командами пакета. Публикация требует одного действия
 в интерфейсе GitHub: `<repo>.wiki.git` не существует, пока не сохранена первая страница,
 и `git push` его не создаёт — в этом случае `wiki publish` возвращает `wiki.remote-missing`
-с указанием на этот шаг.
+с указанием на этот шаг. Полный порядок — в [docs/WIKI.md](docs/WIKI.md).
 
 ## Языки документации
 
@@ -263,11 +352,14 @@ flowchart LR
 | `tools/ghalib/changelog.py` | Keep a Changelog 2.0.0, выпуск версии, черновик из коммитов |
 | `tools/ghalib/meta.py` | описание, темы, домашняя страница |
 | `tools/ghalib/install.py` | установка навыка, манифест sha256, расхождения, удаление |
-| `tests/run_tests.py` | 134 самопроверки с фикстурами и приманками |
+| `tools/ghalib/report.py` | находки, уровни, markdown- и `--json`-вывод |
+| `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, пути, ввод-вывод текста, якоря |
+| `tests/run_tests.py` | 173 самопроверок с фикстурами и приманками |
 
 Якоря считаются по правилам GitHub: нижний регистр, пунктуация отбрасывается, пробелы
 становятся дефисами, повтор заголовка получает `-1`. Правило сверено с живым оглавлением:
-тире в заголовке даёт двойной дефис.
+тире в заголовке даёт двойной дефис. Заметки об архитектуре — в
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Ограничения
 
@@ -294,7 +386,9 @@ python tools/ghagent.py assets check
 
 Новое правило приходит вместе с фикстурой, которая без него падает, и с приманкой, на которой
 оно должно молчать. Правило без фикстуры удаляется: проверка, которую нельзя доказать, хуже
-отсутствия проверки.
+отсутствия проверки. Упаковка и раскладка колеса описаны в
+[docs/PACKAGING.md](docs/PACKAGING.md); изменения 1.1.0 → 1.2.0 — в
+[MIGRATION.md](MIGRATION.md).
 
 ## Участие в проекте
 

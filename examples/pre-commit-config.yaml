@@ -1,0 +1,30 @@
+# pre-commit configuration for a repository that consumes github-agent.
+#
+# Copy this file to the root of the consuming repository as `.pre-commit-config.yaml`,
+# then install the hooks:
+#
+#   pip install pre-commit
+#   pre-commit install
+#
+# `rev` must be a released tag: pre-commit builds the tool from that tagged tree.
+# `v1.2.0` below is a placeholder for the release you decide to pin; replace it with the
+# tag you trust and keep it updated deliberately.
+#
+# The hook definitions live in .pre-commit-hooks.yaml of the github-agent repository.
+
+repos:
+  - repo: https://github.com/paulmann/github-agent
+    rev: v1.2.0    # placeholder: pin the release tag you trust
+    hooks:
+      # Markdown structure, links, anchors, tables and table of contents.
+      # Runs only when a markdown file is part of the change.
+      - id: ghagent-doc
+
+      # Repository hygiene and file contracts; fails below the score threshold.
+      - id: ghagent-audit
+
+      # Secrets, absolute machine paths and personal e-mail addresses in the tree.
+      - id: ghagent-privacy
+
+      # Keep a Changelog 2.0.0 conformance; runs only when CHANGELOG.md changes.
+      - id: ghagent-changelog

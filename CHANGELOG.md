@@ -6,6 +6,64 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-30
+
+### Added
+
+- PyPI package `github-agent` with the `ghagent` console script: `pip install github-agent`,
+  `pipx install github-agent` or `uv tool install github-agent`, Python 3.11+ and no runtime
+  dependency; the optional `[png]` extra adds Pillow for PNG banner output only.
+- Reusable GitHub Action (`action.yml`), a composite action that installs this checkout and runs
+  one `ghagent` command, by default `audit . --min-score 80`, with `python-version`,
+  `working-directory` and `github-token` inputs.
+- Docker image (`Dockerfile`): a two-stage build compiles the wheel from the source tree and
+  installs it into `python:3.13-slim`; `ENTRYPOINT ["ghagent"]`, the audited repository at `/repo`.
+- Pre-commit hooks (`.pre-commit-hooks.yaml`): `ghagent-doc`, `ghagent-audit`,
+  `ghagent-privacy` and `ghagent-changelog`, built from the tagged revision with
+  `language: python` and no separate installation step.
+- `agents.md-length` rule: the canonical root `AGENTS.md` warns above 120 lines, with a hint to
+  keep it a map and move detail into `docs/`. It counts the file it examined, and
+  `--ignore agents.md-length` silences it; `AGENTS.ru.md` and a nested `docs/AGENTS.md` are not
+  the canonical file and are not measured.
+- Documentation split into `docs/RULES.md` (rule catalogue, file contracts, platform traps),
+  `docs/WIKI.md`, `docs/ARCHITECTURE.md`, `docs/IMPORT.md`, `docs/PROCEDURES.md` and
+  `docs/PACKAGING.md`; `AGENTS.md` is now a map under 120 lines that links to them.
+- README restructure: the summary is the first paragraph after the H1, badges and the language
+  switcher follow it, and installation, usage and verification are separate sections.
+
+### Changed
+
+- Heading anchors for non-Latin scripts: `slugify` keeps combining marks of every category
+  (`Mn`, `Mc`, `Me`) instead of dropping the spacing marks, so a Devanagari heading and the
+  table-of-contents link to it agree. Latin, Cyrillic and Greek anchors are unchanged.
+- `audit` looks for the README summary past blank lines and HTML comments: an i18n switcher
+  marker no longer fails `readme.summary`, while a comment-only README still does.
+- Installed-package honesty: from a wheel `selftest` exits `2` and says the test suite ships only
+  in the source tree, and `install`, `verify-install`, `uninstall` and `snippet` exit `2` and
+  point at a git clone. No `PASS` is printed and no install manifest is written for a pack that
+  is not there; from a clone the behaviour is unchanged.
+- `PACK_VERSION` rises to 1.2.0, still single-sourced in `tools/ghalib/util.py` and read from
+  there by `pyproject.toml`.
+- CI runs the self-tests on Python 3.11 and 3.13, then documents and contracts, then builds the
+  sdist and wheel and smoke-tests the installed console script in a clean virtual environment.
+
+### Fixed
+
+- A Windows console or redirected pipe that uses a non-UTF-8 code page (cp866, cp1251,
+  cp1252) crashed on any non-Latin or non-ASCII finding, for example `ghagent assets check`
+  printing its arrow hint: `UnicodeEncodeError: 'charmap' codec ...`. The CLI now reconfigures
+  stdout and stderr to UTF-8 with `backslashreplace`, so the finding is printed and the exit
+  code is unchanged; a stream that cannot be reconfigured is left alone.
+- `README.hi.md` produced 17 `md.link-anchor` errors because the anchor computation dropped the
+  Devanagari vowel signs; the Hindi table of contents now resolves and `ghagent doc --root .`
+  exits `0` on this repository.
+- A README whose H1 is followed by `<!-- md-i18n:switcher -->` failed `readme.summary`; the rule
+  now skips the invisible comment and `ghagent audit .` scores this repository at 100% with no
+  error.
+- 39 new self-tests cover the non-Latin anchors, the comment-skipping summary, the new rule with
+  its 150-line, 120-line and nested-file fixtures, the installed-wheel refusals, and the
+  redirected-stream encoding; 173 checks in total.
+
 ## [1.1.0] - 2026-10-24
 
 ### Added
@@ -43,6 +101,7 @@ All notable changes to this project are documented here. The format is
 
 - The pack ships without tokens, absolute machine paths or personal addresses; the privacy rule fails the build if one appears, and a self-test enforces it on the pack itself.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/paulmann/github-agent/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/paulmann/github-agent/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/paulmann/github-agent/releases/tag/v1.0.0

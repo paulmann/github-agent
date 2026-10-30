@@ -73,6 +73,11 @@ pip install github-agent            # pip en el entorno activo
 ghagent --version
 ```
 
+> **Estado de PyPI.** Estos comandos funcionan a partir de la primera publicación: Trusted
+> Publishing lo configura el propietario del repositorio y el flujo `Publish` se lanza a mano.
+> Hasta entonces, instala la wheel de la [última versión](https://github.com/paulmann/github-agent/releases/latest)
+> o usa el clon de código fuente de más abajo: ambos proporcionan el mismo comando `ghagent`.
+
 El script de consola es `ghagent`; el paquete en PyPI es `github-agent`.
 
 ### Soporte PNG opcional

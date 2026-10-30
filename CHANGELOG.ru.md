@@ -6,6 +6,13 @@
 
 ## [Unreleased]
 
+### Исправлено
+
+- Шесть README явно говорят, что `uv tool install github-agent`, `pipx install github-agent` и
+  `pip install github-agent` начнут работать только после первой публикации на PyPI: Trusted
+  Publishing настраивает владелец, а workflow `Publish` запускается вручную. До этого работают
+  колесо из последнего релиза и клон исходников — они дают ту же команду `ghagent`.
+
 ## [1.2.0] - 2026-10-30
 
 ### Добавлено

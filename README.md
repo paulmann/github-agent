@@ -72,6 +72,11 @@ pip install github-agent            # pip into the active environment
 ghagent --version
 ```
 
+> **PyPI status.** These commands resolve after the first publication. Trusted Publishing is
+> configured by the repository owner and the `Publish` workflow is triggered manually, so until
+> then install the wheel from the [latest release](https://github.com/paulmann/github-agent/releases/latest)
+> or use the source checkout below — both provide the same `ghagent` command.
+
 The console script is `ghagent`; the distribution name is `github-agent`.
 
 ### Optional PNG support

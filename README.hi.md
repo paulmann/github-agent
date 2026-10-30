@@ -71,6 +71,11 @@ pip install github-agent            # सक्रिय वातावरण �
 ghagent --version
 ```
 
+> **PyPI स्थिति।** ये कमांड पहली बार प्रकाशित होने के बाद ही काम करेंगे: Trusted Publishing रिपॉज़िटरी
+> के मालिक द्वारा सेट किया जाता है और `Publish` वर्कफ़्लो मैन्युअल रूप से चलाया जाता है। तब तक
+> [नवीनतम रिलीज़](https://github.com/paulmann/github-agent/releases/latest) से wheel इंस्टॉल करें या
+> नीचे दिए सोर्स क्लोन का उपयोग करें — दोनों से वही `ghagent` कमांड मिलता है।
+
 कंसोल स्क्रिप्ट का नाम `ghagent` है; PyPI पर पैकेज का नाम `github-agent` है।
 
 ### वैकल्पिक PNG समर्थन

@@ -74,6 +74,12 @@ pip install github-agent            # pip in die aktive Umgebung
 ghagent --version
 ```
 
+> **PyPI-Status.** Diese Befehle funktionieren ab der ersten Veröffentlichung: Trusted Publishing
+> richtet der Repository-Eigentümer ein, und der Workflow `Publish` wird manuell gestartet. Bis
+> dahin das Wheel aus dem [letzten Release](https://github.com/paulmann/github-agent/releases/latest)
+> installieren oder den Quelltext-Klon weiter unten verwenden — beide liefern dasselbe
+> `ghagent`-Kommando.
+
 Das Konsolenskript heißt `ghagent`, das Paket auf PyPI heißt `github-agent`.
 
 ### Optionales PNG

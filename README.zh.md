@@ -69,6 +69,10 @@ pip install github-agent            # pip 装入当前环境
 ghagent --version
 ```
 
+> **PyPI 状态。** 这些命令在首次发布之后才可用：Trusted Publishing 由仓库所有者配置，`Publish`
+> 工作流需要手动触发。在此之前，请从[最新发布](https://github.com/paulmann/github-agent/releases/latest)
+> 下载 wheel，或使用下方的源码克隆——两者提供相同的 `ghagent` 命令。
+
 控制台脚本名为 `ghagent`；PyPI 上的包名为 `github-agent`。
 
 ### 可选的 PNG 支持

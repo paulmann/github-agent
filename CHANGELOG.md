@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+### Fixed
+
+- The six READMEs state that `uv tool install github-agent`, `pipx install github-agent` and
+  `pip install github-agent` resolve only after the first PyPI publication: Trusted Publishing is
+  an owner step and the `Publish` workflow is manual. Until then the wheel from the latest release
+  and the source clone are the paths that work, and they provide the same `ghagent` command.
+
 ## [1.2.0] - 2026-10-30
 
 ### Added

@@ -71,6 +71,11 @@ pip install github-agent            # pip в текущее окружение
 ghagent --version
 ```
 
+> **Статус PyPI.** Эти команды начнут работать после первой публикации: Trusted Publishing
+> настраивает владелец репозитория, а workflow `Publish` запускается вручную. До этого ставьте
+> колесо из [последнего релиза](https://github.com/paulmann/github-agent/releases/latest) или
+> используйте клон ниже — команда `ghagent` получается одна и та же.
+
 Консольная команда — `ghagent`; имя дистрибутива — `github-agent`.
 
 ### Необязательная поддержка PNG

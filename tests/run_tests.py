@@ -33,6 +33,7 @@ from ghalib import report as report_module        # noqa: E402
 from ghalib import wiki as wiki_module            # noqa: E402
 from ghalib.util import (                          # noqa: E402
     Report,
+    force_utf8_stdio,
     git,
     read_text,
     run,
@@ -226,6 +227,16 @@ def test_anchors() -> None:
         ("This heading is not unique in the file", "this-heading-is-not-unique-in-the-file"),
         ("This'll be a _Helpful_ Section About the Greek Letter Θ!", "thisll-be-a-helpful-section-about-the-greek-letter-θ"),
         ("`code` and **bold**", "code-and-bold"),
+        # A Devanagari vowel can be a spacing combining mark (`Mc`, e.g. the candra-o
+        # in इंस्टॉलेशन) or a non-spacing one (`Mn`, e.g. the anusvara). GitHub keeps
+        # both: a heading and a TOC link written with the same word must agree.
+        ("इंस्टॉलेशन", "इंस्टॉलेशन"),
+        ("संख्याओं में", "संख्याओं-में"),
+        ("कौन-सी जाँचें चलती हैं", "कौन-सी-जाँचें-चलती-हैं"),
+        # Latin accented letters are single code points and were never the defect.
+        ("Café — résumé", "café--résumé"),
+        ("Ελληνικό κείμενο", "ελληνικό-κείμενο"),
+        ("Установка (Windows)", "установка-windows"),
     ]
     for heading, expected in pairs:
         check(f"anchor: {heading[:28]}", slugify(heading) == expected, f"got {slugify(heading)!r}, expected {expected!r}")
@@ -235,6 +246,28 @@ def test_anchors() -> None:
     third = registry.add("Sample Section")
     check("anchor: duplicates get -1, -2", (first, second, third) == ("sample-section", "sample-section-1", "sample-section-2"),
           f"got {(first, second, third)}")
+
+    # Document level: the link must resolve, and a wrong anchor must still fail.
+    tmp_root = make_tmp()
+    try:
+        hindi = tmp_root / "hindi"
+        write_text(hindi / "good.md",
+                   "# शीर्षक\n\n- [इंस्टॉलेशन](#इंस्टॉलेशन)\n\n## इंस्टॉलेशन\n\nपाठ।\n")
+        report = Report(title="doc", root=str(hindi))
+        checker = mdcheck.DocChecker(hindi, report, mdcheck.DocCheckOptions())
+        checker.check_file(hindi / "good.md")
+        expect_no_rule(report, "md.link-anchor",
+                       "anchor: a Devanagari TOC link resolves against its heading")
+
+        write_text(hindi / "bad.md",
+                   "# शीर्षक\n\n- [इंस्टॉलेशन](#इंस्टलेशन)\n\n## इंस्टॉलेशन\n\nपाठ।\n")
+        report = Report(title="doc", root=str(hindi))
+        checker = mdcheck.DocChecker(hindi, report, mdcheck.DocCheckOptions())
+        checker.check_file(hindi / "bad.md")
+        expect_rule(report, "md.link-anchor",
+                    "anchor: an anchor that lost its vowel sign is reported")
+    finally:
+        shutil.rmtree(tmp_root, ignore_errors=True)
 
 
 def test_text_meta(tmp: Path) -> None:
@@ -359,6 +392,92 @@ def test_doc_decoys(tmp: Path) -> None:
     check("doc: --ignore skips a rule", "md.toc" in rule_report.data.get("rules_ignored", []))
 
 
+def test_agents_md_length(tmp: Path) -> None:
+    """`agents.md-length`: the canonical root AGENTS.md is a map, not a manual."""
+
+    def agents_body(lines: int) -> str:
+        body = ["# AGENTS.md — instructions for agents", "", "A map of the repository rules.", ""]
+        while len(body) < lines:
+            body.append(f"Rule {len(body) + 1}: the detail lives in docs/.")
+        return "\n".join(body) + "\n"
+
+    root = tmp / "agents-length"
+    root.mkdir(parents=True, exist_ok=True)
+
+    write_text(root / "AGENTS.md", agents_body(150))
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions())
+    checker.check_file(root / "AGENTS.md")
+    checker._report_coverage()
+    found = [f for f in report.findings if f.rule == "agents.md-length"]
+    check("agents: a 150-line root AGENTS.md warns", len(found) == 1 and found[0].level == "warn",
+          str([(f.level, f.message) for f in found]))
+    check("agents: the warning says the file is a map and points at docs/",
+          bool(found) and "docs/" in found[0].hint and "map" in found[0].hint,
+          found[0].hint if found else "")
+    check("agents: the rule counted the file it examined",
+          report.data.get("rules_examined", {}).get("agents.md-length") == 1,
+          str(report.data.get("rules_examined", {}).get("agents.md-length")))
+
+    write_text(root / "AGENTS.md", agents_body(121))
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions())
+    checker.check_file(root / "AGENTS.md")
+    expect_rule(report, "agents.md-length", "agents: 121 lines is already over the limit")
+
+    write_text(root / "AGENTS.md", agents_body(120))
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions())
+    checker.check_file(root / "AGENTS.md")
+    expect_no_rule(report, "agents.md-length", "agents: exactly 120 lines stays quiet")
+
+    write_text(root / "AGENTS.md", agents_body(90))
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions())
+    checker.check_file(root / "AGENTS.md")
+    expect_no_rule(report, "agents.md-length", "agents: a 90-line map stays quiet")
+
+    # A long nested copy is a different document with its own contract.
+    decoy = tmp / "agents-decoy"
+    write_text(decoy / "AGENTS.md", agents_body(90))
+    write_text(decoy / "docs" / "AGENTS.md", agents_body(150))
+    report = Report(title="doc", root=str(decoy))
+    checker = mdcheck.DocChecker(decoy, report, mdcheck.DocCheckOptions())
+    checker.check_file(decoy / "AGENTS.md")
+    checker.check_file(decoy / "docs" / "AGENTS.md")
+    expect_no_rule(report, "agents.md-length", "agents: a long docs/AGENTS.md is not the canonical file")
+
+    # An absent root AGENTS.md is honest coverage, not a crash and not a quiet pass.
+    absent = tmp / "agents-absent"
+    write_text(absent / "README.md", "# Title\n\nText.\n")
+    report = Report(title="doc", root=str(absent))
+    checker = mdcheck.DocChecker(absent, report, mdcheck.DocCheckOptions())
+    checker.check_tree()
+    expect_no_rule(report, "agents.md-length", "agents: an absent root AGENTS.md does not fire")
+    check("agents: an absent root AGENTS.md reports skipped coverage",
+          any(f.rule == "coverage.skipped" and "agents.md-length" in f.message for f in report.findings),
+          str([f.message for f in report.findings if f.rule == "coverage.skipped"]))
+
+    # The CLI flag must silence the rule and say that it did.
+    write_text(root / "AGENTS.md", agents_body(150))
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions(ignore={"agents.md-length"}))
+    checker.check_file(root / "AGENTS.md")
+    checker._report_coverage()
+    expect_no_rule(report, "agents.md-length", "agents: --ignore silences the rule")
+    check("agents: the ignored rule is listed",
+          "agents.md-length" in report.data.get("rules_ignored", []), str(report.data.get("rules_ignored")))
+
+    env = dict(os.environ)
+    env["PYTHONIOENCODING"] = "utf-8"
+    proc = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "doc",
+                           "--root", str(root), "--ignore", "agents.md-length"],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    check("agents: the CLI --ignore flag exits 0 and prints no warning",
+          proc.returncode == 0 and "agents.md-length" not in proc.stdout,
+          proc.stdout[-300:] + proc.stderr[-200:])
+
+
 def test_privacy(tmp: Path) -> None:
     root = tmp / "privacy"
     root.mkdir(parents=True, exist_ok=True)
@@ -411,6 +530,19 @@ def test_audit(tmp: Path) -> None:
     write_text(no_summary / "README.md", "# Title\n\n## Содержание\n\n- [Installation](#installation)\n\n## Installation\n\nText.\n\n## Usage\n\nText.\n\n## License\n\nMIT.\n")
     result = audit_module.audit_local(no_summary)
     expect_rule(result.report, "readme.summary", "audit: README without a summary paragraph")
+
+    # An HTML comment is invisible to a reader, so it cannot be the summary: the i18n
+    # switcher marker sits directly after the H1 in the translated READMEs.
+    commented = make_repo(tmp / "repo-comment")
+    write_text(commented / "README.md",
+               "# Title\n\n<!-- md-i18n:switcher -->\n\nA summary paragraph a reader can see.\n")
+    result = audit_module.audit_local(commented)
+    expect_no_rule(result.report, "readme.summary", "audit: a comment before the summary is skipped")
+
+    comment_only = make_repo(tmp / "repo-commentonly")
+    write_text(comment_only / "README.md", "# Title\n\n<!-- md-i18n:switcher -->\n")
+    result = audit_module.audit_local(comment_only)
+    expect_rule(result.report, "readme.summary", "audit: a comment-only block is not a summary")
 
     no_install = make_repo(tmp / "repo-noinstall")
     write_text(no_install / "README.md", GOOD_README.replace("## Installation", "## Подготовка"))
@@ -637,6 +769,45 @@ def test_install(tmp: Path) -> None:
     check("install: uninstall removes the installed copy", not installed.exists() and not report.errors)
 
 
+def test_installed_layout(tmp: Path) -> None:
+    """A wheel ships the CLI and the library only: the pack commands must refuse honestly.
+
+    The layout is simulated by copying `tools/` into a directory that has no `tests/`
+    and no `tools/ghagent.py` next to it — exactly what site-packages looks like.
+    """
+    site = tmp / "site-packages"
+    shutil.copytree(PACK / "tools", site, ignore=shutil.ignore_patterns("__pycache__"))
+    entry = site / "ghagent.py"
+    env = dict(os.environ)
+    env["PYTHONIOENCODING"] = "utf-8"
+
+    def run_entry(*argv: str):
+        return subprocess.run([sys.executable, str(entry), *argv], capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", env=env)
+
+    proc = run_entry("selftest")
+    check("installed: selftest exits 2 without the source tree", proc.returncode == 2,
+          f"exit {proc.returncode}: {proc.stdout[-200:]}{proc.stderr[-200:]}")
+    check("installed: selftest never prints a PASS it did not measure",
+          "PASS" not in proc.stdout + proc.stderr, proc.stdout + proc.stderr)
+    check("installed: selftest tells the user to clone the repository",
+          "github.com/paulmann/github-agent" in proc.stderr and "tests/run_tests.py" in proc.stderr,
+          proc.stderr)
+
+    for command in ("install", "verify-install", "uninstall", "snippet"):
+        proc = run_entry(command, "--target", str(tmp / "target"))
+        check(f"installed: {command} exits 2 without the source tree", proc.returncode == 2,
+              f"exit {proc.returncode}: {proc.stdout[-200:]}{proc.stderr[-200:]}")
+        check(f"installed: {command} points at cloning the repository",
+              "github.com/paulmann/github-agent" in proc.stderr and "tools/ghagent.py" in proc.stderr,
+              proc.stderr)
+    check("installed: no skill directory was written", not (tmp / "target").exists())
+
+    proc = run_entry("--version")
+    check("installed: the CLI itself still works from the installed layout",
+          proc.returncode == 0 and "github-agent 1.2.0" in proc.stdout, proc.stdout + proc.stderr)
+
+
 def test_meta() -> None:
     check("meta: empty description is an error",
           any(level == "error" for level, _rule, _msg in meta_module.validate_description("")))
@@ -698,6 +869,45 @@ def test_cli(tmp: Path) -> None:
     proc = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "audit", str(good), "--json"],
                           capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     check("cli: audit --json returns a score", '"score"' in proc.stdout, proc.stdout[:200] + proc.stderr[:200])
+
+
+def test_stdio_encoding(tmp: Path) -> None:
+    """A redirected stdout on Windows uses the locale codec; the CLI must still print.
+
+    PEP 528 makes the console UTF-8, but a pipe or a redirected file is encoded with
+    cp1252/cp866/cp1251, none of which can carry an arrow. The guard must switch both
+    streams to UTF-8 so a finding is printed instead of UnicodeEncodeError.
+    """
+    import io
+
+    captured = io.BytesIO()
+    stream = io.TextIOWrapper(captured, encoding="cp1252", newline="")
+    original = sys.stdout
+    sys.stdout = stream
+    try:
+        force_utf8_stdio()
+        print("Settings → Social preview")
+        stream.flush()
+    finally:
+        sys.stdout = original
+    check("encoding: a cp1252 stream is switched to UTF-8",
+          "Settings → Social preview".encode("utf-8") in captured.getvalue(),
+          captured.getvalue()[:120])
+
+    # PYTHONIOENCODING=cp1252 is what Windows does to a redirected pipe; the child must
+    # print the non-ASCII hint that `assets check` ends with instead of crashing.
+    env = dict(os.environ)
+    env["PYTHONIOENCODING"] = "cp1252"
+    env.pop("PYTHONUTF8", None)
+    proc = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"),
+                           "assets", "check", "--root", str(PACK)],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    check("encoding: a redirected cp1252 pipe does not raise an internal error",
+          "internal error" not in proc.stderr, proc.stderr[-300:])
+    check("encoding: assets check still exits 0 on the pack", proc.returncode == 0,
+          f"exit {proc.returncode}: {proc.stdout[-300:]}{proc.stderr[-200:]}")
+    check("encoding: the non-ASCII hint arrives intact", "Social preview" in proc.stdout,
+          proc.stdout[-300:])
 
 
 def test_assets(tmp: Path) -> None:
@@ -845,6 +1055,7 @@ def test_pack_hygiene() -> None:
 
 
 def main() -> int:
+    force_utf8_stdio()
     tmp = make_tmp()
     try:
         for name, function in [
@@ -853,14 +1064,17 @@ def main() -> int:
             ("doc-good", lambda: test_doc_good(tmp)),
             ("doc-defects", lambda: test_doc_defects(tmp)),
             ("doc-decoys", lambda: test_doc_decoys(tmp)),
+            ("agents-md-length", lambda: test_agents_md_length(tmp)),
             ("privacy", lambda: test_privacy(tmp)),
             ("audit", lambda: test_audit(tmp)),
             ("changelog", lambda: test_changelog(tmp)),
             ("wiki", lambda: test_wiki(tmp)),
             ("install", lambda: test_install(tmp)),
+            ("installed-layout", lambda: test_installed_layout(tmp)),
             ("meta", lambda: test_meta()),
             ("report", lambda: test_report(tmp)),
             ("assets", lambda: test_assets(tmp)),
+            ("stdio-encoding", lambda: test_stdio_encoding(tmp)),
             ("cli", lambda: test_cli(tmp)),
             ("pack-hygiene", lambda: test_pack_hygiene()),
         ]:

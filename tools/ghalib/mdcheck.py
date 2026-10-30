@@ -27,6 +27,10 @@ from .util import (
 )
 
 ALLOWED_ALERTS = {"NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"}
+# AGENTS.md is the import entry point an agent reads first: a map, not a manual. The
+# canonical root file is the only one this rule measures — translations and nested
+# copies are checked by their own contracts.
+AGENTS_MAX_LINES = 120
 TOC_TITLES = {"содержание", "оглавление", "contents", "table of contents", "toc", "навигация"}
 SECRET_PATTERNS = [
     ("github-token", re.compile(r"\b(gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b")),
@@ -182,6 +186,8 @@ class DocChecker:
                                      path=relative, line=heading.line)
                 previous = heading.level
 
+        self._check_agents_length(path, text, relative)
+
         if self._rule("md.fence"):
             for fence in fences:
                 self._hit("md.fence")
@@ -225,6 +231,25 @@ class DocChecker:
         self._check_links(path, relative, links, headings, text) if structural_links else None
         if self.options.toc and structural_links:
             self._check_toc(relative, headings, lines)
+
+    def _check_agents_length(self, path: Path, text: str, relative: str) -> None:
+        """AGENTS.md is a map: warn when the canonical root file becomes a manual.
+
+        Only `<root>/AGENTS.md` is measured. A translation (`AGENTS.ru.md`) mirrors the
+        English file, and a nested copy is a different document with its own contract;
+        warning about either would teach a reader to ignore the rule.
+        """
+        if not self._rule("agents.md-length"):
+            return
+        if path.resolve() != (self.root / "AGENTS.md").resolve():
+            return
+        self._hit("agents.md-length")
+        line_count = len(text.splitlines())
+        if line_count > AGENTS_MAX_LINES:
+            self.report.warn("agents.md-length",
+                             f"AGENTS.md is {line_count} lines (limit {AGENTS_MAX_LINES})",
+                             path=relative, line=1,
+                             hint="AGENTS.md is a map: keep it short and move detail into docs/")
 
     def _check_tables(self, lines: list[str], relative: str) -> None:
         if not self._rule("md.table"):

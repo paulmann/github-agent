@@ -45,10 +45,29 @@ from ghalib.util import (                          # noqa: E402
     Report,
     emit,
     fail,
+    force_utf8_stdio,
     read_text,
     rel,
     write_text,
 )
+
+# The source tree is the pack root: it holds tools/ghagent.py, tests/, skills/, reference/,
+# docs/ and the wiki sources. An installed wheel carries the CLI and the library only, so a
+# command that copies or verifies the pack has nothing to work with there and must say so
+# instead of writing an empty manifest or printing a PASS it did not measure.
+PACK_ROOT = HERE.parent
+SOURCE_MARKER = PACK_ROOT / "tools" / "ghagent.py"
+CLONE_URL = "https://github.com/paulmann/github-agent"
+
+
+def _needs_source_tree(command: str) -> int | None:
+    """None when the pack root is present; exit 2 with an honest message when it is not."""
+    if SOURCE_MARKER.exists():
+        return None
+    print(f"ghagent: `{command}` needs the source tree: this installed copy has no "
+          f"tools/ghagent.py. Clone {CLONE_URL} and run "
+          f"`python tools/ghagent.py {command}` from the clone.", file=sys.stderr)
+    return EXIT_USAGE
 
 
 def _add_json(parser: argparse.ArgumentParser) -> None:
@@ -148,7 +167,8 @@ def cmd_privacy(args: argparse.Namespace) -> int:
     options = mdcheck.DocCheckOptions(privacy=True, toc=False, max_line_rule=False)
     options.ignore = {"doc.bom", "doc.crlf", "doc.final-newline", "doc.tab-indent", "md.h1",
                       "md.heading-skip", "md.fence", "md.table", "md.alert", "md.image-alt",
-                      "md.hard-break", "doc.line-length", "md.link-local", "md.toc", "md.link-anchor"}
+                      "md.hard-break", "doc.line-length", "md.link-local", "md.toc", "md.link-anchor",
+                      "agents.md-length"}
     report = Report(title="ghagent privacy", root=str(root))
     checker = mdcheck.DocChecker(root, report, options)
     for path in mdcheck.iter_text_files(root):
@@ -287,10 +307,13 @@ def _draft_description(facts: dict) -> str:
 
 
 def cmd_install(args: argparse.Namespace) -> int:
+    blocked = _needs_source_tree("install")
+    if blocked is not None:
+        return blocked
     target, error = install_module.resolve_target(args.profile, args.target)
     if target is None:
         return fail(error)
-    report = install_module.install(HERE.parent, target, write=args.write)
+    report = install_module.install(PACK_ROOT, target, write=args.write)
     code = emit(report, args.json)
     if args.write and not args.json:
         print()
@@ -299,6 +322,9 @@ def cmd_install(args: argparse.Namespace) -> int:
 
 
 def cmd_verify_install(args: argparse.Namespace) -> int:
+    blocked = _needs_source_tree("verify-install")
+    if blocked is not None:
+        return blocked
     target, error = install_module.resolve_target(args.profile, args.target)
     if target is None:
         return fail(error)
@@ -307,6 +333,9 @@ def cmd_verify_install(args: argparse.Namespace) -> int:
 
 
 def cmd_uninstall(args: argparse.Namespace) -> int:
+    blocked = _needs_source_tree("uninstall")
+    if blocked is not None:
+        return blocked
     target, error = install_module.resolve_target(args.profile, args.target)
     if target is None:
         return fail(error)
@@ -315,6 +344,9 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
 
 
 def cmd_snippet(args: argparse.Namespace) -> int:
+    blocked = _needs_source_tree("snippet")
+    if blocked is not None:
+        return blocked
     target, error = install_module.resolve_target(args.profile, args.target)
     print(install_module.snippet(target))
     return EXIT_OK
@@ -336,9 +368,12 @@ def cmd_report(args: argparse.Namespace) -> int:
 
 def cmd_selftest(args: argparse.Namespace) -> int:
     import subprocess
-    runner = HERE.parent / "tests" / "run_tests.py"
+    runner = PACK_ROOT / "tests" / "run_tests.py"
     if not runner.exists():
-        return fail(f"selftest runner is missing: {runner}")
+        print("ghagent: selftest needs the source tree: tests/run_tests.py is not part of the "
+              f"installed package, so this copy cannot be self-tested. Clone {CLONE_URL} and run "
+              "`python tests/run_tests.py` from the clone.", file=sys.stderr)
+        return EXIT_USAGE
     proc = subprocess.run([sys.executable, str(runner), "--quiet"], capture_output=True, text=True,
                           encoding="utf-8", errors="replace")
     sys.stdout.write(proc.stdout)
@@ -460,6 +495,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    force_utf8_stdio()
     parser = build_parser()
     args = parser.parse_args(argv)
     try:

@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 PACK_NAME = "github-agent"
-PACK_VERSION = "1.1.0"
+PACK_VERSION = "1.2.0"
 
 EXIT_OK = 0
 EXIT_FAIL = 1
@@ -99,6 +99,28 @@ def write_text(path: Path, text: str) -> None:
             os.unlink(tmp)
 
 
+def force_utf8_stdio() -> None:
+    """Write stdout and stderr as UTF-8 even when they are redirected.
+
+    On Windows a redirected stream is encoded with the locale codec (cp1252, cp866,
+    cp1251), which cannot carry the arrows, ellipses and non-Latin scripts the reports
+    are made of: the command would die with UnicodeEncodeError instead of printing its
+    finding. PEP 528 already gives the console UTF-8, so only the redirected case needs
+    this. `backslashreplace` keeps the exit code and the rest of the report intact if a
+    stream still refuses a character. Every failure is swallowed on purpose: a stream
+    that cannot be reconfigured (bytes, a test harness, an already wrapped console) must
+    never turn a usable run into a crash.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="backslashreplace")
+        except (AttributeError, OSError, ValueError):
+            pass
+
+
 def iter_text_files(root: Path, *, suffix_set: set[str] | None = None):
     root = Path(root)
     suffixes = suffix_set if suffix_set is not None else TEXT_SUFFIXES
@@ -136,15 +158,24 @@ def strip_inline_markdown(text: str) -> str:
 
 
 def _anchor_keep(ch: str) -> bool:
+    """Letters, digits and combining marks survive; punctuation is dropped.
+
+    All three mark categories are kept, not only `Mn`: Devanagari vowel signs are
+    spacing combining marks (`Mc`), and dropping them turns `इंस्टॉलेशन` into
+    `इंस्टलेशन`, so a table-of-contents link to the heading stops resolving. GitHub
+    keeps the mark, so the anchor keeps it too.
+    """
     if ch in "-_ ":
         return True
     category = unicodedata.category(ch)
-    return category[0] in {"L", "N"} or category == "Mn"
+    return category[0] in {"L", "N", "M"}
 
 
 def slugify(heading: str) -> str:
     """Reproduce GitHub's heading anchor: lowercase, drop punctuation, spaces to hyphens.
 
+    Letters, digits and combining marks survive, so scripts that write a vowel as a
+    separate mark (Devanagari, Thai, Vietnamese) keep it exactly as GitHub renders it.
     Verified against a live repo TOC (em dash removal leaves a double hyphen).
     """
     text = strip_inline_markdown(heading).lower()

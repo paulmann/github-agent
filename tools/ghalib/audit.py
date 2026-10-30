@@ -252,6 +252,42 @@ def _primary_documents(root: Path, config: cfg.Config) -> list[Path]:
     return docs
 
 
+def _summary_after_h1(lines: list[str], start_index: int) -> str:
+    """First prose line after the H1, ignoring blank lines and HTML comments.
+
+    A block of `<!-- ... -->` comments is invisible to a reader, so it cannot be the
+    summary: the i18n switcher marker sits directly after the H1 in the translated
+    READMEs. Comment-only blocks are skipped; a comment followed by prose on the same
+    line leaves the prose behind.
+    """
+    in_comment = False
+    for raw in lines[start_index:]:
+        index = 0
+        while index < len(raw):
+            if in_comment:
+                close = raw.find("-->", index)
+                if close == -1:
+                    index = len(raw)
+                    break
+                in_comment = False
+                index = close + 3
+                continue
+            start = raw.find("<!--", index)
+            candidate = raw[index:len(raw) if start == -1 else start].strip()
+            if candidate:
+                return candidate
+            if start == -1:
+                index = len(raw)
+                break
+            close = raw.find("-->", start + 4)
+            if close == -1:
+                in_comment = True
+                index = len(raw)
+                break
+            index = close + 3
+    return ""
+
+
 def _audit_readme(path: Path, root: Path, report: Report) -> list[Item]:
     relative = rel(path, root)
     text, _ = read_text(path)
@@ -277,8 +313,7 @@ def _audit_readme(path: Path, root: Path, report: Report) -> list[Item]:
     items.append(item)
 
     item = Item(ident="readme.summary", title="one-paragraph summary after the title", weight=6)
-    body = [raw for raw in lines[h1[0].line:] if raw.strip()] if h1 else []
-    summary = body[0].strip() if body else ""
+    summary = _summary_after_h1(lines, h1[0].line) if h1 else ""
     if summary and not summary.startswith(("#", "!", "[![", "|", ">", "<")):
         item.status = "pass"
         item.detail = summary[:80]

@@ -1,0 +1,36 @@
+# Version control and history
+.git
+.gitignore
+.gitattributes
+
+# Build outputs
+dist
+build
+*.egg-info
+*.whl
+*.tar.gz
+
+# Caches and generated state
+**/__pycache__
+**/*.py[cod]
+.ghagent
+.install.json
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Virtual environments
+.venv
+venv
+env
+
+# Local reports
+AUDIT.md
+report.md
+audit.json
+
+# Editors and OS
+.vscode
+.idea
+Thumbs.db
+desktop.ini

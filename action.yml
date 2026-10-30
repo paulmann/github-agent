@@ -1,0 +1,74 @@
+name: github-agent
+description: Audit a repository's documentation, metadata and changelog with ghagent.
+author: paulmann
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  command:
+    description: >-
+      Arguments passed to ghagent. The default audits the repository and requires a score
+      of 80 or higher.
+    required: false
+    default: audit . --min-score 80
+  min-score:
+    description: >-
+      Minimum audit score. Applied only when `command` runs `audit` without an explicit
+      `--min-score`; the default command already carries the flag.
+    required: false
+    default: "80"
+  working-directory:
+    description: Directory to run ghagent in, relative to the repository root.
+    required: false
+    default: "."
+  python-version:
+    description: Python version used to run ghagent.
+    required: false
+    default: "3.13"
+  github-token:
+    description: >-
+      Token exported as GITHUB_TOKEN so remote commands (`audit --repo`,
+      `meta apply`) can authenticate. The default is the workflow's own token.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install github-agent from this action checkout
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+        python -m pip install --disable-pip-version-check --no-input "$ACTION_PATH"
+
+    - name: Run ghagent
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_COMMAND: ${{ inputs.command }}
+        INPUT_MIN_SCORE: ${{ inputs.min-score }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        cd "$GITHUB_WORKSPACE/$INPUT_WORKING_DIRECTORY"
+        args="$INPUT_COMMAND"
+        case "$args" in
+          audit*)
+            case "$args" in
+              *--min-score*) ;;
+              *) args="$args --min-score $INPUT_MIN_SCORE" ;;
+            esac
+            ;;
+        esac
+        echo "+ ghagent $args"
+        # Word splitting is intended: the input is a command line, not one argument.
+        # shellcheck disable=SC2086
+        ghagent $args

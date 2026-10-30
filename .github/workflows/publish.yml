@@ -1,0 +1,70 @@
+name: Publish
+
+# Manual only, on purpose: PyPI Trusted Publishing must be configured for this repository
+# first. Once it is, the `workflow_dispatch` trigger can be extended with
+#
+#   release:
+#     types: [published]
+#
+# and the `if:` guard on the publish job removed. Until then a release-triggered job would
+# fail red: no trusted publisher, no OIDC exchange, no upload.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type "publish" to upload the built distributions to PyPI.
+        required: true
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and check distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Build sdist and wheel
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check build twine
+          python -m build
+
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.confirm == 'publish'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/github-agent
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        # Pinned release, not a moving tag: the uploader holds the OIDC token.
+        uses: pypa/gh-action-pypi-publish@v1.14.3
+        with:
+          print-hash: true

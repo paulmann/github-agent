@@ -59,3 +59,96 @@ jobs:
 
       - name: No BOM, no CRLF, no machine paths
         run: python tools/ghagent.py privacy --root .
+
+  package:
+    name: Package (sdist, wheel, clean install)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Build sdist and wheel
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check build twine
+          python -m build
+
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Version, wheel layout and sdist completeness
+        run: |
+          set -euo pipefail
+          EXPECTED_VERSION=$(python - <<'PY'
+          import pathlib
+          import re
+
+          text = pathlib.Path("tools/ghalib/util.py").read_text(encoding="utf-8")
+          print(re.search(r'^PACK_VERSION = "([^"]+)"', text, re.M).group(1))
+          PY
+          )
+          echo "expected version: $EXPECTED_VERSION"
+          test -f "dist/github_agent-${EXPECTED_VERSION}-py3-none-any.whl"
+          test -f "dist/github_agent-${EXPECTED_VERSION}.tar.gz"
+
+          python -m zipfile -l dist/*.whl | tee wheel-contents.txt
+          grep -q '^ghagent.py' wheel-contents.txt
+          grep -q '^ghalib/' wheel-contents.txt
+          if grep -q '^tools/' wheel-contents.txt; then
+            echo "::error::the wheel installs a top-level tools package"
+            exit 1
+          fi
+
+          python -m tarfile -l dist/*.tar.gz | tee sdist-contents.txt
+          for path in action.yml Dockerfile pyproject.toml tools/ghagent.py tests/run_tests.py \
+                      skills reference docs wiki assets; do
+            grep -q "/$path" sdist-contents.txt || {
+              echo "::error::the sdist is missing $path"
+              exit 1
+            }
+          done
+
+      - name: No third-party runtime dependency
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import email
+          import glob
+          import zipfile
+
+          wheel = glob.glob("dist/*.whl")[0]
+          with zipfile.ZipFile(wheel) as archive:
+              name = next(n for n in archive.namelist() if n.endswith(".dist-info/METADATA"))
+              metadata = email.message_from_bytes(archive.read(name))
+          requires = metadata.get_all("Requires-Dist") or []
+          print("Requires-Dist:", requires or "none")
+          unexpected = [item for item in requires if "extra ==" not in item]
+          if unexpected:
+              raise SystemExit(f"runtime dependencies found: {unexpected}")
+          PY
+
+      - name: Install the wheel in a clean virtual environment
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/pkg-venv"
+          "$RUNNER_TEMP/pkg-venv/bin/python" -m pip install --disable-pip-version-check dist/*.whl
+          "$RUNNER_TEMP/pkg-venv/bin/python" -m pip list
+          EXPECTED_VERSION=$(python - <<'PY'
+          import pathlib
+          import re
+
+          text = pathlib.Path("tools/ghalib/util.py").read_text(encoding="utf-8")
+          print(re.search(r'^PACK_VERSION = "([^"]+)"', text, re.M).group(1))
+          PY
+          )
+          test "$("$RUNNER_TEMP/pkg-venv/bin/ghagent" --version)" = "github-agent $EXPECTED_VERSION"
+
+      - name: Smoke-test the installed CLI on this checkout
+        run: |
+          set -euo pipefail
+          VENV="$RUNNER_TEMP/pkg-venv"
+          "$VENV/bin/ghagent" doc --root .
+          "$VENV/bin/ghagent" audit . --min-score 80

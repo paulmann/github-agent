@@ -1,0 +1,50 @@
+# pre-commit hooks for github-agent.
+#
+# Install once:
+#
+#   pip install pre-commit
+#   # .pre-commit-config.yaml in the consuming repository:
+#   repos:
+#     - repo: https://github.com/paulmann/github-agent
+#       rev: v1.2.0
+#       hooks:
+#         - id: ghagent-doc
+#         - id: ghagent-audit
+#         - id: ghagent-privacy
+#         - id: ghagent-changelog
+#
+# `language: python` makes pre-commit build the wheel from the tagged revision and expose
+# the `ghagent` console script; no separate installation step is needed.
+
+- id: ghagent-doc
+  name: ghagent doc
+  description: Markdown structure, links, anchors, tables and table-of-contents checks.
+  entry: ghagent doc --root .
+  language: python
+  types_or: [markdown]
+  pass_filenames: false
+  require_serial: true
+
+- id: ghagent-audit
+  name: ghagent audit
+  description: Repository hygiene and file contracts; fails below the score threshold.
+  entry: ghagent audit . --min-score 80
+  language: python
+  pass_filenames: false
+  always_run: true
+
+- id: ghagent-privacy
+  name: ghagent privacy
+  description: Secrets, absolute machine paths and personal e-mail addresses in the tree.
+  entry: ghagent privacy --root .
+  language: python
+  pass_filenames: false
+  always_run: true
+
+- id: ghagent-changelog
+  name: ghagent changelog
+  description: Keep a Changelog 2.0.0 conformance of CHANGELOG.md.
+  entry: ghagent changelog check
+  language: python
+  files: ^CHANGELOG\.md$
+  pass_filenames: false

@@ -1,13 +1,13 @@
 name: Publish
 
-# Manual only, on purpose: PyPI Trusted Publishing must be configured for this repository
-# first. Once it is, the `workflow_dispatch` trigger can be extended with
+# Manual only, on purpose: a publication is a human decision, and the trigger is flipped to
+# `release: published` only after the first successful upload.
 #
-#   release:
-#     types: [published]
-#
-# and the `if:` guard on the publish job removed. Until then a release-triggered job would
-# fail red: no trusted publisher, no OIDC exchange, no upload.
+# Authentication, in order of preference:
+#   1. Trusted Publishing (OIDC): add a trusted publisher for this project on PyPI, then delete
+#      the `password:` line below and the PYPI_API_TOKEN secret. Nothing long-lived is stored.
+#   2. API token: the PYPI_API_TOKEN repository secret (used here until the trusted publisher is
+#      configured). Rotate or revoke it after switching to OIDC.
 on:
   workflow_dispatch:
     inputs:
@@ -64,7 +64,10 @@ jobs:
           path: dist/
 
       - name: Publish
-        # Pinned release, not a moving tag: the uploader holds the OIDC token.
+        # Pinned release, not a moving tag: the uploader holds the credential.
+        # `skip-existing` makes a retry after a partial network failure idempotent.
         uses: pypa/gh-action-pypi-publish@v1.14.3
         with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
           print-hash: true

@@ -6,13 +6,16 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-30
+
 ### Changed
 
-- `github-agent-cli` 1.2.1 is published on PyPI (2026-10-30). The six READMEs carry the PyPI badge
-  and state that the wheel ships the CLI only, while the pack comes from the clone;
-  `docs/PACKAGING.md` records the published hashes, why the PyPI files differ from the GitHub
-  release assets, how the first upload was authenticated and how to move the workflow to OIDC and
-  drop the long-lived token.
+- Publication is event-driven: publishing a GitHub release uploads that tag to PyPI
+  (`release: types: [published]`). The manual `workflow_dispatch` path stays as an escape hatch and
+  still requires the `publish` confirmation word. `skip-existing: true` makes a re-run of an
+  already published version a no-op instead of a red job.
+- `docs/PACKAGING.md` documents both authentication paths and the exact command sequence for a
+  release, so the next release needs no repository archaeology.
 
 ## [1.2.1] - 2026-10-30
 
@@ -132,7 +135,8 @@ All notable changes to this project are documented here. The format is
 
 - The pack ships without tokens, absolute machine paths or personal addresses; the privacy rule fails the build if one appears, and a self-test enforces it on the pack itself.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/paulmann/github-agent/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/paulmann/github-agent/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/paulmann/github-agent/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/paulmann/github-agent/compare/v1.0.0...v1.1.0

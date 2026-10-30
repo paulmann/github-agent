@@ -73,7 +73,7 @@ pip install github-agent-cli            # pip into the active environment
 ghagent --version
 ```
 
-> **Published on PyPI.** `github-agent-cli` 1.2.1 has been available since 2026-10-30:
+> **Published on PyPI.** `github-agent-cli` 1.2.2 has been available since 2026-10-30:
 > <https://pypi.org/project/github-agent-cli/>. The wheel ships the CLI only; the pack
 > (skills, tests, reference, wiki sources) comes from the clone below.
 
@@ -126,7 +126,7 @@ release and works as soon as the tag exists:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.1    # pin the release tag
+- uses: paulmann/github-agent@v1.2.2    # pin the release tag
   with:
     command: audit .
     min-score: "80"
@@ -153,7 +153,7 @@ The repository is also a pre-commit hook source; the hooks are `ghagent-doc`,
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.1     # placeholder: pin the release tag you decide to trust
+    rev: v1.2.2     # placeholder: pin the release tag you decide to trust
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -171,7 +171,7 @@ tag, because pre-commit builds the tool from the tagged tree.
 After any install, one command answers whether the CLI is the released build:
 
 ```bash
-ghagent --version     # prints the version, for example github-agent 1.2.1
+ghagent --version     # prints the version, for example github-agent 1.2.2
 ghagent audit .       # 0 clean, 1 findings at error level, 2 usage or environment problem
 ```
 
@@ -238,7 +238,7 @@ The CLI has 13 commands; the table names the ones used every day. The rest (`rep
 
 ## In numbers
 
-Measured in this tree on 2026-10-30 against version 1.2.1:
+Measured in this tree on 2026-10-30 against version 1.2.2:
 
 | Surface | Value | Measurement source |
 |---|---:|---|

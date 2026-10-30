@@ -14,7 +14,7 @@
 
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.1    # placeholder: pin the release tag you trust
+    rev: v1.2.2    # placeholder: pin the release tag you trust
     hooks:
       # Markdown structure, links, anchors, tables and table of contents.
       # Runs only when a markdown file is part of the change.

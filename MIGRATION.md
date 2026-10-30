@@ -36,7 +36,7 @@ CLI only:
 ```bash
 uv tool install --upgrade github-agent     # or: pipx upgrade github-agent
 pip install --upgrade github-agent         # pip into the active environment
-ghagent --version                          # must print: github-agent 1.2.1
+ghagent --version                          # must print: github-agent 1.2.2
 ```
 
 From a clone, for the pack:
@@ -142,7 +142,7 @@ agent request.
 | `install` exits `2` with "needs the source tree" | same | run `install` from a clone, not from the wheel |
 | `agents.md-length` warns after upgrading | the file is over 120 lines | move detail into `docs/` and link it from the map |
 | `ghagent --version` prints 1.1.0 after an upgrade | an older copy is first in `PATH`, or a virtual environment is active | reinstall in the environment that provides `ghagent`; check `pip list` |
-| a pre-commit hook cannot find `ghagent` | the hook builds its own environment | pin the hook repository to `rev: v1.2.1`; no global install is needed |
+| a pre-commit hook cannot find `ghagent` | the hook builds its own environment | pin the hook repository to `rev: v1.2.2`; no global install is needed |
 
 Related: the rule catalogue is in [docs/RULES.md](docs/RULES.md), the packaging detail is in
 [docs/PACKAGING.md](docs/PACKAGING.md), and the release history is in [CHANGELOG.md](CHANGELOG.md).

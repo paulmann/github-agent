@@ -27,7 +27,7 @@
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
 pip install -e .
-ghagent --version           # github-agent 1.2.1
+ghagent --version           # github-agent 1.2.2
 ghagent selftest            # должно напечатать PASS
 python tests/run_tests.py   # тот же набор тестов, полный вывод
 ```

@@ -15,7 +15,7 @@ Python nor a clone on the host.
 uv tool install github-agent-cli        # isolated tool environment
 pipx install github-agent-cli           # isolated virtual environment
 pip install github-agent-cli            # into the active environment
-ghagent --version                   # github-agent 1.2.1
+ghagent --version                   # github-agent 1.2.2
 ```
 
 The console script is `ghagent`; the distribution is `github-agent`. The wheel ships the CLI
@@ -60,7 +60,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 The working directory is `/repo` and the entry point is `ghagent`. No registry image is
-published as part of 1.2.1; the tag is a local convention. The image contains the CLI only, so
+published as part of 1.2.2; the tag is a local convention. The image contains the CLI only, so
 `selftest` and `install` exit `2` there as well. Details: [Docker example](https://github.com/paulmann/github-agent/blob/main/examples/docker.md).
 
 ## GitHub Action
@@ -70,7 +70,7 @@ exists:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.1
+- uses: paulmann/github-agent@v1.2.2
   with:
     command: audit .
     min-score: "80"

@@ -27,7 +27,7 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 本工具包为上述每一处都建立了可验证的约定，并把这项工作压缩到一条命令。它不写营销文案，
 也不编造数字：它检查人写下的内容，并拒绝发布已经损坏的东西。
 
-> **文档状态。** 本 README 中的每个数字都在 2026-10-30 针对 1.2.1 版本、用表格中列出的命令
+> **文档状态。** 本 README 中的每个数字都在 2026-10-30 针对 1.2.2 版本、用表格中列出的命令
 > 实测得出。较长的指南放在
 > [维基](https://github.com/paulmann/github-agent/wiki) 与 [`docs/`](docs/IMPORT.md) 中；面向
 > 智能体的协议是 [`AGENTS.md`](AGENTS.md)，打包与迁移说明见
@@ -70,7 +70,7 @@ pip install github-agent-cli            # pip 装入当前环境
 ghagent --version
 ```
 
-> **已发布到 PyPI。** `github-agent-cli` 1.2.1 自 2026-10-30 起可用:
+> **已发布到 PyPI。** `github-agent-cli` 1.2.2 自 2026-10-30 起可用:
 > <https://pypi.org/project/github-agent-cli/>。wheel 只包含 CLI；完整包
 > (skills、tests、reference、wiki 源) 从下方克隆安装。
 
@@ -110,7 +110,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 在 Windows PowerShell 中，同样的挂载写作 `-v "${PWD}:/repo"`。入口点是 `ghagent`，因此镜像名
-之后的第一个参数就是命令。1.2.1 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
+之后的第一个参数就是命令。1.2.2 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
 约定。参见 [examples/docker.md](examples/docker.md)。
 
 ### GitHub Action
@@ -119,7 +119,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.1    # 固定发布标签
+- uses: paulmann/github-agent@v1.2.2    # 固定发布标签
   with:
     command: audit .
     min-score: "80"
@@ -145,7 +145,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.1     # 占位符：固定你信任的发布标签
+    rev: v1.2.2     # 占位符：固定你信任的发布标签
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -163,7 +163,7 @@ repos:
 安装之后，一条命令即可回答 CLI 是否为已发布的构建：
 
 ```bash
-ghagent --version     # 打印版本，例如 github-agent 1.2.1
+ghagent --version     # 打印版本，例如 github-agent 1.2.2
 ghagent audit .       # 0 干净，1 有错误级发现，2 用法或环境问题
 ```
 
@@ -228,7 +228,7 @@ CLI 共有 13 条命令；表格列出的是日常使用的那几条。其余命
 
 ## 数据一览
 
-在本仓库中于 2026-10-30 针对 1.2.1 版本实测：
+在本仓库中于 2026-10-30 针对 1.2.2 版本实测：
 
 | 项目 | 数值 | 测量来源 |
 |---|---:|---|

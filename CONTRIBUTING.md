@@ -27,7 +27,7 @@ for the map, [docs/RULES.md](docs/RULES.md) for the rule catalogue and
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
 pip install -e .
-ghagent --version           # github-agent 1.2.1
+ghagent --version           # github-agent 1.2.2
 ghagent selftest            # must print PASS
 python tests/run_tests.py   # the same suite, full output
 ```

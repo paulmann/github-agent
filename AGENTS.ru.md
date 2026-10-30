@@ -26,7 +26,7 @@ uv tool install github-agent-cli            # рекомендуется: изо
 pipx install github-agent-cli               # альтернатива
 pip install github-agent-cli                # Python 3.11+
 pip install "github-agent-cli[png]"         # необязательный Pillow: только PNG
-ghagent --version                       # github-agent 1.2.1
+ghagent --version                       # github-agent 1.2.2
 ```
 
 Wheel содержит только CLI. Пакет — `skills/`, `tools/`, `tests/`, `reference/`, `wiki/`,

@@ -30,7 +30,7 @@ Dieses Paket legt auf jede dieser Stellen einen prüfbaren Vertrag und reduziert
 einen Befehl. Es schreibt keine Marketingtexte und erfindet keine Zahlen: Es prüft, was ein
 Mensch geschrieben hat, und veröffentlicht nicht, was defekt ist.
 
-> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-10-30 gegen Version 1.2.1
+> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-10-30 gegen Version 1.2.2
 > mit den in der Tabelle genannten Befehlen gemessen. Ausführliche Anleitungen stehen im
 > [Wiki](https://github.com/paulmann/github-agent/wiki) und in [`docs/`](docs/IMPORT.md); das
 > Protokoll für Agenten ist [`AGENTS.md`](AGENTS.md), die Hinweise zu Paketierung und Migration
@@ -75,7 +75,7 @@ pip install github-agent-cli            # pip in die aktive Umgebung
 ghagent --version
 ```
 
-> **Auf PyPI veröffentlicht.** `github-agent-cli` 1.2.1 ist seit dem 2026-10-30 verfügbar:
+> **Auf PyPI veröffentlicht.** `github-agent-cli` 1.2.2 ist seit dem 2026-10-30 verfügbar:
 > <https://pypi.org/project/github-agent-cli/>. Das Wheel enthält nur die CLI; das Paket
 > (Skills, Tests, Vorlagen, Wiki-Quellen) kommt aus dem Klon weiter unten.
 
@@ -118,7 +118,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 Unter Windows PowerShell lautet derselbe Mount `-v "${PWD}:/repo"`. Der Einstiegspunkt ist
-`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.2.1 wird
+`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.2.2 wird
 kein Registry-Image veröffentlicht, und die CI baut den Container nicht: Der Tag ist eine lokale
 Konvention. Siehe [examples/docker.md](examples/docker.md).
 
@@ -129,7 +129,7 @@ von einer PyPI-Veröffentlichung ab und funktioniert, sobald der Tag existiert:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.1    # den Release-Tag festlegen
+- uses: paulmann/github-agent@v1.2.2    # den Release-Tag festlegen
   with:
     command: audit .
     min-score: "80"
@@ -157,7 +157,7 @@ Das Repository ist zugleich eine Quelle für pre-commit-Hooks; die Hooks heißen
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.1     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
+    rev: v1.2.2     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -175,7 +175,7 @@ einen veröffentlichten Tag, weil pre-commit das Werkzeug aus dem getaggten Baum
 Nach jeder Installation beantwortet ein Befehl, ob die CLI der freigegebene Build ist:
 
 ```bash
-ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.2.1
+ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.2.2
 ghagent audit .       # 0 sauber, 1 Befunde auf Fehlerstufe, 2 Aufruf- oder Umgebungsproblem
 ```
 
@@ -243,7 +243,7 @@ Die CLI hat 13 Befehle; die Tabelle nennt die jeden Tag genutzten. Die übrigen 
 
 ## In Zahlen
 
-In diesem Baum am 2026-10-30 gegen Version 1.2.1 gemessen:
+In diesem Baum am 2026-10-30 gegen Version 1.2.2 gemessen:
 
 | Messgröße | Wert | Quelle der Messung |
 |---|---:|---|

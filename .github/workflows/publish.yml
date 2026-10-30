@@ -1,14 +1,18 @@
 name: Publish
 
-# Manual only, on purpose: a publication is a human decision, and the trigger is flipped to
-# `release: published` only after the first successful upload.
+# Publication is event-driven: publishing a GitHub release uploads that tag to PyPI. The manual
+# `workflow_dispatch` path stays as the escape hatch for a re-run, and needs the confirmation word.
 #
 # Authentication, in order of preference:
 #   1. Trusted Publishing (OIDC): add a trusted publisher for this project on PyPI, then delete
 #      the `password:` line below and the PYPI_API_TOKEN secret. Nothing long-lived is stored.
 #   2. API token: the PYPI_API_TOKEN repository secret (used here until the trusted publisher is
 #      configured). Rotate or revoke it after switching to OIDC.
+#
+# `skip-existing: true` makes a re-run of an already uploaded version a no-op instead of a red job.
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       confirm:
@@ -49,7 +53,7 @@ jobs:
   publish:
     name: Publish to PyPI
     needs: build
-    if: github.event_name == 'workflow_dispatch' && inputs.confirm == 'publish'
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.confirm == 'publish')
     runs-on: ubuntu-latest
     environment:
       name: pypi

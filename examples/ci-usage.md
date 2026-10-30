@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Score the repository
-        uses: paulmann/github-agent@v1.2.1
+        uses: paulmann/github-agent@v1.2.2
         with:
           command: audit .
           min-score: "80"
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Markdown, links, anchors, tables
-        uses: paulmann/github-agent@v1.2.1
+        uses: paulmann/github-agent@v1.2.2
         with:
           command: doc --root .
 ```
@@ -61,7 +61,7 @@ scope the command needs:
 
 ```yaml
       - name: Audit GitHub metadata
-        uses: paulmann/github-agent@v1.2.1
+        uses: paulmann/github-agent@v1.2.2
         with:
           command: audit --repo ${{ github.repository }} --http
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -98,7 +98,7 @@ is `/repo`, so the repository under test is mounted there:
       - uses: actions/checkout@v7
         with:
           repository: paulmann/github-agent
-          ref: v1.2.1
+          ref: v1.2.2
           path: ghagent-src
 
       - name: Build the image
@@ -108,5 +108,5 @@ is `/repo`, so the repository under test is mounted there:
         run: docker run --rm -v "$PWD/workspace:/repo" ghagent audit .
 ```
 
-No registry image is published as part of 1.2.1; the build step is deliberate. See
+No registry image is published as part of 1.2.2; the build step is deliberate. See
 [docker.md](docker.md) for the local commands and the mount rules.

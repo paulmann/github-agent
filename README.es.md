@@ -74,7 +74,7 @@ pip install github-agent-cli            # pip en el entorno activo
 ghagent --version
 ```
 
-> **Publicado en PyPI.** `github-agent-cli` 1.2.1 está disponible desde el 2026-10-30:
+> **Publicado en PyPI.** `github-agent-cli` 1.2.2 está disponible desde el 2026-10-30:
 > <https://pypi.org/project/github-agent-cli/>. La wheel solo contiene la CLI; el paquete
 > (skills, tests, reference, fuentes de la wiki) viene del clon de más abajo.
 
@@ -117,7 +117,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 En Windows PowerShell el mismo montaje es `-v "${PWD}:/repo"`. El punto de entrada es `ghagent`,
 así que el primer argumento tras el nombre de la imagen es la orden. No se publica ninguna imagen
-de registro como parte de 1.2.1 y la CI no construye el contenedor: la etiqueta es una convención
+de registro como parte de 1.2.2 y la CI no construye el contenedor: la etiqueta es una convención
 local. Véase [examples/docker.md](examples/docker.md).
 
 ### GitHub Action
@@ -127,7 +127,7 @@ publicación en PyPI y funciona en cuanto existe la etiqueta:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.1    # fije la etiqueta de la versión
+- uses: paulmann/github-agent@v1.2.2    # fije la etiqueta de la versión
   with:
     command: audit .
     min-score: "80"
@@ -155,7 +155,7 @@ El repositorio también es fuente de hooks de pre-commit; los hooks son `ghagent
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.1     # marcador: fije la etiqueta de versión en la que confíe
+    rev: v1.2.2     # marcador: fije la etiqueta de versión en la que confíe
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -173,7 +173,7 @@ etiqueta publicada, porque pre-commit construye la herramienta desde el árbol e
 Tras cualquier instalación, una orden responde si la CLI es la compilación publicada:
 
 ```bash
-ghagent --version     # imprime la versión, por ejemplo github-agent 1.2.1
+ghagent --version     # imprime la versión, por ejemplo github-agent 1.2.2
 ghagent audit .       # 0 limpio, 1 hallazgos de nivel de error, 2 problema de uso o de entorno
 ```
 
@@ -240,7 +240,7 @@ La CLI tiene 13 órdenes; la tabla nombra las de uso diario. El resto (`report`,
 
 ## En cifras
 
-Medido en este árbol el 2026-10-30 sobre la versión 1.2.1:
+Medido en este árbol el 2026-10-30 sobre la versión 1.2.2:
 
 | Ámbito | Valor | Fuente de la medición |
 |---|---:|---|

@@ -2,7 +2,7 @@
 
 The repository ships a `Dockerfile` that builds the wheel from the build context and installs it
 into a clean runtime image. No published copy of `github-agent` is needed: the checked-out source
-is the source of truth. No registry image is published as part of 1.2.1, and CI does not build
+is the source of truth. No registry image is published as part of 1.2.2, and CI does not build
 the container, so the tag below is a local convention.
 
 ## Build

@@ -6,12 +6,16 @@
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-30
+
 ### Изменено
 
-- `github-agent-cli` 1.2.1 опубликован на PyPI (2026-10-30). Шесть README несут бейдж PyPI и
-  прямо говорят, что колесо содержит только CLI, а пакет ставится из клона; `docs/PACKAGING.md`
-  фиксирует опубликованные хэши, причину расхождения с ассетами GitHub-релиза, способ
-  аутентификации первой загрузки и порядок перехода на OIDC с удалением долгоживущего токена.
+- Публикация привязана к событию: публикация GitHub-релиза выгружает этот тег на PyPI
+  (`release: types: [published]`). Ручной `workflow_dispatch` остаётся запасным путём и по-прежнему
+  требует подтверждающего слова `publish`. `skip-existing: true` делает повторный прогон для уже
+  опубликованной версии тихим no-op, а не красным job.
+- `docs/PACKAGING.md` описывает оба способа аутентификации и точную последовательность релиза,
+  чтобы следующий релиз не требовал раскопок в репозитории.
 
 ## [1.2.1] - 2026-10-30
 
@@ -131,7 +135,8 @@
 
 - Пакет поставляется без токенов, абсолютных путей машины и личных адресов; правило приватности роняет сборку, если такое появится, а самопроверка следит за самим пакетом.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/paulmann/github-agent/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/paulmann/github-agent/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/paulmann/github-agent/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/paulmann/github-agent/compare/v1.0.0...v1.1.0

@@ -4,13 +4,14 @@ How `github-agent` is built, installed, published and consumed. The project has 
 contract that the packaging exists to protect: **zero third-party dependencies**. The wheel is
 the CLI plus its library, the sdist is the complete pack, and the CLI itself proves both.
 
-Measured with CPython 3.14.7 and `pip` 26.2.1 on the tree at version 1.2.0. Commands are
+Measured with CPython 3.14.7 and `pip` 26.2.1 on the tree at version 1.2.1. Commands are
 written for a POSIX shell; the PowerShell equivalents are in
 [scripts/build_and_check.ps1](../scripts/build_and_check.ps1).
 
 ## Contents
 
 - [What ships](#what-ships)
+- [Four names, one project](#four-names-one-project)
 - [One version, one source](#one-version-one-source)
 - [Build locally](#build-locally)
 - [Automated build check](#automated-build-check)
@@ -30,8 +31,8 @@ written for a POSIX shell; the PowerShell equivalents are in
 
 | Artefact | Built from | Contains | Audience |
 |---|---|---|---|
-| Wheel `github_agent-1.2.0-py3-none-any.whl` | [pyproject.toml](../pyproject.toml) | `ghagent.py`, `ghalib/`, dist-info | `pip`, `uv`, `pipx` users |
-| sdist `github_agent-1.2.0.tar.gz` | the same tree | the whole pack: `tools/`, `tests/`, `skills/`, `reference/`, `docs/`, `wiki/`, `assets/`, `.github/`, packaging files | pack installation, reproducible source |
+| Wheel `github_agent_cli-1.2.1-py3-none-any.whl` | [pyproject.toml](../pyproject.toml) | `ghagent.py`, `ghalib/`, dist-info | `pip`, `uv`, `pipx` users |
+| sdist `github_agent_cli-1.2.1.tar.gz` | the same tree | the whole pack: `tools/`, `tests/`, `skills/`, `reference/`, `docs/`, `wiki/`, `assets/`, `.github/`, packaging files | pack installation, reproducible source |
 | Composite Action [action.yml](../action.yml) | the tagged repository | installs the action checkout with `pip`, then runs `ghagent` | CI workflows |
 | Container image [Dockerfile](../Dockerfile) | the build context | the wheel in `python:3.13-slim`, `ENTRYPOINT ghagent` | local containers |
 | pre-commit hooks [.pre-commit-hooks.yaml](../.pre-commit-hooks.yaml) | the tagged repository | four hooks, `language: python` | contributors |
@@ -40,6 +41,22 @@ written for a POSIX shell; the PowerShell equivalents are in
 dependency is the `png` extra (Pillow) and it changes one thing: PNG output of
 `ghagent assets render`.
 
+## Four names, one project
+
+The distribution name is not the product name. A user meets four different identifiers:
+
+| Name | Value | Where it is used |
+|---|---|---|
+| Distribution | `github-agent-cli` | PyPI URL, `pip install`, wheel and sdist filenames |
+| Console script | `ghagent` | the command in a shell, in CI, in pre-commit hooks |
+| Library package | `ghalib` | `from ghalib import ...`, `ghagent.py` imports |
+| Repository and product | `github-agent` | GitHub, README, `ghagent --version` prints `github-agent X.Y.Z` |
+
+Why they differ: `github-agent` on PyPI belongs to an unrelated project ("GitHub Agent for MCP",
+version 2.4.9 at the time of writing) and `ghagent` belongs to another one ("A GitHub Explorer",
+0.0.1). A name is claimed once and cannot be reused, so this project publishes under
+`github-agent-cli` and keeps the product, the command and the library names unchanged. This is a
+distribution fact, not a rename of the project: `CHANGELOG.md` records it under 1.2.1.
 ## One version, one source
 
 `tools/ghalib/util.py` holds the only version literal in the tree:
@@ -68,10 +85,10 @@ python -m twine check dist/*
 Measured output of the last verified build:
 
 ```text
-Successfully built github_agent-1.2.0.tar.gz and github_agent-1.2.0-py3-none-any.whl
+Successfully built github_agent_cli-1.2.1.tar.gz and github_agent_cli-1.2.1-py3-none-any.whl
 ...
-Checking dist/github_agent-1.2.0-py3-none-any.whl: PASSED
-Checking dist/github_agent-1.2.0.tar.gz: PASSED
+Checking dist/github_agent_cli-1.2.1-py3-none-any.whl: PASSED
+Checking dist/github_agent_cli-1.2.1.tar.gz: PASSED
 ```
 
 `python -m build` uses build isolation: it downloads `hatchling>=1.27` (the declared build
@@ -107,11 +124,11 @@ request that breaks packaging is red before it merges.
 ## Install
 
 ```bash
-uv tool install github-agent            # isolated CLI, recommended
-pipx install github-agent               # isolated CLI, alternative
-pip install github-agent                # into the current environment
-pip install "github-agent[png]"         # plus Pillow, for PNG banner output
-ghagent --version                       # github-agent 1.2.0
+uv tool install github-agent-cli            # isolated CLI, recommended
+pipx install github-agent-cli               # isolated CLI, alternative
+pip install github-agent-cli                # into the current environment
+pip install "github-agent-cli[png]"         # plus Pillow, for PNG banner output
+ghagent --version                       # github-agent 1.2.1
 ```
 
 These commands resolve from PyPI after the first publication; until then install the wheel
@@ -122,7 +139,7 @@ clean installation, measured in a fresh virtual environment:
 $ pip list
 Package      Version
 ------------ -------
-github-agent 1.2.0
+github-agent 1.2.1
 pip          26.2.1
 ```
 
@@ -142,7 +159,7 @@ have verified anything. The next section is that path.
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py --version       # github-agent 1.2.0
+python tools/ghagent.py --version       # github-agent 1.2.1
 python tools/ghagent.py selftest        # must print PASS
 python tools/ghagent.py install --profile harness --write
 ```
@@ -160,18 +177,18 @@ The wheel has 17 entries and no other top-level name:
 |---|---|
 | `ghagent.py` | the console-script target (`ghagent = "ghagent:main"`) |
 | `ghalib/` | 11 library modules, one small file each, standard library only |
-| `github_agent-1.2.0.dist-info/` | `METADATA`, `WHEEL`, `entry_points.txt`, `licenses/LICENSE`, `RECORD` |
+| `github_agent_cli-1.2.1.dist-info/` | `METADATA`, `WHEEL`, `entry_points.txt`, `licenses/LICENSE`, `RECORD` |
 
 `only-include` and `sources` in `pyproject.toml` strip the `tools/` prefix, so site-packages
 gets `ghagent.py` and `ghalib/` and never a generic `tools` package. The verification checks
 that absence explicitly.
 
-Key metadata lines from `github_agent-1.2.0.dist-info/METADATA`:
+Key metadata lines from `github_agent_cli-1.2.1.dist-info/METADATA`:
 
 ```text
 Metadata-Version: 2.5
 Name: github-agent
-Version: 1.2.0
+Version: 1.2.1
 Requires-Python: >=3.11
 License-Expression: MIT
 License-File: LICENSE
@@ -198,7 +215,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: paulmann/github-agent@v1.2.0
+      - uses: paulmann/github-agent@v1.2.1
         with:
           command: audit . --min-score 80
 ```
@@ -223,9 +240,9 @@ given.
 ## Docker image
 
 ```bash
-docker build -t ghagent:1.2.0 .
-docker run --rm ghagent:1.2.0 --version
-docker run --rm -v "$PWD:/repo" ghagent:1.2.0 audit . --min-score 80
+docker build -t ghagent:1.2.1 .
+docker run --rm ghagent:1.2.1 --version
+docker run --rm -v "$PWD:/repo" ghagent:1.2.1 audit . --min-score 80
 ```
 
 Two stages, both `python:3.13-slim`. The build stage runs `pip wheel` against the build
@@ -243,7 +260,7 @@ supported local path, not as a public image reference.
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.0
+    rev: v1.2.1
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -272,8 +289,8 @@ because each command examines a tree, not a list of changed files.
    `assets check`, `privacy --root .`, then `bash scripts/build_and_check.sh`.
 4. Commit on `main`, push, and watch CI until green; never tag a red commit.
 5. Create an annotated tag, then a GitHub release whose notes come from
-   `python tools/ghagent.py changelog notes X.Y.Z`; attach `dist/github_agent-X.Y.Z.tar.gz`,
-   `dist/github_agent-X.Y.Z-py3-none-any.whl` and `SHA256SUMS.txt`.
+   `python tools/ghagent.py changelog notes X.Y.Z`; attach `dist/github_agent_cli-X.Y.Z.tar.gz`,
+   `dist/github_agent_cli-X.Y.Z-py3-none-any.whl` and `SHA256SUMS.txt`.
 6. Download the assets again and compare their SHA-256 values with `SHA256SUMS.txt`; publish
    only after the comparison matches.
 7. Upload to PyPI deliberately, through the Publish workflow (next section), and verify the
@@ -315,7 +332,7 @@ or the wrong bytes.
 When the first PyPI release exists:
 
 - a formula belongs in a separate tap repository, with `url` pointing at the PyPI sdist and
-  `sha256` copied from `sha256sum dist/github_agent-X.Y.Z.tar.gz`;
+  `sha256` copied from `sha256sum dist/github_agent_cli-X.Y.Z.tar.gz`;
 - a Scoop manifest uses the release asset URL and its measured hash, with `checkver` and
   `autoupdate` reading the PyPI JSON API;
 - both gain a bump procedure that recomputes the hash after every release.

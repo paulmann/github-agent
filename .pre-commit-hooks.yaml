@@ -6,7 +6,7 @@
 #   # .pre-commit-config.yaml in the consuming repository:
 #   repos:
 #     - repo: https://github.com/paulmann/github-agent
-#       rev: v1.2.0
+#       rev: v1.2.1
 #       hooks:
 #         - id: ghagent-doc
 #         - id: ghagent-audit

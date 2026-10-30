@@ -1,5 +1,10 @@
 # Migration from 1.1.0 to 1.2.0
 
+> **1.2.1 note.** Behaviour did not change. The PyPI distribution is now `github-agent-cli`, because
+> `github-agent` and `ghagent` are taken on PyPI by unrelated projects. The console script is still
+> `ghagent` and `ghagent --version` still prints `github-agent X.Y.Z`; if you installed the wheel
+> manually, replace `pip install github-agent` with `pip install github-agent-cli`. Everything below
+> applies unchanged.
 This guide is for the owner of a repository that uses github-agent — either as a CLI, as a pack
 installed into an agent skill root, or as a checking step in CI. It records what moved, what
 changed meaning, and what needs an action. Version 1.2.0 does not break the 1.1.0 workflow: the
@@ -10,7 +15,7 @@ to migrate.
 
 | Area | 1.1.0 | 1.2.0 |
 |---|---|---|
-| Install | clone the repository, run `python tools/ghagent.py` | `uv tool install github-agent`, `pipx install github-agent` or `pip install github-agent`; console script `ghagent` |
+| Install | clone the repository, run `python tools/ghagent.py` | `uv tool install github-agent-cli`, `pipx install github-agent-cli` or `pip install github-agent-cli`; console script `ghagent` |
 | Source tree | the only way to run | unchanged: `python tools/ghagent.py <command>` still works and is what the pack's own docs use |
 | Pack installation | `install --profile … --write` from a clone | unchanged, still from a clone; the wheel ships the CLI only and refuses `install`/`selftest` with exit `2` |
 | Rule catalogue | inside a 296-line `AGENTS.md` | `AGENTS.md` is a map under 120 lines; the catalogue is [docs/RULES.md](docs/RULES.md) |
@@ -31,7 +36,7 @@ CLI only:
 ```bash
 uv tool install --upgrade github-agent     # or: pipx upgrade github-agent
 pip install --upgrade github-agent         # pip into the active environment
-ghagent --version                          # must print: github-agent 1.2.0
+ghagent --version                          # must print: github-agent 1.2.1
 ```
 
 From a clone, for the pack:
@@ -133,11 +138,11 @@ agent request.
 
 | Symptom | Cause | Action |
 |---|---|---|
-| `selftest` exits `2` right after `pip install github-agent` | the wheel ships the CLI only | clone the repository and run `python tools/ghagent.py selftest` from the clone |
+| `selftest` exits `2` right after `pip install github-agent-cli` | the wheel ships the CLI only | clone the repository and run `python tools/ghagent.py selftest` from the clone |
 | `install` exits `2` with "needs the source tree" | same | run `install` from a clone, not from the wheel |
 | `agents.md-length` warns after upgrading | the file is over 120 lines | move detail into `docs/` and link it from the map |
 | `ghagent --version` prints 1.1.0 after an upgrade | an older copy is first in `PATH`, or a virtual environment is active | reinstall in the environment that provides `ghagent`; check `pip list` |
-| a pre-commit hook cannot find `ghagent` | the hook builds its own environment | pin the hook repository to `rev: v1.2.0`; no global install is needed |
+| a pre-commit hook cannot find `ghagent` | the hook builds its own environment | pin the hook repository to `rev: v1.2.1`; no global install is needed |
 
 Related: the rule catalogue is in [docs/RULES.md](docs/RULES.md), the packaging detail is in
 [docs/PACKAGING.md](docs/PACKAGING.md), and the release history is in [CHANGELOG.md](CHANGELOG.md).

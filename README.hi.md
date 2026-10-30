@@ -28,7 +28,7 @@ CHANGELOG और समुदाय के अनुबंधों को अ�
 देता है। यह मार्केटिंग कॉपी नहीं लिखता और संख्याएँ नहीं गढ़ता: यह जाँचता है कि मनुष्य ने क्या
 लिखा, और जो टूटा है उसे प्रकाशित करने से मना कर देता है।
 
-> **दस्तावेज़ की स्थिति।** इस README का हर आँकड़ा 2026-10-30 को संस्करण 1.2.0 के विरुद्ध, तालिका
+> **दस्तावेज़ की स्थिति।** इस README का हर आँकड़ा 2026-10-30 को संस्करण 1.2.1 के विरुद्ध, तालिका
 > में नामित कमांडों से मापा गया। विस्तृत मार्गदर्शिकाएँ
 > [Wiki](https://github.com/paulmann/github-agent/wiki) और [`docs/`](docs/IMPORT.md) में रहती हैं;
 > एजेंटों के लिए प्रोटोकॉल [`AGENTS.md`](AGENTS.md) है, और पैकेजिंग व माइग्रेशन के नोट
@@ -65,9 +65,9 @@ Python 3.11 या नया चाहिए; CI सुइट को 3.11 और
 ### पैकेज प्रबंधक
 
 ```bash
-uv tool install github-agent        # uv, अलग टूल वातावरण
-pipx install github-agent           # pipx, अलग आभासी वातावरण
-pip install github-agent            # सक्रिय वातावरण में pip
+uv tool install github-agent-cli        # uv, अलग टूल वातावरण
+pipx install github-agent-cli           # pipx, अलग आभासी वातावरण
+pip install github-agent-cli            # सक्रिय वातावरण में pip
 ghagent --version
 ```
 
@@ -83,8 +83,8 @@ ghagent --version
 `assets render` हमेशा SVG लिखता है। PNG आउटपुट के लिए Pillow चाहिए, जो एक वैकल्पिक अतिरिक्त है:
 
 ```bash
-pip install "github-agent[png]"
-uv tool install --with pillow github-agent
+pip install "github-agent-cli[png]"
+uv tool install --with pillow github-agent-cli
 ```
 
 Pillow के बिना कमांड बताता है कि PNG क्यों नहीं बना, सोशल प्रीव्यू को तैयार दिखाने के बजाय।
@@ -113,7 +113,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` है। एंट्री पॉइंट `ghagent` है, इसलिए इमेज के
-नाम के बाद पहला आर्ग्युमेंट ही कमांड है। 1.2.0 के भाग के रूप में कोई रजिस्ट्री इमेज प्रकाशित नहीं
+नाम के बाद पहला आर्ग्युमेंट ही कमांड है। 1.2.1 के भाग के रूप में कोई रजिस्ट्री इमेज प्रकाशित नहीं
 होती और CI कंटेनर नहीं बनाता: टैग एक स्थानीय परंपरा है। देखें
 [examples/docker.md](examples/docker.md)।
 
@@ -124,7 +124,7 @@ Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` ह�
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: paulmann/github-agent@v1.2.0    # रिलीज़ टैग पिन करें
+- uses: paulmann/github-agent@v1.2.1    # रिलीज़ टैग पिन करें
   with:
     command: audit .
     min-score: "80"
@@ -151,7 +151,7 @@ Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` ह�
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.0     # प्लेसहोल्डर: वह रिलीज़ टैग पिन करें जिस पर आप भरोसा करते हैं
+    rev: v1.2.1     # प्लेसहोल्डर: वह रिलीज़ टैग पिन करें जिस पर आप भरोसा करते हैं
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -169,7 +169,7 @@ pre-commit टूल को टैग किए गए ट्री से ब�
 किसी भी इंस्टॉल के बाद एक कमांड बताता है कि CLI जारी किया गया बिल्ड है या नहीं:
 
 ```bash
-ghagent --version     # संस्करण छापता है, उदाहरण के लिए github-agent 1.2.0
+ghagent --version     # संस्करण छापता है, उदाहरण के लिए github-agent 1.2.1
 ghagent audit .       # 0 स्वच्छ, 1 त्रुटि-स्तर के निष्कर्ष, 2 उपयोग या वातावरण की समस्या
 ```
 
@@ -235,7 +235,7 @@ CLI में 13 कमांड हैं; तालिका रोज़ क�
 
 ## संख्याओं में
 
-इस ट्री में 2026-10-30 को संस्करण 1.2.0 के विरुद्ध मापा गया:
+इस ट्री में 2026-10-30 को संस्करण 1.2.1 के विरुद्ध मापा गया:
 
 | पक्ष | मान | माप का स्रोत |
 |---|---:|---|

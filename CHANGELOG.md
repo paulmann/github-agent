@@ -6,12 +6,28 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-30
+
+### Changed
+
+- The PyPI distribution is **`github-agent-cli`**: `github-agent` (2.4.9, an unrelated MCP agent)
+  and `ghagent` (0.0.1, a GitHub explorer) are already taken. The project, the console script
+  `ghagent`, the library package `ghalib` and the `--version` output (`github-agent X.Y.Z`) keep
+  their names; only the distribution name changes, so the installers are
+  `uv tool install github-agent-cli`, `pipx install github-agent-cli`,
+  `pip install github-agent-cli` and `pip install "github-agent-cli[png]"`. Every README,
+  `AGENTS.md`, docs page, wiki page and example was updated, and the wheel and sdist are now
+  `github_agent_cli-X.Y.Z-*`.
+- `pyproject.toml` records why the distribution and the product names differ, and
+  `docs/PACKAGING.md` explains the four names a user meets (distribution, console script,
+  library package, repository) with the evidence for each.
+
 ### Fixed
 
-- The six READMEs state that `uv tool install github-agent`, `pipx install github-agent` and
-  `pip install github-agent` resolve only after the first PyPI publication: Trusted Publishing is
-  an owner step and the `Publish` workflow is manual. Until then the wheel from the latest release
-  and the source clone are the paths that work, and they provide the same `ghagent` command.
+- The six READMEs state that the package-manager commands resolve only after the first PyPI
+  publication: Trusted Publishing is an owner step and the `Publish` workflow is manual. Until
+  then the wheel from the latest release and the source clone are the paths that work, and they
+  provide the same `ghagent` command.
 
 ## [1.2.0] - 2026-10-30
 
@@ -108,7 +124,8 @@ All notable changes to this project are documented here. The format is
 
 - The pack ships without tokens, absolute machine paths or personal addresses; the privacy rule fails the build if one appears, and a self-test enforces it on the pack itself.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/paulmann/github-agent/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/paulmann/github-agent/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/paulmann/github-agent/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/paulmann/github-agent/releases/tag/v1.0.0

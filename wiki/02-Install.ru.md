@@ -11,10 +11,10 @@
 ## Из PyPI: uv, pipx или pip
 
 ```bash
-uv tool install github-agent        # изолированное окружение инструмента
-pipx install github-agent           # изолированное виртуальное окружение
-pip install github-agent            # в текущее окружение
-ghagent --version                   # github-agent 1.2.0
+uv tool install github-agent-cli        # изолированное окружение инструмента
+pipx install github-agent-cli           # изолированное виртуальное окружение
+pip install github-agent-cli            # в текущее окружение
+ghagent --version                   # github-agent 1.2.1
 ```
 
 Консольная команда — `ghagent`, дистрибутив — `github-agent`. Колесо содержит только CLI,
@@ -26,8 +26,8 @@ git-клон. Так и задумано: тесты и шаблоны навы�
 `assets render` всегда пишет SVG. Для PNG нужен Pillow:
 
 ```bash
-pip install "github-agent[png]"
-uv tool install --with pillow github-agent
+pip install "github-agent-cli[png]"
+uv tool install --with pillow github-agent-cli
 ```
 
 Без Pillow команда выпускает SVG и говорит, почему PNG нет.
@@ -58,7 +58,7 @@ cd /path/to/your/repository
 docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
-Рабочий каталог образа — `/repo`, точка входа — `ghagent`. Образ в реестр в рамках 1.2.0 не
+Рабочий каталог образа — `/repo`, точка входа — `ghagent`. Образ в реестр в рамках 1.2.1 не
 публикуется; тег — локальная договорённость. В образе только CLI, поэтому `selftest` и
 `install` там тоже завершаются кодом `2`. Подробности: [пример Docker](https://github.com/paulmann/github-agent/blob/main/examples/docker.md).
 
@@ -69,7 +69,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: paulmann/github-agent@v1.2.0
+- uses: paulmann/github-agent@v1.2.1
   with:
     command: audit .
     min-score: "80"

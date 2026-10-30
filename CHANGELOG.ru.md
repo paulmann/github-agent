@@ -6,12 +6,27 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-30
+
+### Изменено
+
+- Дистрибутив на PyPI — **`github-agent-cli`**: имена `github-agent` (2.4.9, чужой MCP-агент) и
+  `ghagent` (0.0.1, чужой GitHub-обозреватель) уже заняты. Проект, консольная команда `ghagent`,
+  библиотечный пакет `ghalib` и вывод `--version` (`github-agent X.Y.Z`) сохраняют свои имена;
+  меняется только имя дистрибутива, поэтому установка:
+  `uv tool install github-agent-cli`, `pipx install github-agent-cli`,
+  `pip install github-agent-cli` и `pip install "github-agent-cli[png]"`. Обновлены все README,
+  `AGENTS.md`, страницы docs и вики, примеры; колесо и sdist теперь `github_agent_cli-X.Y.Z-*`.
+- В `pyproject.toml` записано, почему дистрибутив и продукт называются по-разному, а
+  `docs/PACKAGING.md` объясняет четыре имени, с которыми встречается пользователь (дистрибутив,
+  консольная команда, библиотека, репозиторий), с доказательством каждого.
+
 ### Исправлено
 
-- Шесть README явно говорят, что `uv tool install github-agent`, `pipx install github-agent` и
-  `pip install github-agent` начнут работать только после первой публикации на PyPI: Trusted
-  Publishing настраивает владелец, а workflow `Publish` запускается вручную. До этого работают
-  колесо из последнего релиза и клон исходников — они дают ту же команду `ghagent`.
+- Шесть README явно говорят, что команды пакетных менеджеров начнут работать только после первой
+  публикации на PyPI: Trusted Publishing настраивает владелец, а workflow `Publish` запускается
+  вручную. До этого работают колесо из последнего релиза и клон исходников — они дают ту же
+  команду `ghagent`.
 
 ## [1.2.0] - 2026-10-30
 
@@ -109,7 +124,8 @@
 
 - Пакет поставляется без токенов, абсолютных путей машины и личных адресов; правило приватности роняет сборку, если такое появится, а самопроверка следит за самим пакетом.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/paulmann/github-agent/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/paulmann/github-agent/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/paulmann/github-agent/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/paulmann/github-agent/releases/tag/v1.0.0

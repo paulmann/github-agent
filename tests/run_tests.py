@@ -32,6 +32,8 @@ from ghalib import meta as meta_module            # noqa: E402
 from ghalib import report as report_module        # noqa: E402
 from ghalib import wiki as wiki_module            # noqa: E402
 from ghalib.util import (                          # noqa: E402
+    PACK_NAME,
+    PACK_VERSION,
     Report,
     force_utf8_stdio,
     git,
@@ -804,8 +806,12 @@ def test_installed_layout(tmp: Path) -> None:
     check("installed: no skill directory was written", not (tmp / "target").exists())
 
     proc = run_entry("--version")
+    # The expected string comes from the single version source: a literal here would turn every
+    # release into a test failure and teach the next reader to edit the test instead of the version.
+    expected = f"{PACK_NAME} {PACK_VERSION}"
     check("installed: the CLI itself still works from the installed layout",
-          proc.returncode == 0 and "github-agent 1.2.0" in proc.stdout, proc.stdout + proc.stderr)
+          proc.returncode == 0 and expected in proc.stdout,
+          f"expected {expected!r} in {proc.stdout + proc.stderr!r}")
 
 
 def test_meta() -> None:

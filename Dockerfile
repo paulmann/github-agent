@@ -28,7 +28,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN python -m pip install --no-cache-dir --upgrade pip
 
 COPY --from=build /wheels /wheels
-RUN python -m pip install --no-cache-dir --no-index --find-links /wheels github-agent \
+RUN python -m pip install --no-cache-dir --no-index --find-links /wheels github-agent-cli \
     && rm -rf /wheels
 
 # The repository under test is mounted here.

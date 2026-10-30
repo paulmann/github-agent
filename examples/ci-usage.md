@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Score the repository
-        uses: paulmann/github-agent@v1.2.0
+        uses: paulmann/github-agent@v1.2.1
         with:
           command: audit .
           min-score: "80"
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Markdown, links, anchors, tables
-        uses: paulmann/github-agent@v1.2.0
+        uses: paulmann/github-agent@v1.2.1
         with:
           command: doc --root .
 ```
@@ -61,7 +61,7 @@ scope the command needs:
 
 ```yaml
       - name: Audit GitHub metadata
-        uses: paulmann/github-agent@v1.2.0
+        uses: paulmann/github-agent@v1.2.1
         with:
           command: audit --repo ${{ github.repository }} --http
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -77,7 +77,7 @@ A single step can run one command only. To run the full set, use one step per co
         with:
           python-version: "3.13"
 
-      - run: pip install github-agent
+      - run: pip install github-agent-cli
       - run: ghagent doc --root .
       - run: ghagent audit . --min-score 80
       - run: ghagent privacy --root .
@@ -98,7 +98,7 @@ is `/repo`, so the repository under test is mounted there:
       - uses: actions/checkout@v4
         with:
           repository: paulmann/github-agent
-          ref: v1.2.0
+          ref: v1.2.1
           path: ghagent-src
 
       - name: Build the image
@@ -108,5 +108,5 @@ is `/repo`, so the repository under test is mounted there:
         run: docker run --rm -v "$PWD/workspace:/repo" ghagent audit .
 ```
 
-No registry image is published as part of 1.2.0; the build step is deliberate. See
+No registry image is published as part of 1.2.1; the build step is deliberate. See
 [docker.md](docker.md) for the local commands and the mount rules.

@@ -71,8 +71,8 @@ try {
     $Version = $VersionMatch.Groups[1].Value
     Write-Host "PACK_VERSION: $Version"
 
-    $Wheel = Join-Path $Dist "github_agent-$Version-py3-none-any.whl"
-    $Sdist = Join-Path $Dist "github_agent-$Version.tar.gz"
+    $Wheel = Join-Path $Dist "github_agent_cli-$Version-py3-none-any.whl"
+    $Sdist = Join-Path $Dist "github_agent_cli-$Version.tar.gz"
     if (-not (Test-Path $Wheel)) { throw "wheel is missing: $Wheel" }
     if (-not (Test-Path $Sdist)) { throw "sdist is missing: $Sdist" }
 

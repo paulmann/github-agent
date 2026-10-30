@@ -27,7 +27,7 @@ CHANGELOG и контракты сообщества, проверяет док�
 Он не пишет рекламных текстов и не выдумывает чисел: он проверяет то, что написал человек,
 и отказывается публиковать сломанное.
 
-> **Состояние документации.** Каждое число в этом README измерено 2026-10-30 на версии 1.2.0
+> **Состояние документации.** Каждое число в этом README измерено 2026-10-30 на версии 1.2.1
 > командами, названными в таблице. Подробные руководства лежат в
 > [вики](https://github.com/paulmann/github-agent/wiki) и в [`docs/`](docs/IMPORT.ru.md);
 > протокол для агентов — [`AGENTS.md`](AGENTS.ru.md), заметки об упаковке и миграции —
@@ -65,9 +65,9 @@ CLI.
 ### Пакетные менеджеры
 
 ```bash
-uv tool install github-agent        # uv, изолированное окружение инструмента
-pipx install github-agent           # pipx, изолированное виртуальное окружение
-pip install github-agent            # pip в текущее окружение
+uv tool install github-agent-cli        # uv, изолированное окружение инструмента
+pipx install github-agent-cli           # pipx, изолированное виртуальное окружение
+pip install github-agent-cli            # pip в текущее окружение
 ghagent --version
 ```
 
@@ -83,8 +83,8 @@ ghagent --version
 `assets render` всегда пишет SVG. Для PNG нужен Pillow, он подключается отдельным extras:
 
 ```bash
-pip install "github-agent[png]"
-uv tool install --with pillow github-agent
+pip install "github-agent-cli[png]"
+uv tool install --with pillow github-agent-cli
 ```
 
 Без Pillow команда говорит, почему PNG нет, вместо того чтобы выдавать готовое социальное
@@ -125,7 +125,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: paulmann/github-agent@v1.2.0    # закрепите релизный тег
+- uses: paulmann/github-agent@v1.2.1    # закрепите релизный тег
   with:
     command: audit .
     min-score: "80"
@@ -152,7 +152,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.0     # заглушка: закрепите релизный тег, которому доверяете
+    rev: v1.2.1     # заглушка: закрепите релизный тег, которому доверяете
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -170,7 +170,7 @@ repos:
 После любой установки на вопрос, является ли CLI релизной сборкой, отвечает одна команда:
 
 ```bash
-ghagent --version     # печатает версию, например github-agent 1.2.0
+ghagent --version     # печатает версию, например github-agent 1.2.1
 ghagent audit .       # 0 чисто, 1 находки уровня error, 2 ошибка вызова или окружения
 ```
 
@@ -237,7 +237,7 @@ score: 72.5% (22 scored, 1 skipped)
 
 ## В цифрах
 
-Измерено в этом дереве 2026-10-30 на версии 1.2.0:
+Измерено в этом дереве 2026-10-30 на версии 1.2.1:
 
 | Поверхность | Значение | Источник измерения |
 |---|---:|---|

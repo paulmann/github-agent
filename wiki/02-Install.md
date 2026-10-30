@@ -12,10 +12,10 @@ Python nor a clone on the host.
 ## From PyPI: uv, pipx or pip
 
 ```bash
-uv tool install github-agent        # isolated tool environment
-pipx install github-agent           # isolated virtual environment
-pip install github-agent            # into the active environment
-ghagent --version                   # github-agent 1.2.0
+uv tool install github-agent-cli        # isolated tool environment
+pipx install github-agent-cli           # isolated virtual environment
+pip install github-agent-cli            # into the active environment
+ghagent --version                   # github-agent 1.2.1
 ```
 
 The console script is `ghagent`; the distribution is `github-agent`. The wheel ships the CLI
@@ -27,8 +27,8 @@ the git clone. That is deliberate: the tests and the skill templates are not par
 `assets render` always writes the SVG. PNG output needs Pillow:
 
 ```bash
-pip install "github-agent[png]"
-uv tool install --with pillow github-agent
+pip install "github-agent-cli[png]"
+uv tool install --with pillow github-agent-cli
 ```
 
 Without Pillow the command produces the SVG and says why no PNG exists.
@@ -60,7 +60,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 The working directory is `/repo` and the entry point is `ghagent`. No registry image is
-published as part of 1.2.0; the tag is a local convention. The image contains the CLI only, so
+published as part of 1.2.1; the tag is a local convention. The image contains the CLI only, so
 `selftest` and `install` exit `2` there as well. Details: [Docker example](https://github.com/paulmann/github-agent/blob/main/examples/docker.md).
 
 ## GitHub Action
@@ -70,7 +70,7 @@ exists:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: paulmann/github-agent@v1.2.0
+- uses: paulmann/github-agent@v1.2.1
   with:
     command: audit .
     min-score: "80"

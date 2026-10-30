@@ -22,11 +22,11 @@ CHANGELOG без дат, вики из несвязанных страниц, с
 ## Установка
 
 ```bash
-uv tool install github-agent            # рекомендуется: изолированный CLI
-pipx install github-agent               # альтернатива
-pip install github-agent                # Python 3.11+
-pip install "github-agent[png]"         # необязательный Pillow: только PNG
-ghagent --version                       # github-agent 1.2.0
+uv tool install github-agent-cli            # рекомендуется: изолированный CLI
+pipx install github-agent-cli               # альтернатива
+pip install github-agent-cli                # Python 3.11+
+pip install "github-agent-cli[png]"         # необязательный Pillow: только PNG
+ghagent --version                       # github-agent 1.2.1
 ```
 
 Wheel содержит только CLI. Пакет — `skills/`, `tools/`, `tests/`, `reference/`, `wiki/`,

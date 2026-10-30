@@ -19,11 +19,11 @@ The pack turns each recurring job into one command: `0` clean, `1` with errors, 
 ## Install
 
 ```bash
-uv tool install github-agent            # recommended: isolated CLI
-pipx install github-agent               # alternative
-pip install github-agent                # Python 3.11+
-pip install "github-agent[png]"         # optional Pillow: PNG banner output only
-ghagent --version                       # github-agent 1.2.0
+uv tool install github-agent-cli            # recommended: isolated CLI
+pipx install github-agent-cli               # alternative
+pip install github-agent-cli                # Python 3.11+
+pip install "github-agent-cli[png]"         # optional Pillow: PNG banner output only
+ghagent --version                       # github-agent 1.2.1
 ```
 
 The wheel ships the CLI only. The pack — `skills/`, `tools/`, `tests/`, `reference/`, `wiki/`,

@@ -59,8 +59,8 @@ PY
 )
 echo "PACK_VERSION: $VERSION"
 
-WHEEL="$DIST/github_agent-$VERSION-py3-none-any.whl"
-SDIST="$DIST/github_agent-$VERSION.tar.gz"
+WHEEL="$DIST/github_agent_cli-$VERSION-py3-none-any.whl"
+SDIST="$DIST/github_agent_cli-$VERSION.tar.gz"
 test -f "$WHEEL"
 test -f "$SDIST"
 

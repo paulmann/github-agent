@@ -63,9 +63,9 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 ### 包管理器
 
 ```bash
-uv tool install github-agent        # uv，隔离的工具环境
-pipx install github-agent           # pipx，隔离的虚拟环境
-pip install github-agent            # pip 装入当前环境
+uv tool install github-agent-cli        # uv，隔离的工具环境
+pipx install github-agent-cli           # pipx，隔离的虚拟环境
+pip install github-agent-cli            # pip 装入当前环境
 ghagent --version
 ```
 
@@ -80,8 +80,8 @@ ghagent --version
 `assets render` 始终写出 SVG。PNG 输出需要 Pillow，它是一个可选附加项：
 
 ```bash
-pip install "github-agent[png]"
-uv tool install --with pillow github-agent
+pip install "github-agent-cli[png]"
+uv tool install --with pillow github-agent-cli
 ```
 
 没有 Pillow 时，命令会说明为什么没有 PNG，而不是假装社交预览已经就绪。
@@ -109,7 +109,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 在 Windows PowerShell 中，同样的挂载写作 `-v "${PWD}:/repo"`。入口点是 `ghagent`，因此镜像名
-之后的第一个参数就是命令。1.2.0 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
+之后的第一个参数就是命令。1.2.1 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
 约定。参见 [examples/docker.md](examples/docker.md)。
 
 ### GitHub Action
@@ -118,7 +118,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: paulmann/github-agent@v1.2.0    # 固定发布标签
+- uses: paulmann/github-agent@v1.2.1    # 固定发布标签
   with:
     command: audit .
     min-score: "80"
@@ -144,7 +144,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.0     # 占位符：固定你信任的发布标签
+    rev: v1.2.1     # 占位符：固定你信任的发布标签
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -162,7 +162,7 @@ repos:
 安装之后，一条命令即可回答 CLI 是否为已发布的构建：
 
 ```bash
-ghagent --version     # 打印版本，例如 github-agent 1.2.0
+ghagent --version     # 打印版本，例如 github-agent 1.2.1
 ghagent audit .       # 0 干净，1 有错误级发现，2 用法或环境问题
 ```
 

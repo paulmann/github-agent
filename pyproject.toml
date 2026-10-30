@@ -3,7 +3,9 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "github-agent"
+# The PyPI distribution is github-agent-cli: the names github-agent and ghagent are already
+# taken by unrelated projects. The product and the console script keep their names.
+name = "github-agent-cli"
 description = "Repository and wiki steward: one command per documentation job, standard library only."
 readme = "README.md"
 license = "MIT"

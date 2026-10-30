@@ -66,9 +66,9 @@ the wheel ships only the CLI.
 ### Package managers
 
 ```bash
-uv tool install github-agent        # uv, isolated tool environment
-pipx install github-agent           # pipx, isolated virtual environment
-pip install github-agent            # pip into the active environment
+uv tool install github-agent-cli        # uv, isolated tool environment
+pipx install github-agent-cli           # pipx, isolated virtual environment
+pip install github-agent-cli            # pip into the active environment
 ghagent --version
 ```
 
@@ -84,8 +84,8 @@ The console script is `ghagent`; the distribution name is `github-agent`.
 `assets render` always writes the SVG. PNG output needs Pillow, which is an optional extra:
 
 ```bash
-pip install "github-agent[png]"
-uv tool install --with pillow github-agent
+pip install "github-agent-cli[png]"
+uv tool install --with pillow github-agent-cli
 ```
 
 Without Pillow the command says why no PNG exists instead of pretending a social preview is
@@ -126,7 +126,7 @@ release and works as soon as the tag exists:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: paulmann/github-agent@v1.2.0    # pin the release tag
+- uses: paulmann/github-agent@v1.2.1    # pin the release tag
   with:
     command: audit .
     min-score: "80"
@@ -153,7 +153,7 @@ The repository is also a pre-commit hook source; the hooks are `ghagent-doc`,
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.0     # placeholder: pin the release tag you decide to trust
+    rev: v1.2.1     # placeholder: pin the release tag you decide to trust
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -171,7 +171,7 @@ tag, because pre-commit builds the tool from the tagged tree.
 After any install, one command answers whether the CLI is the released build:
 
 ```bash
-ghagent --version     # prints the version, for example github-agent 1.2.0
+ghagent --version     # prints the version, for example github-agent 1.2.1
 ghagent audit .       # 0 clean, 1 findings at error level, 2 usage or environment problem
 ```
 
@@ -238,7 +238,7 @@ The CLI has 13 commands; the table names the ones used every day. The rest (`rep
 
 ## In numbers
 
-Measured in this tree on 2026-10-30 against version 1.2.0:
+Measured in this tree on 2026-10-30 against version 1.2.1:
 
 | Surface | Value | Measurement source |
 |---|---:|---|

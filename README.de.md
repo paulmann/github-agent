@@ -29,7 +29,7 @@ Dieses Paket legt auf jede dieser Stellen einen prüfbaren Vertrag und reduziert
 einen Befehl. Es schreibt keine Marketingtexte und erfindet keine Zahlen: Es prüft, was ein
 Mensch geschrieben hat, und veröffentlicht nicht, was defekt ist.
 
-> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-10-30 gegen Version 1.2.0
+> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-10-30 gegen Version 1.2.1
 > mit den in der Tabelle genannten Befehlen gemessen. Ausführliche Anleitungen stehen im
 > [Wiki](https://github.com/paulmann/github-agent/wiki) und in [`docs/`](docs/IMPORT.md); das
 > Protokoll für Agenten ist [`AGENTS.md`](AGENTS.md), die Hinweise zu Paketierung und Migration
@@ -68,9 +68,9 @@ Paketmanager installieren die CLI, während der Klon der Weg für
 ### Paketmanager
 
 ```bash
-uv tool install github-agent        # uv, isolierte Tool-Umgebung
-pipx install github-agent           # pipx, isolierte virtuelle Umgebung
-pip install github-agent            # pip in die aktive Umgebung
+uv tool install github-agent-cli        # uv, isolierte Tool-Umgebung
+pipx install github-agent-cli           # pipx, isolierte virtuelle Umgebung
+pip install github-agent-cli            # pip in die aktive Umgebung
 ghagent --version
 ```
 
@@ -88,8 +88,8 @@ Das Konsolenskript heißt `ghagent`, das Paket auf PyPI heißt `github-agent`.
 optionales Extra ist:
 
 ```bash
-pip install "github-agent[png]"
-uv tool install --with pillow github-agent
+pip install "github-agent-cli[png]"
+uv tool install --with pillow github-agent-cli
 ```
 
 Ohne Pillow sagt der Befehl, warum kein PNG vorliegt, statt eine fertige Social Preview
@@ -119,7 +119,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 Unter Windows PowerShell lautet derselbe Mount `-v "${PWD}:/repo"`. Der Einstiegspunkt ist
-`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.2.0 wird
+`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.2.1 wird
 kein Registry-Image veröffentlicht, und die CI baut den Container nicht: Der Tag ist eine lokale
 Konvention. Siehe [examples/docker.md](examples/docker.md).
 
@@ -130,7 +130,7 @@ von einer PyPI-Veröffentlichung ab und funktioniert, sobald der Tag existiert:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: paulmann/github-agent@v1.2.0    # den Release-Tag festlegen
+- uses: paulmann/github-agent@v1.2.1    # den Release-Tag festlegen
   with:
     command: audit .
     min-score: "80"
@@ -158,7 +158,7 @@ Das Repository ist zugleich eine Quelle für pre-commit-Hooks; die Hooks heißen
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.0     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
+    rev: v1.2.1     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -176,7 +176,7 @@ einen veröffentlichten Tag, weil pre-commit das Werkzeug aus dem getaggten Baum
 Nach jeder Installation beantwortet ein Befehl, ob die CLI der freigegebene Build ist:
 
 ```bash
-ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.2.0
+ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.2.1
 ghagent audit .       # 0 sauber, 1 Befunde auf Fehlerstufe, 2 Aufruf- oder Umgebungsproblem
 ```
 
@@ -244,7 +244,7 @@ Die CLI hat 13 Befehle; die Tabelle nennt die jeden Tag genutzten. Die übrigen 
 
 ## In Zahlen
 
-In diesem Baum am 2026-10-30 gegen Version 1.2.0 gemessen:
+In diesem Baum am 2026-10-30 gegen Version 1.2.1 gemessen:
 
 | Messgröße | Wert | Quelle der Messung |
 |---|---:|---|

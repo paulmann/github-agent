@@ -117,7 +117,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 这个复合 action 从自己的检出目录安装工具包，因此不依赖 PyPI 发布，标签存在即可使用：
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 - uses: paulmann/github-agent@v1.2.1    # 固定发布标签
   with:
     command: audit .

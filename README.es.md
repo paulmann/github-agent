@@ -126,7 +126,7 @@ La acción compuesta instala el paquete desde su propio checkout, así que no de
 publicación en PyPI y funciona en cuanto existe la etiqueta:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 - uses: paulmann/github-agent@v1.2.1    # fije la etiqueta de la versión
   with:
     command: audit .

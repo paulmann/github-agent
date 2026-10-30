@@ -214,7 +214,7 @@ jobs:
   ghagent:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: paulmann/github-agent@v1.2.1
         with:
           command: audit . --min-score 80
@@ -222,7 +222,7 @@ jobs:
 
 The action is `runs: using: composite`. It installs the checked-out action repository into the
 runner's Python with `pip install "$GITHUB_ACTION_PATH"`, so it does not need a PyPI release
-and works as soon as the tag exists. It uses `actions/setup-python@v5` and needs network only
+and works as soon as the tag exists. It uses `actions/setup-python@v7` and needs network only
 for the build backend and Python.
 
 | Input | Default | Effect |

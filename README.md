@@ -125,7 +125,7 @@ The composite action installs the pack from its own checkout, so it does not dep
 release and works as soon as the tag exists:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 - uses: paulmann/github-agent@v1.2.1    # pin the release tag
   with:
     command: audit .

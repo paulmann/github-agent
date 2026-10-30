@@ -22,7 +22,7 @@ jobs:
     name: Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Score the repository
         uses: paulmann/github-agent@v1.2.1
@@ -34,7 +34,7 @@ jobs:
     name: Documents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Markdown, links, anchors, tables
         uses: paulmann/github-agent@v1.2.1
@@ -53,7 +53,7 @@ is the intended behaviour.
 | `command` | `audit . --min-score 80` | any `ghagent` command without the program name |
 | `min-score` | `80` | applied only when `command` starts with `audit` and passes no `--min-score` |
 | `working-directory` | `.` | relative to `$GITHUB_WORKSPACE` |
-| `python-version` | `3.13` | passed to `actions/setup-python@v5` |
+| `python-version` | `3.13` | passed to `actions/setup-python@v7` |
 | `github-token` | the workflow token | exported as `GITHUB_TOKEN` |
 
 For a command that talks to the API, such as `audit --repo owner/name`, pass a token with the
@@ -73,7 +73,7 @@ A single step can run one command only. To run the full set, use one step per co
 `run:` block after installing the tool yourself:
 
 ```yaml
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
@@ -91,11 +91,11 @@ from a checkout of this repository and run it against the workspace. The image w
 is `/repo`, so the repository under test is mounted there:
 
 ```yaml
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: workspace
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: paulmann/github-agent
           ref: v1.2.1

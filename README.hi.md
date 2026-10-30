@@ -123,7 +123,7 @@ Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` ह�
 और टैग मौजूद होते ही काम करता है:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 - uses: paulmann/github-agent@v1.2.1    # रिलीज़ टैग पिन करें
   with:
     command: audit .

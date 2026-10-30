@@ -129,7 +129,7 @@ Die zusammengesetzte Action installiert das Paket aus ihrem eigenen Checkout; si
 von einer PyPI-Veröffentlichung ab und funktioniert, sobald der Tag existiert:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 - uses: paulmann/github-agent@v1.2.1    # den Release-Tag festlegen
   with:
     command: audit .

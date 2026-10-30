@@ -70,6 +70,9 @@ the wheel ships only the CLI.
 uv tool install github-agent-cli        # uv, isolated tool environment
 pipx install github-agent-cli           # pipx, isolated virtual environment
 pip install github-agent-cli            # pip into the active environment
+brew install paulmann/homebrew-github-agent-cli/github-agent-cli   # macOS and Linux
+scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli
+scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 

@@ -1,0 +1,23 @@
+{
+    "$schema": "https://raw.githubusercontent.com/ScoopInstaller/Scoop/master/schema.json",
+    "version": "1.2.2",
+    "description": "Repository and wiki steward: one command per documentation job, zero runtime dependencies.",
+    "homepage": "https://github.com/paulmann/github-agent",
+    "license": "MIT",
+    "depends": "python",
+    "url": "https://github.com/paulmann/github-agent/releases/download/v1.2.2/github-agent-cli-1.2.2-windows-x64.zip",
+    "hash": "2676f33b2752df4cc04188a741816933b4ae860189305ddcf71041a3ee1c85a4",
+    "extract_dir": "github-agent-cli-1.2.2",
+    "bin": "ghagent.cmd",
+    "checkver": {
+        "url": "https://pypi.org/pypi/github-agent-cli/json",
+        "jsonpath": "$.info.version"
+    },
+    "autoupdate": {
+        "url": "https://github.com/paulmann/github-agent/releases/download/v$version/github-agent-cli-$version-windows-x64.zip",
+        "hash": {
+            "url": "https://github.com/paulmann/github-agent/releases/download/v$version/SHA256SUMS.txt",
+            "regex": "([a-f0-9]{64})\\s+github-agent-cli-$version-windows-x64\\.zip"
+        }
+    }
+}

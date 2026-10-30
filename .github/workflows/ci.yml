@@ -170,3 +170,69 @@ jobs:
 
       - name: The image lints the documents
         run: docker run --rm --volume "$PWD:/repo" ghagent:ci doc --root .
+  manifests:
+    name: Package-manager manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Homebrew formula syntax
+        run: ruby -c packaging/homebrew/github-agent-cli.rb
+
+      - name: Homebrew formula downloads and verifies
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import re
+          import urllib.request
+
+          text = pathlib.Path("packaging/homebrew/github-agent-cli.rb").read_text(encoding="utf-8")
+          url = re.search(r'^\s*url "([^"]+)"', text, re.M).group(1)
+          expected = re.search(r'^\s*sha256 "([0-9a-f]{64})"', text, re.M).group(1)
+          with urllib.request.urlopen(url, timeout=60) as response:
+              data = response.read()
+          actual = hashlib.sha256(data).hexdigest()
+          print(f"downloaded {url} ({len(data)} bytes), sha256 {actual}")
+          if actual != expected:
+              raise SystemExit("formula sha256 does not match the downloaded sdist")
+          version = re.search(r"github_agent_cli-([0-9.]+)\.tar\.gz", url).group(1)
+          pypi = json.load(urllib.request.urlopen("https://pypi.org/pypi/github-agent-cli/json", timeout=60))
+          if pypi["info"]["version"] != version:
+              raise SystemExit(f"formula pins {version}, PyPI serves {pypi['info']['version']}")
+          print(f"formula pins the current PyPI version {version}")
+          PY
+
+      - name: Scoop manifest downloads and verifies
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import io
+          import json
+          import pathlib
+          import urllib.request
+          import zipfile
+
+          manifest = json.loads(pathlib.Path("packaging/scoop/github-agent-cli.json").read_text(encoding="utf-8"))
+          with urllib.request.urlopen(manifest["url"], timeout=60) as response:
+              data = response.read()
+          actual = hashlib.sha256(data).hexdigest()
+          print(f"downloaded {manifest['url']} ({len(data)} bytes), sha256 {actual}")
+          if actual != manifest["hash"]:
+              raise SystemExit("scoop hash does not match the downloaded bundle")
+          with zipfile.ZipFile(io.BytesIO(data)) as archive:
+              names = archive.namelist()
+          required = f"{manifest['extract_dir']}/{manifest['bin']}"
+          if required not in names:
+              raise SystemExit(f"the bundle has no {required}")
+          if not any(name.startswith(f"{manifest['extract_dir']}/lib/ghagent.py") for name in names):
+              raise SystemExit("the bundle has no lib/ghagent.py")
+          print(f"bundle layout is valid, {len(names)} entries")
+          PY

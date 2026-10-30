@@ -69,6 +69,9 @@ CLI.
 uv tool install github-agent-cli        # uv, изолированное окружение инструмента
 pipx install github-agent-cli           # pipx, изолированное виртуальное окружение
 pip install github-agent-cli            # pip в текущее окружение
+brew install paulmann/homebrew-github-agent-cli/github-agent-cli   # macOS и Linux
+scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli
+scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 

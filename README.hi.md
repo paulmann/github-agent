@@ -69,6 +69,9 @@ Python 3.11 या नया चाहिए; CI सुइट को 3.11 और
 uv tool install github-agent-cli        # uv, अलग टूल वातावरण
 pipx install github-agent-cli           # pipx, अलग आभासी वातावरण
 pip install github-agent-cli            # सक्रिय वातावरण में pip
+brew install paulmann/homebrew-github-agent-cli/github-agent-cli   # macOS और Linux
+scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli
+scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 

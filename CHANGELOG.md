@@ -6,6 +6,29 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+### Added
+
+- `packaging/homebrew/github-agent-cli.rb`: a Homebrew formula that installs the PyPI sdist
+  `github_agent_cli-1.2.2.tar.gz` (sha256 `f60d17b1…e14ae`) into a virtualenv with `python@3.13`,
+  with `livecheck` reading the PyPI JSON API. Canonical copy: `paulmann/homebrew-github-agent-cli`.
+- `packaging/scoop/github-agent-cli.json`: a Scoop manifest for the Windows bundle
+  `github-agent-cli-1.2.2-windows-x64.zip` (sha256 `2676f33b…c85a4`), `depends: python`,
+  `checkver`/`autoupdate` from the PyPI JSON API and the release `SHA256SUMS.txt`. Canonical copy:
+  `paulmann/scoop-github-agent-cli`.
+- A Windows bundle in the release assets: `ghagent.cmd` plus the wheel contents under `lib/`. It was
+  executed on Windows before upload (`--version`, `audit . --min-score 90`).
+- CI job `manifests`: `ruby -c` for the formula, a real download of both URLs with the SHA-256
+  compared against the manifest, and a layout check of the bundle. A wrong hash or a stale version
+  fails the pull request.
+- `packaging/README.md`: what each manifest installs, where the canonical copy lives and the bump
+  procedure for both.
+
+### Changed
+
+- `docs/PACKAGING.md`: the Homebrew and Scoop section is no longer "deferred" — it lists both
+  manifests, the measured hashes and how the CI job verifies them.
+- The six READMEs and `AGENTS.md` gained the `brew` and `scoop` install commands.
+
 ## [1.2.2] - 2026-10-30
 
 ### Changed

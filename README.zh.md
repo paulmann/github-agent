@@ -67,6 +67,9 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 uv tool install github-agent-cli        # uv，隔离的工具环境
 pipx install github-agent-cli           # pipx，隔离的虚拟环境
 pip install github-agent-cli            # pip 装入当前环境
+brew install paulmann/homebrew-github-agent-cli/github-agent-cli   # macOS 与 Linux
+scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli
+scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 

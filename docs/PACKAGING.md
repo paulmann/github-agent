@@ -23,7 +23,7 @@ written for a POSIX shell; the PowerShell equivalents are in
 - [pre-commit hooks](#pre-commit-hooks)
 - [Release procedure](#release-procedure)
 - [PyPI publication](#pypi-publication)
-- [Deferred: Homebrew and Scoop](#deferred-homebrew-and-scoop)
+- [Homebrew and Scoop](#homebrew-and-scoop)
 - [Deferred: mypy and ruff](#deferred-mypy-and-ruff)
 - [Failure modes](#failure-modes)
 
@@ -336,23 +336,30 @@ The project now exists, so a trusted publisher can be attached to it instead of 
    `release: types: [published]` and drop the `if:` guard, so a published release becomes the only
    publication event.
 
-## Deferred: Homebrew and Scoop
+## Homebrew and Scoop
 
-A Homebrew formula and a Scoop manifest are deliberately **not** in this repository yet. Both
-need a real, immutable download URL and a real SHA-256. The first PyPI release now provides them:
-the sdist URL and hash above are real, so a formula can be written without inventing anything.
+Both manifests are real now: they point at the published 1.2.2 files and CI job `manifests`
+downloads each URL and compares its SHA-256 before a pull request can merge.
 
-When the formula is written:
+| Package manager | File | Install |
+|---|---|---|
+| Homebrew (macOS, Linux) | [packaging/homebrew/github-agent-cli.rb](../packaging/homebrew/github-agent-cli.rb) | `brew install paulmann/homebrew-github-agent-cli/github-agent-cli` |
+| Scoop (Windows) | [packaging/scoop/github-agent-cli.json](../packaging/scoop/github-agent-cli.json) | `scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli` then `scoop install github-agent-cli` |
 
-- it belongs in a separate tap repository, with `url` pointing at the PyPI sdist and `sha256`
-  copied from `sha256sum github_agent_cli-X.Y.Z.tar.gz`;
-- a Scoop manifest uses the release asset URL and its measured hash, with `checkver` and
-  `autoupdate` reading the PyPI JSON API;
-- both gain a bump procedure that recomputes the hash after every release.
+The formula installs the PyPI sdist
+(`github_agent_cli-1.2.2.tar.gz`, sha256 `f60d17b10a25fe6c9b307509fa7f0e58a571d1e39f802191dc1d6828b8ee14ae`)
+into a virtualenv with `python@3.13`, so `brew` users need no pip. The Scoop manifest installs the
+Windows bundle `github-agent-cli-1.2.2-windows-x64.zip` (sha256
+`2676f33b2752df4cc04188a741816933b4ae860189305ddcf71041a3ee1c85a4`): `ghagent.cmd`,
+`lib/` with the wheel contents, and `depends: python` for the interpreter. The bundle was executed
+on Windows before upload — `ghagent.cmd --version` printed `github-agent 1.2.2` and an audit scored
+100.0%.
 
-There is no placeholder `sha256` value anywhere in this tree; adding one is a defect, not a
-stub.
-
+The canonical copies live in the tap (`paulmann/homebrew-github-agent-cli`) and bucket
+(`paulmann/scoop-github-agent-cli`) repositories; the files in `packaging/` are the reviewable
+source, and [packaging/README.md](../packaging/README.md) carries the bump procedure. Both manifests
+auto-detect a new version from the PyPI JSON API; the hashes still have to be recomputed after each
+release, which is exactly what the `manifests` job checks.
 ## Deferred: mypy and ruff
 
 Neither mypy nor ruff is enabled in CI. The repository has no configuration for either, and

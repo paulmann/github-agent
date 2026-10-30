@@ -72,6 +72,9 @@ Paketmanager installieren die CLI, während der Klon der Weg für
 uv tool install github-agent-cli        # uv, isolierte Tool-Umgebung
 pipx install github-agent-cli           # pipx, isolierte virtuelle Umgebung
 pip install github-agent-cli            # pip in die aktive Umgebung
+brew install paulmann/homebrew-github-agent-cli/github-agent-cli   # macOS und Linux
+scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli
+scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 

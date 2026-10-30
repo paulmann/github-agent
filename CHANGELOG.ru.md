@@ -6,6 +6,27 @@
 
 ## [Unreleased]
 
+### Добавлено
+
+- `packaging/homebrew/github-agent-cli.rb`: формула Homebrew, которая ставит sdist с PyPI
+  `github_agent_cli-1.2.2.tar.gz` (sha256 `f60d17b1…e14ae`) в virtualenv с `python@3.13`,
+  `livecheck` читает JSON API PyPI. Каноническая копия: `paulmann/homebrew-github-agent-cli`.
+- `packaging/scoop/github-agent-cli.json`: манифест Scoop для Windows-бандла
+  `github-agent-cli-1.2.2-windows-x64.zip` (sha256 `2676f33b…c85a4`), `depends: python`,
+  `checkver`/`autoupdate` из JSON API PyPI и `SHA256SUMS.txt` релиза. Каноническая копия:
+  `paulmann/scoop-github-agent-cli`.
+- Windows-бандл в ассетах релиза: `ghagent.cmd` плюс содержимое колеса в `lib/`. Перед загрузкой
+  он был запущен на Windows (`--version`, `audit . --min-score 90`).
+- CI-job `manifests`: `ruby -c` для формулы, реальная загрузка обоих URL со сверкой SHA-256 и
+  проверка раскладки бандла. Неверный хэш или устаревшая версия валят pull request.
+- `packaging/README.md`: что ставит каждый манифест, где каноническая копия и как обновлять.
+
+### Изменено
+
+- `docs/PACKAGING.md`: раздел про Homebrew и Scoop больше не «отложенный» — там оба манифеста,
+  измеренные хэши и проверка в CI.
+- В шесть README и `AGENTS.md` добавлены команды установки через `brew` и `scoop`.
+
 ## [1.2.2] - 2026-10-30
 
 ### Изменено

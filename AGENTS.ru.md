@@ -26,6 +26,8 @@ uv tool install github-agent-cli            # рекомендуется: изо
 pipx install github-agent-cli               # альтернатива
 pip install github-agent-cli                # Python 3.11+
 pip install "github-agent-cli[png]"         # необязательный Pillow: только PNG
+brew install paulmann/homebrew-github-agent-cli/github-agent-cli
+scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli && scoop install github-agent-cli
 ghagent --version                       # github-agent 1.2.2
 ```
 

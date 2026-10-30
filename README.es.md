@@ -71,6 +71,9 @@ paquetes instalan la CLI, mientras que el clon es lo que necesita
 uv tool install github-agent-cli        # uv, entorno de herramientas aislado
 pipx install github-agent-cli           # pipx, entorno virtual aislado
 pip install github-agent-cli            # pip en el entorno activo
+brew install paulmann/homebrew-github-agent-cli/github-agent-cli   # macOS y Linux
+scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli
+scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 

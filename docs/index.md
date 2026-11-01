@@ -41,7 +41,7 @@ wrote and refuses to publish what is broken.
 | [Wiki workflow](WIKI.md) | sources in the repository, built and published to the wiki namespace |
 | [Packaging](PACKAGING.md) | PyPI, Homebrew, Scoop, Docker, the Action and the release procedure |
 | [Procedures](PROCEDURES.md) | the exact sequences for a release, a wiki publish and a rescue |
-| [Field notes](FIELD-NOTES.md) | what ten real repositories broke, and what changed because of it |
+| [Field notes](FIELD-NOTES.md) | ten defects that real repositories reported, and what changed because of it |
 
 The repository root carries the files GitHub reads first: [`README.md`](../README.md),
 [`AGENTS.md`](../AGENTS.md) (the protocol for an agent), [`CHANGELOG.md`](../CHANGELOG.md) and

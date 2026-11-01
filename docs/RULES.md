@@ -298,6 +298,12 @@ The chip row describes what the project *is*: declared keywords first, the top l
 fallback. Emoji from a `README` H1 are stripped — the font set has no colour glyphs, so they land
 as a box.
 
+`assets render` is the generic generator: it reads the repository and draws a card that any project
+can use. This repository's own card is a designed one, and it is still reproducible:
+`python tools/make_social_preview.py --write` renders both `assets/social-preview.png` and its SVG
+twin from a single layout description, so the two files cannot drift apart. The terminal panel in
+it repeats output the tool actually prints, which is the only reason the picture can be trusted.
+
 ## Metadata
 
 | Rule id | Level | What it checks |

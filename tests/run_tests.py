@@ -33,6 +33,8 @@ from ghalib import meta as meta_module  # noqa: E402
 from ghalib import report as report_module  # noqa: E402
 from ghalib import wiki as wiki_module  # noqa: E402
 from ghalib.util import (  # noqa: E402
+    EXCLUDED_DIRS,
+    HIDDEN_DIR_ALLOWLIST,
     PACK_NAME,
     PACK_VERSION,
     Report,
@@ -1201,8 +1203,16 @@ def test_assets(tmp: Path) -> None:
 def test_pack_hygiene() -> None:
     """The pack must ship without BOM, CRLF, machine paths or personal addresses."""
     offenders: list[str] = []
+    # Build output and tool state are not part of the published tree: `python -m build` writes
+    # its own files, and the gate used to go red for a file nobody ships.
+    ignored = set(EXCLUDED_DIRS)
     for path in sorted(PACK.rglob("*")):
         if not path.is_file() or ".git" in path.parts or "__pycache__" in path.parts:
+            continue
+        directories = path.relative_to(PACK).parts[:-1]
+        if any(part in ignored for part in directories):
+            continue
+        if any(part.startswith(".") and part not in HIDDEN_DIR_ALLOWLIST for part in directories):
             continue
         if path.name == ".install.json" or ".ghagent" in path.parts:
             continue    # machine-local artefacts, gitignored, never published

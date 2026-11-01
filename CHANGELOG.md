@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+### Added
+
+- `tools/make_social_preview.py`: the repository's own social preview, rendered from one layout
+description into `assets/social-preview.png` **and** its SVG twin, so the pair cannot drift. The
+card carries the name, one sentence, three claims and a terminal panel with output the tool
+really prints.
+
+### Changed
+
+- `assets/social-preview.png` and `assets/social-preview.svg` are the designed card now (1280×640,
+  63 KB) instead of the generic `assets render` output.
+
+### Fixed
+
+- The pack hygiene test skipped build output and tool state: one `python -m build` wrote its own
+  files under `dist/` and turned the gate red for a file nobody ships.
+
 ## [1.3.0] - 2026-11-01
 
 ### Added

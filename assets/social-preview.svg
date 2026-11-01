@@ -1,21 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="github-agent">
-  <rect width="1280" height="640" fill="#0d1117"/>
-  <rect x="0" y="0" width="1280" height="6" fill="#58a6ff"/>
-  <rect x="72" y="72" width="1136" height="496" rx="18" fill="#161b22" stroke="#30363d"/>
-  <text x="120" y="168" fill="#e6edf3" font-size="64" font-weight="700" font-family="Segoe UI, Helvetica, Arial, sans-serif">github-agent</text>
-  <text x="120" y="253" fill="#8b949e" font-size="26" font-family="Segoe UI, Helvetica, Arial, sans-serif">Repository and wiki steward for AI agents: audits, images,</text>
-  <text x="120" y="289" fill="#8b949e" font-size="26" font-family="Segoe UI, Helvetica, Arial, sans-serif">wiki, changelog — one command per job.</text>
-  <rect x="120" y="440" width="1040" height="56" rx="10" fill="#0d1117" stroke="#30363d"/>
-  <text x="144" y="476" fill="#3fb950" font-size="22" font-family="Consolas, Menlo, monospace">ghagent.py audit .</text>
-  <rect x="120" y="512" width="86" height="32" rx="16" fill="none" stroke="#30363d"/>
-  <text x="132" y="534" fill="#8b949e" font-size="16" font-family="Consolas, Menlo, monospace">python</text>
-  <rect x="216" y="512" width="86" height="32" rx="16" fill="none" stroke="#30363d"/>
-  <text x="228" y="534" fill="#8b949e" font-size="16" font-family="Consolas, Menlo, monospace">github</text>
-  <rect x="312" y="512" width="62" height="32" rx="16" fill="none" stroke="#30363d"/>
-  <text x="324" y="534" fill="#8b949e" font-size="16" font-family="Consolas, Menlo, monospace">wiki</text>
-  <rect x="384" y="512" width="62" height="32" rx="16" fill="none" stroke="#30363d"/>
-  <text x="396" y="534" fill="#8b949e" font-size="16" font-family="Consolas, Menlo, monospace">lint</text>
-  <rect x="456" y="512" width="86" height="32" rx="16" fill="none" stroke="#30363d"/>
-  <text x="468" y="534" fill="#8b949e" font-size="16" font-family="Consolas, Menlo, monospace">agents</text>
-  <text x="1160" y="614" text-anchor="end" fill="#8b949e" font-size="18" font-family="Consolas, Menlo, monospace">MIT · python</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="github-agent — repository and wiki steward">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#090d13"/>
+      <stop offset="1" stop-color="#101721"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1280" height="6" fill="#4f9cf9"/>
+  <text x="72" y="96" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#4f9cf9" text-anchor="start">REPOSITORY &amp; WIKI STEWARD</text>
+  <text x="72" y="168" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="74" fill="#e6edf3" text-anchor="start">github-agent</text>
+  <rect x="72" y="196" width="132" height="6" rx="3" fill="#4f9cf9" stroke="#4f9cf9" stroke-width="1"/>
+  <text x="72" y="248" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="27" fill="#e6edf3" text-anchor="start">One command per documentation job:</text>
+  <text x="72" y="288" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="22" fill="#8b98a5" text-anchor="start">audit  ·  lint  ·  changelog  ·  wiki  ·  images</text>
+  <rect x="72" y="346" width="8" height="8" rx="2" fill="#3fb950" stroke="#3fb950" stroke-width="1"/>
+  <text x="96" y="356" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="20" fill="#8b98a5" text-anchor="start">README, CHANGELOG and community files — scored</text>
+  <rect x="72" y="384" width="8" height="8" rx="2" fill="#3fb950" stroke="#3fb950" stroke-width="1"/>
+  <text x="96" y="394" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="20" fill="#8b98a5" text-anchor="start">Markdown, links, anchors, tables, secrets — checked</text>
+  <rect x="72" y="422" width="8" height="8" rx="2" fill="#3fb950" stroke="#3fb950" stroke-width="1"/>
+  <text x="96" y="432" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="20" fill="#8b98a5" text-anchor="start">GitHub Wiki — built, verified, published</text>
+  <rect x="672" y="88" width="536" height="400" rx="16" fill="#111823" stroke="#263242" stroke-width="1"/>
+  <circle cx="700" cy="108" r="6" fill="#ff5f56"/>
+  <circle cx="722" cy="108" r="6" fill="#ffbd2e"/>
+  <circle cx="744" cy="108" r="6" fill="#27c93f"/>
+  <line x1="672" y1="134" x2="1208" y2="134" stroke="#263242" stroke-width="1"/>
+  <text x="700" y="172" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#4f9cf9" text-anchor="start">$ ghagent audit . --min-score 85</text>
+  <text x="700" y="210" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#8b98a5" text-anchor="start"> hygiene score: 100.0% (34 items scored)</text>
+  <text x="700" y="248" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#4f9cf9" text-anchor="start">$ ghagent doc --root .</text>
+  <text x="700" y="286" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#3fb950" text-anchor="start">PASS: 0 error(s), 0 warning(s)</text>
+  <text x="700" y="324" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#4f9cf9" text-anchor="start">$ ghagent changelog check</text>
+  <text x="700" y="362" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#3fb950" text-anchor="start">PASS: 0 error(s), 0 warning(s)</text>
+  <text x="700" y="400" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#4f9cf9" text-anchor="start">$ ghagent wiki build &amp;&amp; ghagent wiki verify</text>
+  <text x="700" y="438" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#3fb950" text-anchor="start">PASS: 0 error(s)</text>
+  <line x1="72" y1="548" x2="1208" y2="548" stroke="#263242" stroke-width="1"/>
+  <text x="72" y="596" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="19" fill="#8b98a5" text-anchor="start">Python 3.11+  ·  zero runtime dependencies  ·  MIT</text>
+  <text x="1208" y="596" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="19" fill="#4f9cf9" text-anchor="end">github.com/paulmann/github-agent</text>
 </svg>

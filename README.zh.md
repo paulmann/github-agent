@@ -33,7 +33,7 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 本工具包为上述每一处都建立了可验证的约定，并把这项工作压缩到一条命令。它不写营销文案，
 也不编造数字：它检查人写下的内容，并拒绝发布已经损坏的东西。
 
-> **文档状态。** 本 README 中的每个数字都在 2026-10-30 针对 1.2.2 版本、用表格中列出的命令
+> **文档状态。** 本 README 中的每个数字都在 2026-11-01 针对 1.3.0 版本、用表格中列出的命令
 > 实测得出。较长的指南放在
 > [维基](https://github.com/paulmann/github-agent/wiki) 与 [`docs/`](docs/IMPORT.md) 中；面向
 > 智能体的协议是 [`AGENTS.md`](AGENTS.md)，打包与迁移说明见
@@ -91,7 +91,7 @@ scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 
-> **已发布到 PyPI。** `github-agent-cli` 1.2.2 自 2026-10-30 起可用:
+> **已发布到 PyPI。** `github-agent-cli` 1.3.0 自 2026-11-01 起可用:
 > <https://pypi.org/project/github-agent-cli/>。wheel 只包含 CLI；完整包
 > (skills、tests、reference、wiki 源) 从下方克隆安装。
 
@@ -131,7 +131,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 在 Windows PowerShell 中，同样的挂载写作 `-v "${PWD}:/repo"`。入口点是 `ghagent`，因此镜像名
-之后的第一个参数就是命令。1.2.2 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
+之后的第一个参数就是命令。1.3.0 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
 约定。参见 [examples/docker.md](examples/docker.md)。
 
 ### GitHub Action
@@ -140,7 +140,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.2    # 固定发布标签
+- uses: paulmann/github-agent@v1.3.0    # 固定发布标签
   with:
     command: audit .
     min-score: "80"
@@ -166,7 +166,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.2     # 占位符：固定你信任的发布标签
+    rev: v1.3.0     # 占位符：固定你信任的发布标签
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -184,7 +184,7 @@ repos:
 安装之后，一条命令即可回答 CLI 是否为已发布的构建：
 
 ```bash
-ghagent --version     # 打印版本，例如 github-agent 1.2.2
+ghagent --version     # 打印版本，例如 github-agent 1.3.0
 ghagent audit .       # 0 干净，1 有错误级发现，2 用法或环境问题
 ```
 
@@ -208,7 +208,7 @@ ghagent assets check               # 格式、尺寸、替代文本、被引用�
 ghagent wiki build                 # 为维基命名空间重写链接
 ghagent wiki verify                # 每个内部链接都能解析
 ghagent changelog check            # Keep a Changelog 与 SemVer
-ghagent changelog release 1.2.0 --write
+ghagent changelog release 1.3.0 --write
 ghagent meta suggest               # 描述与主题
 ```
 
@@ -238,7 +238,7 @@ score: 72.5% (22 scored, 1 skipped)
 | 查找密钥与本机路径 | `ghagent privacy --root .` |
 | 渲染横幅与社交预览 | `ghagent assets render --write` |
 | 构建、校验并发布维基 | `ghagent wiki build`、`verify`、`publish --push` |
-| 发布一个版本 | `ghagent changelog release 1.2.0 --write` |
+| 发布一个版本 | `ghagent changelog release 1.3.0 --write` |
 | 修正描述与主题 | `ghagent meta apply --repo owner/name --write` |
 | 把技能安装到其他智能体 | `ghagent install --profile harness --write` |
 
@@ -259,7 +259,7 @@ CLI 共有 13 条命令；表格列出的是日常使用的那几条。其余命
 
 ## 数据一览
 
-在本仓库中于 2026-10-30 针对 1.2.2 版本实测：
+在本仓库中于 2026-11-01 针对 1.3.0 版本实测：
 
 | 项目 | 数值 | 测量来源 |
 |---|---:|---|
@@ -269,7 +269,7 @@ CLI 共有 13 条命令；表格列出的是日常使用的那几条。其余命
 | 在本仓库上检查的文档规则 | 17 | `ghagent doc --json`，字段 `rules_examined` |
 | 运行时依赖 | 0 | `pyproject.toml`，`dependencies = []` |
 | 记录的平台陷阱 | 15 | [docs/RULES.md](docs/RULES.md#platform-traps) 中的陷阱表 |
-| Python 行数 | 4176 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
+| Python 行数 | 4412 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## 执行的检查
 

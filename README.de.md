@@ -37,7 +37,7 @@ Dieses Paket legt auf jede dieser Stellen einen prüfbaren Vertrag und reduziert
 einen Befehl. Es schreibt keine Marketingtexte und erfindet keine Zahlen: Es prüft, was ein
 Mensch geschrieben hat, und veröffentlicht nicht, was defekt ist.
 
-> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-10-30 gegen Version 1.2.2
+> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-11-01 gegen Version 1.3.0
 > mit den in der Tabelle genannten Befehlen gemessen. Ausführliche Anleitungen stehen im
 > [Wiki](https://github.com/paulmann/github-agent/wiki) und in [`docs/`](docs/IMPORT.md); das
 > Protokoll für Agenten ist [`AGENTS.md`](AGENTS.md), die Hinweise zu Paketierung und Migration
@@ -100,7 +100,7 @@ scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 
-> **Auf PyPI veröffentlicht.** `github-agent-cli` 1.2.2 ist seit dem 2026-10-30 verfügbar:
+> **Auf PyPI veröffentlicht.** `github-agent-cli` 1.3.0 ist seit dem 2026-11-01 verfügbar:
 > <https://pypi.org/project/github-agent-cli/>. Das Wheel enthält nur die CLI; das Paket
 > (Skills, Tests, Vorlagen, Wiki-Quellen) kommt aus dem Klon weiter unten.
 
@@ -143,7 +143,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 Unter Windows PowerShell lautet derselbe Mount `-v "${PWD}:/repo"`. Der Einstiegspunkt ist
-`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.2.2 wird
+`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.3.0 wird
 kein Registry-Image veröffentlicht, und die CI baut den Container nicht: Der Tag ist eine lokale
 Konvention. Siehe [examples/docker.md](examples/docker.md).
 
@@ -154,7 +154,7 @@ von einer PyPI-Veröffentlichung ab und funktioniert, sobald der Tag existiert:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.2    # den Release-Tag festlegen
+- uses: paulmann/github-agent@v1.3.0    # den Release-Tag festlegen
   with:
     command: audit .
     min-score: "80"
@@ -182,7 +182,7 @@ Das Repository ist zugleich eine Quelle für pre-commit-Hooks; die Hooks heißen
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.2     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
+    rev: v1.3.0     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -200,7 +200,7 @@ einen veröffentlichten Tag, weil pre-commit das Werkzeug aus dem getaggten Baum
 Nach jeder Installation beantwortet ein Befehl, ob die CLI der freigegebene Build ist:
 
 ```bash
-ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.2.2
+ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.3.0
 ghagent audit .       # 0 sauber, 1 Befunde auf Fehlerstufe, 2 Aufruf- oder Umgebungsproblem
 ```
 
@@ -225,7 +225,7 @@ ghagent assets check               # Format, Abmessungen, Alternativtext, refere
 ghagent wiki build                 # schreibt Links für den Namensraum des Wikis um
 ghagent wiki verify                # jeder interne Link löst auf
 ghagent changelog check            # Keep a Changelog und SemVer
-ghagent changelog release 1.2.0 --write
+ghagent changelog release 1.3.0 --write
 ghagent meta suggest               # Beschreibung und Topics
 ```
 
@@ -257,7 +257,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Geheimnisse und Maschinenpfade finden | `ghagent privacy --root .` |
 | Banner und Social Preview erzeugen | `ghagent assets render --write` |
 | Wiki bauen, prüfen und veröffentlichen | `ghagent wiki build`, `verify`, `publish --push` |
-| Eine Version freigeben | `ghagent changelog release 1.2.0 --write` |
+| Eine Version freigeben | `ghagent changelog release 1.3.0 --write` |
 | Beschreibung und Topics korrigieren | `ghagent meta apply --repo owner/name --write` |
 | Den Skill in einen anderen Agenten installieren | `ghagent install --profile harness --write` |
 
@@ -279,7 +279,7 @@ Repositories an einer Stelle und führt sie auf einen Rückgabecode zurück.
 
 ## In Zahlen
 
-In diesem Baum am 2026-10-30 gegen Version 1.2.2 gemessen:
+In diesem Baum am 2026-11-01 gegen Version 1.3.0 gemessen:
 
 | Messgröße | Wert | Quelle der Messung |
 |---|---:|---|
@@ -289,7 +289,7 @@ In diesem Baum am 2026-10-30 gegen Version 1.2.2 gemessen:
 | In diesem Baum geprüfte Dokumentregeln | 17 | `ghagent doc --json`, Feld `rules_examined` |
 | Laufzeitabhängigkeiten | 0 | `pyproject.toml`, `dependencies = []` |
 | Dokumentierte Plattform-Fallstricke | 15 | die Fallstricktabelle in [docs/RULES.md](docs/RULES.md#platform-traps) |
-| Python-Zeilen | 4176 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
+| Python-Zeilen | 4412 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## Ausgeführte Prüfungen
 

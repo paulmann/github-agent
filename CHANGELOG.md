@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-01
+
 ### Added
 
 - `docs/FIELD-NOTES.md`: ten defects that real repositories found, anonymised — the symptom, the
@@ -198,7 +200,8 @@ All notable changes to this project are documented here. The format is
 
 - The pack ships without tokens, absolute machine paths or personal addresses; the privacy rule fails the build if one appears, and a self-test enforces it on the pack itself.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/paulmann/github-agent/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/paulmann/github-agent/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/paulmann/github-agent/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/paulmann/github-agent/compare/v1.1.0...v1.2.0

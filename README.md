@@ -36,8 +36,8 @@ This pack puts a verifiable contract on each of those places and reduces the wor
 command. It does not write marketing copy and does not invent numbers: it checks what a human
 wrote and refuses to publish what is broken.
 
-> **Documentation status.** Every number in this README was measured on 2026-10-30 against
-> version 1.2.0 with the commands named in the table. Long guides live in the
+> **Documentation status.** Every number in this README was measured on 2026-11-01 against
+> version 1.3.0 with the commands named in the table. Long guides live in the
 > [Wiki](https://github.com/paulmann/github-agent/wiki) and [`docs/`](docs/IMPORT.md); the
 > protocol for agents is [`AGENTS.md`](AGENTS.md), the packaging and migration notes are
 > [`docs/PACKAGING.md`](docs/PACKAGING.md) and [`MIGRATION.md`](MIGRATION.md).
@@ -103,7 +103,7 @@ scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 
-> **Published on PyPI.** `github-agent-cli` 1.2.2 has been available since 2026-10-30:
+> **Published on PyPI.** `github-agent-cli` 1.3.0 has been available since 2026-11-01:
 > <https://pypi.org/project/github-agent-cli/>. The wheel ships the CLI only; the pack
 > (skills, tests, reference, wiki sources) comes from the clone below.
 
@@ -146,7 +146,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 On Windows PowerShell the same mount is `-v "${PWD}:/repo"`. The entry point is `ghagent`, so
 the first argument after the image name is the command. No registry image is published as part
-of 1.2.0 and CI does not build the container: the tag is a local convention. See
+of 1.3.0 and CI does not build the container: the tag is a local convention. See
 [examples/docker.md](examples/docker.md).
 
 ### GitHub Action
@@ -156,7 +156,7 @@ release and works as soon as the tag exists:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.2    # pin the release tag
+- uses: paulmann/github-agent@v1.3.0    # pin the release tag
   with:
     command: audit .
     min-score: "80"
@@ -183,7 +183,7 @@ The repository is also a pre-commit hook source; the hooks are `ghagent-doc`,
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.2     # placeholder: pin the release tag you decide to trust
+    rev: v1.3.0     # placeholder: pin the release tag you decide to trust
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -201,7 +201,7 @@ tag, because pre-commit builds the tool from the tagged tree.
 After any install, one command answers whether the CLI is the released build:
 
 ```bash
-ghagent --version     # prints the version, for example github-agent 1.2.2
+ghagent --version     # prints the version, for example github-agent 1.3.0
 ghagent audit .       # 0 clean, 1 findings at error level, 2 usage or environment problem
 ```
 
@@ -225,7 +225,7 @@ ghagent assets check               # format, dimensions, alt text, referenced fi
 ghagent wiki build                 # rewrite links for the wiki namespace
 ghagent wiki verify                # every internal link resolves
 ghagent changelog check            # Keep a Changelog and SemVer
-ghagent changelog release 1.2.0 --write
+ghagent changelog release 1.3.0 --write
 ghagent meta suggest               # description and topics
 ```
 
@@ -257,7 +257,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Find secrets and machine paths | `ghagent privacy --root .` |
 | Render the banner and social preview | `ghagent assets render --write` |
 | Build, verify and publish the wiki | `ghagent wiki build`, `verify`, `publish --push` |
-| Release a version | `ghagent changelog release 1.2.0 --write` |
+| Release a version | `ghagent changelog release 1.3.0 --write` |
 | Fix description and topics | `ghagent meta apply --repo owner/name --write` |
 | Install the skill into another agent | `ghagent install --profile harness --write` |
 
@@ -283,7 +283,7 @@ with one exit code.
 
 ## In numbers
 
-Measured in this tree on 2026-10-30 against version 1.2.2:
+Measured in this tree on 2026-11-01 against version 1.3.0:
 
 | Surface | Value | Measurement source |
 |---|---:|---|
@@ -293,7 +293,7 @@ Measured in this tree on 2026-10-30 against version 1.2.2:
 | Document rules examined on this tree | 17 | `ghagent doc --json`, field `rules_examined` |
 | Runtime dependencies | 0 | `pyproject.toml`, `dependencies = []` |
 | Platform traps recorded | 15 | the traps table in [docs/RULES.md](docs/RULES.md) |
-| Python lines | 4176 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
+| Python lines | 4412 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## Checks that run
 

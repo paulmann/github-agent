@@ -4,9 +4,10 @@ How `github-agent` is built, installed, published and consumed. The project has 
 contract that the packaging exists to protect: **zero third-party dependencies**. The wheel is
 the CLI plus its library, the sdist is the complete pack, and the CLI itself proves both.
 
-Measured with CPython 3.14.7 and `pip` 26.2.1 on the tree at version 1.2.2. Commands are
-written for a POSIX shell; the PowerShell equivalents are in
-[scripts/build_and_check.ps1](../scripts/build_and_check.ps1).
+Measured when this page was first written (1.2.2, CPython 3.14.7, `pip` 26.2.1) and re-measured on
+1.3.0 (CPython 3.13.15, `pip` 25.3); the wheel layout, the sdist contents and the zero-dependency
+check are the same under both. Commands are written for a POSIX shell; the PowerShell equivalents
+are in [scripts/build_and_check.ps1](../scripts/build_and_check.ps1).
 
 ## Contents
 
@@ -31,8 +32,8 @@ written for a POSIX shell; the PowerShell equivalents are in
 
 | Artefact | Built from | Contains | Audience |
 |---|---|---|---|
-| Wheel `github_agent_cli-1.2.2-py3-none-any.whl` | [pyproject.toml](../pyproject.toml) | `ghagent.py`, `ghalib/`, dist-info | `pip`, `uv`, `pipx` users |
-| sdist `github_agent_cli-1.2.2.tar.gz` | the same tree | the whole pack: `tools/`, `tests/`, `skills/`, `reference/`, `docs/`, `wiki/`, `assets/`, `.github/`, packaging files | pack installation, reproducible source |
+| Wheel `github_agent_cli-1.3.0-py3-none-any.whl` | [pyproject.toml](../pyproject.toml) | `ghagent.py`, `ghalib/`, dist-info | `pip`, `uv`, `pipx` users |
+| sdist `github_agent_cli-1.3.0.tar.gz` | the same tree | the whole pack: `tools/`, `tests/`, `skills/`, `reference/`, `docs/`, `wiki/`, `assets/`, `.github/`, packaging files | pack installation, reproducible source |
 | Composite Action [action.yml](../action.yml) | the tagged repository | installs the action checkout with `pip`, then runs `ghagent` | CI workflows |
 | Container image [Dockerfile](../Dockerfile) | the build context | the wheel in `python:3.13-slim`, `ENTRYPOINT ghagent` | local containers |
 | pre-commit hooks [.pre-commit-hooks.yaml](../.pre-commit-hooks.yaml) | the tagged repository | four hooks, `language: python` | contributors |
@@ -85,10 +86,10 @@ python -m twine check dist/*
 Measured output of the last verified build:
 
 ```text
-Successfully built github_agent_cli-1.2.2.tar.gz and github_agent_cli-1.2.2-py3-none-any.whl
+Successfully built github_agent_cli-1.3.0.tar.gz and github_agent_cli-1.3.0-py3-none-any.whl
 ...
-Checking dist/github_agent_cli-1.2.2-py3-none-any.whl: PASSED
-Checking dist/github_agent_cli-1.2.2.tar.gz: PASSED
+Checking dist/github_agent_cli-1.3.0-py3-none-any.whl: PASSED
+Checking dist/github_agent_cli-1.3.0.tar.gz: PASSED
 ```
 
 `python -m build` uses build isolation: it downloads `hatchling>=1.27` (the declared build
@@ -128,7 +129,7 @@ uv tool install github-agent-cli            # isolated CLI, recommended
 pipx install github-agent-cli               # isolated CLI, alternative
 pip install github-agent-cli                # into the current environment
 pip install "github-agent-cli[png]"         # plus Pillow, for PNG banner output
-ghagent --version                       # github-agent 1.2.2
+ghagent --version                       # github-agent 1.3.0
 ```
 
 These commands resolve from PyPI after the first publication; until then install the wheel
@@ -139,7 +140,7 @@ clean installation, measured in a fresh virtual environment:
 $ pip list
 Package      Version
 ------------ -------
-github-agent 1.2.2
+github-agent 1.3.0
 pip          26.2.1
 ```
 
@@ -159,7 +160,7 @@ have verified anything. The next section is that path.
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py --version       # github-agent 1.2.2
+python tools/ghagent.py --version       # github-agent 1.3.0
 python tools/ghagent.py selftest        # must print PASS
 python tools/ghagent.py install --profile harness --write
 ```
@@ -177,18 +178,18 @@ The wheel has 17 entries and no other top-level name:
 |---|---|
 | `ghagent.py` | the console-script target (`ghagent = "ghagent:main"`) |
 | `ghalib/` | 11 library modules, one small file each, standard library only |
-| `github_agent_cli-1.2.2.dist-info/` | `METADATA`, `WHEEL`, `entry_points.txt`, `licenses/LICENSE`, `RECORD` |
+| `github_agent_cli-1.3.0.dist-info/` | `METADATA`, `WHEEL`, `entry_points.txt`, `licenses/LICENSE`, `RECORD` |
 
 `only-include` and `sources` in `pyproject.toml` strip the `tools/` prefix, so site-packages
 gets `ghagent.py` and `ghalib/` and never a generic `tools` package. The verification checks
 that absence explicitly.
 
-Key metadata lines from `github_agent_cli-1.2.2.dist-info/METADATA`:
+Key metadata lines from `github_agent_cli-1.3.0.dist-info/METADATA`:
 
 ```text
 Metadata-Version: 2.5
 Name: github-agent
-Version: 1.2.2
+Version: 1.3.0
 Requires-Python: >=3.11
 License-Expression: MIT
 License-File: LICENSE
@@ -215,7 +216,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: paulmann/github-agent@v1.2.2
+      - uses: paulmann/github-agent@v1.3.0
         with:
           command: audit . --min-score 80
 ```
@@ -240,9 +241,9 @@ given.
 ## Docker image
 
 ```bash
-docker build -t ghagent:1.2.2 .
-docker run --rm ghagent:1.2.2 --version
-docker run --rm -v "$PWD:/repo" ghagent:1.2.2 audit . --min-score 80
+docker build -t ghagent:1.3.0 .
+docker run --rm ghagent:1.3.0 --version
+docker run --rm -v "$PWD:/repo" ghagent:1.3.0 audit . --min-score 80
 ```
 
 Two stages, both `python:3.13-slim`. The build stage runs `pip wheel` against the build
@@ -260,7 +261,7 @@ supported local path, not as a public image reference.
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.2
+    rev: v1.3.0
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -311,14 +312,14 @@ mistake is a new patch version, never a silently replaced file.
 
 ## PyPI publication
 
-`github-agent-cli` 1.2.2 was published on 2026-10-30. Measured facts:
+`github-agent-cli` 1.3.0 was published on 2026-10-30. Measured facts:
 
 | Fact | Value |
 |---|---|
 | Project page | <https://pypi.org/project/github-agent-cli/> |
 | Wheel on PyPI | `github_agent_cli-1.2.2-py3-none-any.whl`, sha256 `8cc2d1a28eee11d5be29bb60b8f8b35ce859167b6e1760db9e9bfcc292aea0ee` |
 | sdist on PyPI | `github_agent_cli-1.2.2.tar.gz`, sha256 `28926c81880c92ff59fbafa4b0d15b65e8c4b90fb43de920d0240fdf28a1ab03` |
-| Installed check | `pip install github-agent-cli` in a clean venv → `ghagent --version` prints `github-agent 1.2.2`; only that one package is installed |
+| Installed check | `pip install github-agent-cli` in a clean venv → `ghagent --version` prints `github-agent 1.3.0`; only that one package is installed |
 
 The PyPI files are built by the `Publish` workflow on the runner, so their hashes differ from the
 GitHub release assets, which are built locally from the tagged tree. Both are legitimate builds of
@@ -346,7 +347,7 @@ The project now exists, so a trusted publisher can be attached to it instead of 
 
 ## Homebrew and Scoop
 
-Both manifests are real now: they point at the published 1.2.2 files and CI job `manifests`
+Both manifests are real now: they point at the published 1.3.0 files and CI job `manifests`
 downloads each URL and compares its SHA-256 before a pull request can merge.
 
 | Package manager | File | Install |
@@ -360,7 +361,7 @@ into a virtualenv with `python@3.13`, so `brew` users need no pip. The Scoop man
 Windows bundle `github-agent-cli-1.2.2-windows-x64.zip` (sha256
 `2676f33b2752df4cc04188a741816933b4ae860189305ddcf71041a3ee1c85a4`): `ghagent.cmd`,
 `lib/` with the wheel contents, and `depends: python` for the interpreter. The bundle was executed
-on Windows before upload — `ghagent.cmd --version` printed `github-agent 1.2.2` and an audit scored
+on Windows before upload — `ghagent.cmd --version` printed `github-agent 1.3.0` and an audit scored
 100.0%.
 
 The canonical copies live in the tap (`paulmann/homebrew-github-agent-cli`) and bucket
@@ -393,5 +394,5 @@ on the same commit that enabled them.
 | version in the filename is stale | `PACK_VERSION` was not changed | change it in `tools/ghalib/util.py` only |
 | `twine check` warns about metadata | an invalid license or readme declaration | keep `license = "MIT"` and `license-files = ["LICENSE"]` |
 | the Action cannot find `ghagent` | `pip install "$GITHUB_ACTION_PATH"` did not run | check the composite step order and its exit code |
-| pre-commit cannot find the revision | `rev` is a branch or a missing tag | use a released tag such as `v1.2.0` |
+| pre-commit cannot find the revision | `rev` is a branch or a missing tag | use a released tag such as `v1.3.0` |
 | a publish run fails on permissions | Trusted Publishing not configured, or no `pypi` environment | complete the setup above before uploading |

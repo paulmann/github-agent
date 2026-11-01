@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-01
+
 ### Добавлено
 
 - `packaging/homebrew/github-agent-cli.rb`: формула Homebrew, которая ставит sdist с PyPI
@@ -156,7 +158,8 @@
 
 - Пакет поставляется без токенов, абсолютных путей машины и личных адресов; правило приватности роняет сборку, если такое появится, а самопроверка следит за самим пакетом.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/paulmann/github-agent/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/paulmann/github-agent/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/paulmann/github-agent/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/paulmann/github-agent/compare/v1.1.0...v1.2.0

@@ -35,7 +35,7 @@ CHANGELOG и контракты сообщества, проверяет док�
 Он не пишет рекламных текстов и не выдумывает чисел: он проверяет то, что написал человек,
 и отказывается публиковать сломанное.
 
-> **Состояние документации.** Каждое число в этом README измерено 2026-10-30 на версии 1.2.2
+> **Состояние документации.** Каждое число в этом README измерено 2026-11-01 на версии 1.3.0
 > командами, названными в таблице. Подробные руководства лежат в
 > [вики](https://github.com/paulmann/github-agent/wiki) и в [`docs/`](docs/IMPORT.ru.md);
 > протокол для агентов — [`AGENTS.md`](AGENTS.ru.md), заметки об упаковке и миграции —
@@ -103,7 +103,7 @@ scoop install github-agent-cli                                     # Windows
 ghagent --version
 ```
 
-> **Опубликовано на PyPI.** `github-agent-cli` 1.2.2 доступен с 2026-10-30:
+> **Опубликовано на PyPI.** `github-agent-cli` 1.3.0 доступен с 2026-11-01:
 > <https://pypi.org/project/github-agent-cli/>. Колесо содержит только CLI; пакет
 > (скиллы, тесты, шаблоны, исходники вики) ставится из клона ниже.
 
@@ -145,7 +145,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 В Windows PowerShell тот же монтаж выглядит как `-v "${PWD}:/repo"`. Точка входа — `ghagent`,
-поэтому первый аргумент после имени образа — это команда. В рамках 1.2.0 образ в реестр не
+поэтому первый аргумент после имени образа — это команда. В рамках 1.3.0 образ в реестр не
 публикуется, и CI контейнер не собирает: тег — локальная договорённость. См.
 [examples/docker.md](examples/docker.md).
 
@@ -156,7 +156,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.2.2    # закрепите релизный тег
+- uses: paulmann/github-agent@v1.3.0    # закрепите релизный тег
   with:
     command: audit .
     min-score: "80"
@@ -183,7 +183,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.2.2     # заглушка: закрепите релизный тег, которому доверяете
+    rev: v1.3.0     # заглушка: закрепите релизный тег, которому доверяете
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -201,7 +201,7 @@ repos:
 После любой установки на вопрос, является ли CLI релизной сборкой, отвечает одна команда:
 
 ```bash
-ghagent --version     # печатает версию, например github-agent 1.2.2
+ghagent --version     # печатает версию, например github-agent 1.3.0
 ghagent audit .       # 0 чисто, 1 находки уровня error, 2 ошибка вызова или окружения
 ```
 
@@ -225,7 +225,7 @@ ghagent assets check               # формат, размеры, alt-текс�
 ghagent wiki build                 # переписать ссылки под пространство вики
 ghagent wiki verify                # каждая внутренняя ссылка разрешается
 ghagent changelog check            # Keep a Changelog и SemVer
-ghagent changelog release 1.2.0 --write
+ghagent changelog release 1.3.0 --write
 ghagent meta suggest               # описание и темы
 ```
 
@@ -257,7 +257,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Найти секреты и машинные пути | `ghagent privacy --root .` |
 | Нарисовать баннер и социальное превью | `ghagent assets render --write` |
 | Собрать, проверить и опубликовать вики | `ghagent wiki build`, `verify`, `publish --push` |
-| Выпустить версию | `ghagent changelog release 1.2.0 --write` |
+| Выпустить версию | `ghagent changelog release 1.3.0 --write` |
 | Привести в порядок описание и темы | `ghagent meta apply --repo owner/name --write` |
 | Установить навык другому агенту | `ghagent install --profile harness --write` |
 
@@ -279,7 +279,7 @@ score: 72.5% (22 scored, 1 skipped)
 
 ## В цифрах
 
-Измерено в этом дереве 2026-10-30 на версии 1.2.2:
+Измерено в этом дереве 2026-11-01 на версии 1.3.0:
 
 | Поверхность | Значение | Источник измерения |
 |---|---:|---|
@@ -289,7 +289,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Правил документов, осмотренных на этом дереве | 17 | `ghagent doc --json`, поле `rules_examined` |
 | Зависимостей при запуске | 0 | `pyproject.toml`, `dependencies = []` |
 | Записанных ловушек платформы | 15 | таблица ловушек в [docs/RULES.md](docs/RULES.md) |
-| Строк Python | 4176 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
+| Строк Python | 4412 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## Проверки, которые выполняются
 

@@ -8,8 +8,8 @@ class GithubAgentCli < Formula
 
   desc "Repository and wiki steward: one command per documentation job"
   homepage "https://github.com/paulmann/github-agent"
-  url "https://files.pythonhosted.org/packages/source/g/github-agent-cli/github_agent_cli-1.2.2.tar.gz"
-  sha256 "f60d17b10a25fe6c9b307509fa7f0e58a571d1e39f802191dc1d6828b8ee14ae"
+  url "https://files.pythonhosted.org/packages/source/g/github-agent-cli/github_agent_cli-1.3.0.tar.gz"
+  sha256 "763595eb57df20b7e12711946680e528d100794d3fc0addf8fb4c9b06d33cf26"
   license "MIT"
 
   depends_on "python@3.13"

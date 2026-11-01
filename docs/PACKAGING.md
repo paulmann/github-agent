@@ -312,14 +312,14 @@ mistake is a new patch version, never a silently replaced file.
 
 ## PyPI publication
 
-`github-agent-cli` 1.3.0 was published on 2026-10-30. Measured facts:
+`github-agent-cli` 1.3.0 was published on 2026-11-01. Measured facts:
 
 | Fact | Value |
 |---|---|
 | Project page | <https://pypi.org/project/github-agent-cli/> |
-| Wheel on PyPI | `github_agent_cli-1.2.2-py3-none-any.whl`, sha256 `8cc2d1a28eee11d5be29bb60b8f8b35ce859167b6e1760db9e9bfcc292aea0ee` |
-| sdist on PyPI | `github_agent_cli-1.2.2.tar.gz`, sha256 `28926c81880c92ff59fbafa4b0d15b65e8c4b90fb43de920d0240fdf28a1ab03` |
-| Installed check | `pip install github-agent-cli` in a clean venv → `ghagent --version` prints `github-agent 1.3.0`; only that one package is installed |
+| Wheel on PyPI | `github_agent_cli-1.3.0-py3-none-any.whl`, 71 318 bytes, sha256 `f62fe090fe9267e749e76b6e1fd0d8b291115729ff139941068a986c147983fc` |
+| sdist on PyPI | `github_agent_cli-1.3.0.tar.gz`, 317 289 bytes, sha256 `763595eb57df20b7e12711946680e528d100794d3fc0addf8fb4c9b06d33cf26` |
+| Installed check | the published wheel, unpacked and run with CPython 3.13.15: `ghagent --version` prints `github-agent 1.3.0`, `ghagent audit . --min-score 90` scores 100.0% and exits 0 |
 
 The PyPI files are built by the `Publish` workflow on the runner, so their hashes differ from the
 GitHub release assets, which are built locally from the tagged tree. Both are legitimate builds of
@@ -356,10 +356,10 @@ downloads each URL and compares its SHA-256 before a pull request can merge.
 | Scoop (Windows) | [packaging/scoop/github-agent-cli.json](../packaging/scoop/github-agent-cli.json) | `scoop bucket add github-agent-cli https://github.com/paulmann/scoop-github-agent-cli` then `scoop install github-agent-cli` |
 
 The formula installs the PyPI sdist
-(`github_agent_cli-1.2.2.tar.gz`, sha256 `f60d17b10a25fe6c9b307509fa7f0e58a571d1e39f802191dc1d6828b8ee14ae`)
+(`github_agent_cli-1.3.0.tar.gz`, sha256 `763595eb57df20b7e12711946680e528d100794d3fc0addf8fb4c9b06d33cf26`)
 into a virtualenv with `python@3.13`, so `brew` users need no pip. The Scoop manifest installs the
-Windows bundle `github-agent-cli-1.2.2-windows-x64.zip` (sha256
-`2676f33b2752df4cc04188a741816933b4ae860189305ddcf71041a3ee1c85a4`): `ghagent.cmd`,
+Windows bundle `github-agent-cli-1.3.0-windows-x64.zip` (sha256
+`cd88d4858ad183799a71dd8065092cc84c3813dc11ffe75e319ccc052e5077fe`): `ghagent.cmd`,
 `lib/` with the wheel contents, and `depends: python` for the interpreter. The bundle was executed
 on Windows before upload — `ghagent.cmd --version` printed `github-agent 1.3.0` and an audit scored
 100.0%.

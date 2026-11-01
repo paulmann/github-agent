@@ -148,3 +148,10 @@ check_untyped_defs = true
 no_implicit_optional = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+# Pillow is the optional extra: it is absent on a bare checkout and in CI, and the pack
+# imports it lazily, inside a function, exactly so that a missing Pillow lowers the output
+# format instead of breaking the import. The checker must not turn that into an error.
+[[tool.mypy.overrides]]
+module = ["PIL", "PIL.*"]
+ignore_missing_imports = true

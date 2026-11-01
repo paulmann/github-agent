@@ -9,7 +9,7 @@ from . import changelog as changelog_module
 from . import config as cfg
 from . import mdcheck
 from . import wiki as wiki_module
-from .util import EXIT_FAIL, EXIT_OK, Report, rel
+from .util import EXIT_FAIL, EXIT_OK, Report
 
 
 def build(root: Path) -> tuple[str, int]:

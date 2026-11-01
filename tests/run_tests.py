@@ -24,24 +24,23 @@ HERE = Path(__file__).resolve().parent
 PACK = HERE.parent
 sys.path.insert(0, str(PACK / "tools"))
 
-from ghalib import audit as audit_module          # noqa: E402
+from ghalib import assets as assets_module  # noqa: E402
+from ghalib import audit as audit_module  # noqa: E402
 from ghalib import changelog as changelog_module  # noqa: E402
-from ghalib import install as install_module      # noqa: E402
-from ghalib import mdcheck                        # noqa: E402
-from ghalib import meta as meta_module            # noqa: E402
-from ghalib import report as report_module        # noqa: E402
-from ghalib import wiki as wiki_module            # noqa: E402
-from ghalib.util import (                          # noqa: E402
+from ghalib import install as install_module  # noqa: E402
+from ghalib import mdcheck  # noqa: E402
+from ghalib import meta as meta_module  # noqa: E402
+from ghalib import report as report_module  # noqa: E402
+from ghalib import wiki as wiki_module  # noqa: E402
+from ghalib.util import (  # noqa: E402
     PACK_NAME,
     PACK_VERSION,
     Report,
+    SlugRegistry,
     force_utf8_stdio,
     git,
     read_text,
-    run,
-    scan_structure,
     slugify,
-    SlugRegistry,
     write_text,
 )
 
@@ -392,6 +391,174 @@ def test_doc_decoys(tmp: Path) -> None:
     checker = mdcheck.DocChecker(root, rule_report, mdcheck.DocCheckOptions(ignore={"md.toc"}))
     checker.check_tree()
     check("doc: --ignore skips a rule", "md.toc" in rule_report.data.get("rules_ignored", []))
+
+
+def test_wiki_mode(tmp: Path) -> None:
+    """A wiki addresses pages by name; a repository addresses files. Both are checked.
+
+    Reported from a real session: `doc --root <wiki checkout>` produced 119 `md.link-local`
+    errors on correct links and two `md.h1` errors for `_Sidebar.md`/`_Footer.md`, so the
+    only way to run the gate was `--ignore md.link-local,md.h1` — which also switched off
+    the real checks.
+    """
+    root = tmp / "wiki-tree"
+    root.mkdir(parents=True, exist_ok=True)
+    write_text(root / "_Sidebar.md", "- [Home](Home)\n- [Migration](Migration-3.x-to-4.0)\n")
+    write_text(root / "_Footer.md", "*Footer text.*\n")
+    write_text(root / "Home.md",
+               "# Home\n\nSee [Architecture](Architecture) and [migration](Migration-3.x-to-4.0#steps).\n")
+    write_text(root / "Architecture.md", "# Architecture\n\n## Security model\n\nText.\n")
+    write_text(root / "Migration-3.x-to-4.0.md", "# Migration\n\n## Steps\n\nText.\n")
+
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions())
+    checker.check_tree()
+    check("wiki: a page-name link resolves inside a wiki checkout", not report.errors,
+          "; ".join(f"{f.rule}:{f.message}" for f in report.errors[:4]))
+    check("wiki: a page name with dots in it resolves",
+          not [f for f in report.findings if f.rule == "md.link-local"],
+          str([f.message for f in report.findings if f.rule == "md.link-local"]))
+    check("wiki: the partials are a note, not an error",
+          all(f.level == "info" for f in report.findings if f.rule == "md.h1"),
+          str([(f.level, f.path) for f in report.findings if f.rule == "md.h1"]))
+
+    # The same link outside a wiki is a 404 on GitHub and must stay an error.
+    repo = tmp / "plain-repo"
+    repo.mkdir(parents=True, exist_ok=True)
+    write_text(repo / "Page.md", "# Page\n\nSee [Architecture](Architecture).\n")
+    write_text(repo / "Architecture.md", "# Architecture\n\nText.\n")
+    report = Report(title="doc", root=str(repo))
+    checker = mdcheck.DocChecker(repo, report, mdcheck.DocCheckOptions())
+    checker.check_tree()
+    expect_rule(report, "md.link-local", "wiki: the same link outside a wiki is still an error")
+
+    # The resolution is not a blanket excuse: a page that does not exist is reported.
+    write_text(root / "Home.md", "# Home\n\nSee [Nowhere](Nowhere).\n")
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions())
+    checker.check_file(root / "Home.md")
+    expect_rule(report, "md.link-local", "wiki: a link to a missing page is still an error")
+
+
+def test_hidden_dirs(tmp: Path) -> None:
+    """Tool state is not documentation: `.swarm`, `.zwork`, `.claude` are never published."""
+    # The literal paths are assembled at run time: this file is itself checked by the
+    # pack's privacy rule, and a machine path written here would be a finding of its own.
+    posix_home = "/" + "home/" + "projectowner/project"
+    windows_home = "C:" + "\\" + "Users" + "\\" + "projectowner"
+    root = tmp / "hidden"
+    root.mkdir(parents=True, exist_ok=True)
+    write_text(root / "README.md", "# Title\n\nText.\n")
+    write_text(root / "docs/local.md", f"# Local\n\nWorkspace: {posix_home}\n")
+    write_text(root / ".swarm/plan.md", f"Workspace: {posix_home}\n")
+    write_text(root / ".zwork/notes.md", f"Path: {windows_home}\n")
+    write_text(root / ".github/ISSUE_TEMPLATE/bug.md", "Body starts at H2.\n")
+
+    report = Report(title="doc", root=str(root))
+    checker = mdcheck.DocChecker(root, report, mdcheck.DocCheckOptions())
+    checker.check_tree()
+    paths = [f.path for f in report.findings if f.rule == "privacy.abs-path"]
+    check("hidden: the published file is still reported", paths == ["docs/local.md"], str(paths))
+    files = {str(path.relative_to(root)).replace("\\", "/") for path in mdcheck.iter_text_files(root)}
+    check("hidden: the walker skips dot-directories and keeps .github",
+          files == {"README.md", "docs/local.md", ".github/ISSUE_TEMPLATE/bug.md"}, str(sorted(files)))
+
+
+def test_changelog_traps(tmp: Path) -> None:
+    """Three findings that turned a correct Keep a Changelog into a red gate."""
+    root = tmp / "changelog-traps"
+    root.mkdir(parents=True, exist_ok=True)
+    body = (
+        "# Changelog\n\n"
+        "## [Unreleased]\n\n"
+        "### Added — template language\n\n- A thing.\n\n"
+        "## [2.0.0] - 2024-05-01\n\nThe release that rewrote everything.\n\n"
+        "## [1.0.0] - 2023-01-01\n\n### Fixed\n\n- A bug.\n"
+    )
+    write_text(root / "CHANGELOG.md", body)
+    report = changelog_module.check(root / "CHANGELOG.md")
+    check("changelog: a grouped heading `Added — subtitle` is a known type",
+          not [f for f in report.findings if f.rule == "changelog.types"],
+          str([f.message for f in report.findings if f.rule == "changelog.types"]))
+    check("changelog: missing link references are a warning, not an error",
+          not report.errors and any(f.rule == "changelog.link-refs" and f.level == "warn"
+                                    for f in report.findings),
+          str([(f.rule, f.level) for f in report.findings]))
+    check("changelog: a version described in prose is a warning",
+          any(f.rule == "changelog.prose-version" and f.level == "warn" for f in report.findings),
+          str([(f.rule, f.level) for f in report.findings]))
+
+    # An empty version is still an error: the warning must not swallow a real defect.
+    write_text(root / "EMPTY.md",
+               "# Changelog\n\n## [1.0.0] - 2024-01-01\n\n## [0.9.0] - 2023-01-01\n\n### Added\n\n- x.\n")
+    report = changelog_module.check(root / "EMPTY.md")
+    expect_rule(report, "changelog.empty-version", "changelog: a version with no content is still an error")
+
+
+def test_wiki_verify_target(tmp: Path) -> None:
+    """`wiki verify` must verify what the caller named, and say so in the header."""
+    repo = tmp / "verify-repo"
+    (repo / "wiki").mkdir(parents=True, exist_ok=True)
+    write_text(repo / "wiki" / "Home.md", "# Home\n\nText.\n")
+    report = wiki_module.verify_target(repo, out=None, wiki_dir="wiki", wiki_dir_given=False)
+    check("wiki: sources without a build say `run build`",
+          any(f.rule == "wiki.build-missing" for f in report.errors), report.render())
+
+    clone = tmp / "wiki-clone"
+    clone.mkdir(parents=True, exist_ok=True)
+    write_text(clone / "Home.md", "# Home\n\n[Other](Other)\n")
+    write_text(clone / "Other.md", "# Other\n\nText.\n")
+    write_text(clone / "_Sidebar.md", "- [Home](Home)\n- [Other](Other)\n")
+    write_text(clone / "_Footer.md", "*Footer.*\n")
+    report = wiki_module.verify_target(repo, out=None, wiki_dir=str(clone), wiki_dir_given=True)
+    check("wiki: --wiki-dir naming a checkout is verified there", not report.errors, report.render())
+    check("wiki: the header names the directory that was verified", str(clone) in report.root, report.root)
+
+    empty = tmp / "no-wiki"
+    empty.mkdir(parents=True, exist_ok=True)
+    report = wiki_module.verify_target(empty, out=None, wiki_dir="wiki", wiki_dir_given=False)
+    check("wiki: nothing to verify is a note, not an error",
+          not report.errors and any(f.rule == "wiki.not-applicable" for f in report.findings),
+          report.render())
+
+
+def test_meta_remote(tmp: Path) -> None:
+    """`meta check --repo` reads the remote; an unreadable remote is not an empty description."""
+    import contextlib
+    import io
+
+    import ghagent  # the CLI module in tools/
+
+    original = meta_module.read_remote
+    meta_module.read_remote = lambda slug: None
+    buffer = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buffer):
+            code = ghagent.main(["meta", "check", "--repo", "owner/repo"])
+    finally:
+        meta_module.read_remote = original
+    output = buffer.getvalue()
+    check("meta: an unreadable remote is an error", code == 1 and "cannot read" in output, output[:300])
+    check("meta: the empty field is not claimed without reading", "description is empty" not in output, output[:300])
+
+
+def test_assets_traps(tmp: Path) -> None:
+    """A cut banner is reported, and a two-line title is not called cut."""
+    check("assets: a two-line title is not reported as cut",
+          not assets_module._truncated(assets_module._wrap("HTML.PHP — Template Processing Library", 26, 2)))
+    check("assets: an over-long tagline is reported as cut",
+          assets_module._truncated(assets_module._wrap("word " * 60, 62, 3)))
+    root = tmp / "assets-traps"
+    root.mkdir(parents=True, exist_ok=True)
+    write_text(root / "README.md", "# Title\n\n**Summary.**\n")
+    spec = assets_module.BannerSpec(
+        title="A repository title long enough that it cannot fit on two short lines",
+        tagline="short")
+    report = assets_module.write_assets(root, spec=spec, write=False)
+    check("assets: a cut title is a warning, not silence",
+          any(f.rule == "assets.truncated" and f.level == "warn" for f in report.findings), report.render())
+    check("assets: an empty command line is a note",
+          any(f.rule == "assets.no-command" for f in report.findings), report.render())
 
 
 def test_agents_md_length(tmp: Path) -> None:
@@ -1070,6 +1237,12 @@ def main() -> int:
             ("doc-good", lambda: test_doc_good(tmp)),
             ("doc-defects", lambda: test_doc_defects(tmp)),
             ("doc-decoys", lambda: test_doc_decoys(tmp)),
+            ("wiki-mode", lambda: test_wiki_mode(tmp)),
+            ("hidden-dirs", lambda: test_hidden_dirs(tmp)),
+            ("changelog-traps", lambda: test_changelog_traps(tmp)),
+            ("wiki-verify-target", lambda: test_wiki_verify_target(tmp)),
+            ("meta-remote", lambda: test_meta_remote(tmp)),
+            ("assets-traps", lambda: test_assets_traps(tmp)),
             ("agents-md-length", lambda: test_agents_md_length(tmp)),
             ("privacy", lambda: test_privacy(tmp)),
             ("audit", lambda: test_audit(tmp)),

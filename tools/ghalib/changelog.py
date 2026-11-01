@@ -57,6 +57,11 @@ TYPE_TO_SECTION = {
 NOISE_TYPES = {"chore", "test", "tests", "ci", "wip", "release"}
 SECTION_ORDER = {name.lower(): index for index, name in enumerate(TYPES_EN)}
 SECTION_ORDER.update({name.lower(): index for index, name in enumerate(TYPES_RU)})
+# A group heading may carry a subtitle: `### Added — template language`. The subtitle
+# groups entries inside the type, it does not invent a new type, so it is dropped before
+# the lookup. Measured on a real changelog: 10 false "unknown change type" warnings, one
+# per grouped section, on a document that follows Keep a Changelog.
+SUBTITLE_SPLIT = re.compile(r"\s+[—–-]\s+|\s*:\s+")
 
 
 @dataclass
@@ -66,10 +71,19 @@ class VersionSection:
     line: int
     sections: list[tuple[str, int]]     # (heading text, line)
     items: int = 0
+    prose: int = 0                      # non-blank body lines outside a `###` subsection
 
 
 def section_name(heading: str) -> str | None:
-    return TYPE_ALIASES.get(heading.strip().lower())
+    """Map a `###` heading to a canonical change type, ignoring a grouping subtitle."""
+    text = heading.strip()
+    canonical = TYPE_ALIASES.get(text.lower())
+    if canonical:
+        return canonical
+    base = SUBTITLE_SPLIT.split(text, maxsplit=1)[0].strip()
+    if base != text:
+        return TYPE_ALIASES.get(base.lower())
+    return None
 
 
 def parse(text: str) -> tuple[list[VersionSection], dict[str, str]]:
@@ -91,6 +105,8 @@ def parse(text: str) -> tuple[list[VersionSection], dict[str, str]]:
             if level == 2:
                 if current and current_section_start is not None:
                     current.items += _count_items(lines, current_section_start, index)
+                if current:
+                    current.prose += _count_prose(lines, current.line, index)
                 current_section_start = None
                 if title.strip().strip("[]").lower() in {"unreleased", "не выпущено", "невыпущено"}:
                     current = VersionSection(version="Unreleased", date="", line=index, sections=[])
@@ -109,7 +125,20 @@ def parse(text: str) -> tuple[list[VersionSection], dict[str, str]]:
                 current_section_start = index
     if current and current_section_start is not None:
         current.items += _count_items(lines, current_section_start, len(lines) + 1)
+    if current:
+        current.prose += _count_prose(lines, current.line, len(lines) + 1)
     return versions, references
+
+
+def _count_prose(lines: list[str], start: int, end: int) -> int:
+    """Body lines that are neither a heading, a list item nor blank."""
+    count = 0
+    for raw in lines[start:end - 1]:
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#") or re.match(r"^[-*]\s+\S", stripped):
+            continue
+        count += 1
+    return count
 
 
 def _count_items(lines: list[str], start: int, end: int) -> int:
@@ -207,11 +236,23 @@ def check(path: Path, *, report: Report | None = None, slug: str = "", today: dt
         previous_key = key
 
         if not section.sections:
-            report.error("changelog.empty-version", f"version {section.version} has no change subsections",
-                         path=path.name, line=section.line)
+            if section.prose:
+                report.warn("changelog.prose-version",
+                            f"version {section.version} describes its changes in prose, without `###` subsections",
+                            path=path.name, line=section.line,
+                            hint="Keep a Changelog reads a version by subsection; a paragraph is accepted but not comparable")
+            else:
+                report.error("changelog.empty-version", f"version {section.version} has no change subsections",
+                             path=path.name, line=section.line)
         if section.sections and section.items == 0:
-            report.error("changelog.empty-version", f"version {section.version} has headings but no entries",
-                         path=path.name, line=section.line)
+            if section.prose:
+                report.warn("changelog.prose-version",
+                            f"version {section.version}: the subsections carry no list items",
+                            path=path.name, line=section.line,
+                            hint="list each change as a `- ` item so it can be compared and released")
+            else:
+                report.error("changelog.empty-version", f"version {section.version} has headings but no entries",
+                             path=path.name, line=section.line)
 
         names: list[str] = []
         for heading, line in section.sections:
@@ -229,8 +270,12 @@ def check(path: Path, *, report: Report | None = None, slug: str = "", today: dt
     uses_brackets = any(re.match(r"^##\s+\[", raw) for raw in lines)
     if uses_brackets:
         if not references:
-            report.error("changelog.link-refs", "versions use [x.y.z] but there are no link references at the bottom",
-                         path=path.name, hint="add `[x.y.z]: https://…/compare/…` lines")
+            # Keep a Changelog makes the link references optional: `## [Unreleased]` without
+            # a bottom-of-file `[unreleased]:` line is a legal document. Reporting it as an
+            # error turned a correct changelog into a red gate (measured: exit 1 on a
+            # repository whose only defect was the missing optional block).
+            report.warn("changelog.link-refs", "versions use [x.y.z] but there are no link references at the bottom",
+                        path=path.name, hint="optional in Keep a Changelog; `[x.y.z]: https://…/compare/…` links the versions")
         else:
             for label in ["unreleased", *[v.version.lower() for v in released]]:
                 if label not in references:
@@ -390,7 +435,7 @@ def suggest(root: Path, since: str, *, include_noise: bool = False, limit: int =
     breaking: list[str] = []
     for record in records:
         parts = record.split("\x1f")
-        sha = parts[0].strip()[:7]
+        _sha = parts[0].strip()[:7]      # the record format is `<sha>\x1f<subject>\x1f<body>`
         subject = parts[1].strip() if len(parts) > 1 else ""
         body = parts[2].strip() if len(parts) > 2 else ""
         match = CONVENTIONAL_RE.match(subject)

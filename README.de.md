@@ -13,13 +13,20 @@ Wiki im Repository — ein Befehl pro Aufgabe.
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Lizenz: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Laufzeitabhängigkeiten](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![Selbsttests](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
+[![Selbsttests](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — Verwalter für Repositories und Wikis im Dienst von KI-Agenten"
      width="100%">
 
-[**Installation**](#installation) · [**Verwendung**](#verwendung) · [**Wiki**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**MIGRATION.md**](MIGRATION.md) · [**Packaging**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Sicherheit**](SECURITY.md) · [**Russische Fassung**](README.ru.md)
+<img src="https://github.com/paulmann/github-agent/raw/main/assets/demo.gif"
+     alt="Drei ghagent-Befehle im Terminal: audit ergibt 100%, doc und changelog check bestehen"
+     width="100%">
+
+<sub>Die Animation entsteht aus der echten Ausgabe dreier Befehle (`tools/make_demo.py`); sie kann
+nichts zeigen, was das Werkzeug nicht gedruckt hat.</sub>
+
+[**Installation**](#installation) · [**Verwendung**](#verwendung) · [**Warum es das gibt**](#warum-es-das-gibt) · [**Wie es sich vergleicht**](#wie-es-sich-vergleicht) · [**Dokumentation**](https://paulmann.github.io/github-agent/) · [**Wiki**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**Packaging**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Sicherheit**](SECURITY.md) · [**Russische Fassung**](README.ru.md)
 
 Ein Repository scheitert selten am Code, es scheitert an der Dokumentation. Dem README fehlt der
 Abschnitt zur Installation, dem Changelog fehlen die Datumsangaben, das Wiki besteht aus drei
@@ -42,9 +49,11 @@ Mensch geschrieben hat, und veröffentlicht nicht, was defekt ist.
 
 ## Inhalt
 
+- [Warum es das gibt](#warum-es-das-gibt)
 - [Installation](#installation)
 - [Verwendung](#verwendung)
 - [Was das Paket leistet](#was-das-paket-leistet)
+- [Wie es sich vergleicht](#wie-es-sich-vergleicht)
 - [In Zahlen](#in-zahlen)
 - [Ausgeführte Prüfungen](#ausgeführte-prüfungen)
 - [Bilder](#bilder)
@@ -58,6 +67,19 @@ Mensch geschrieben hat, und veröffentlicht nicht, was defekt ist.
 - [Lizenz](#lizenz)
 
 ---
+
+## Warum es das gibt
+
+GitHub rendert, was committet wurde, und sagt nicht, dass im README der Abschnitt Installation
+fehlt, im CHANGELOG die Daten, in der Wiki die Navigation, und dass der Banner ein kaputtes Bild
+ist. `git push` gelingt trotzdem, und der Mangel bleibt jahrelang, weil niemand das Repository als
+Produkt betrachtet.
+
+Drei Ideen bestimmen das Verhalten: **eine Prüfung ist ein Befehl mit Rückgabecode** (`0` sauber,
+`1` Befunde auf Fehlerebene, `2` Umgebungsproblem), und eine Regel, die null Objekte gesehen hat,
+meldet `coverage.skipped`; **ein falsches `PASS` ist schlimmer als ein falsches `FAIL`** — die Regel
+wird verengt, bis beide Antworten stimmen (siehe
+[Feldnotizen](https://paulmann.github.io/github-agent/FIELD-NOTES/)); **Zahlen statt Adjektive**.
 
 ## Installation
 
@@ -189,7 +211,7 @@ melden:
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 173/173 Prüfungen bestanden
+python tools/ghagent.py selftest    # 194/194 Prüfungen bestanden
 ```
 
 ## Verwendung
@@ -244,13 +266,24 @@ Die CLI hat 13 Befehle; die Tabelle nennt die jeden Tag genutzten. Die übrigen 
 `changelog notes`, `meta suggest`, `wiki init`, `wiki publish`) stehen mit ihren Flags in
 [`AGENTS.md`](AGENTS.md).
 
+## Wie es sich vergleicht
+
+Das Paket ersetzt die Werkzeuge unten nicht: es sammelt die Dokumentationsfläche eines
+Repositories an einer Stelle und führt sie auf einen Rückgabecode zurück.
+
+| Werkzeug | Stärke | Unterschied dieses Pakets |
+|---|---|---|
+| `markdownlint` | Markdown-Stil, eine Regel-ID je Befund | `ghagent doc` prüft zusätzlich Links, Anker, Inhaltsverzeichnis, Tabellen, Datenschutz und den CHANGELOG-Vertrag |
+| `release-please` | Versionen aus Conventional Commits | das CHANGELOG bleibt handgeschrieben und maschinell geprüft; `changelog suggest` liefert nur einen Entwurf |
+| Community-Health-Dateien | Checkliste in der Oberfläche | `audit` zählt dieselben Dateien aus dem Baum und aus dem Remote-Repository: ein fehlender Eintrag ist eine Zahl, kein Abzeichen |
+
 ## In Zahlen
 
 In diesem Baum am 2026-10-30 gegen Version 1.2.2 gemessen:
 
 | Messgröße | Wert | Quelle der Messung |
 |---|---:|---|
-| Selbsttests | 173 | `python tests/run_tests.py` |
+| Selbsttests | 194 | `python tests/run_tests.py` |
 | CLI-Befehle | 13 | `ghagent --help` |
 | Bibliotheksmodule | 11 | `tools/ghalib/*.py` |
 | In diesem Baum geprüfte Dokumentregeln | 17 | `ghagent doc --json`, Feld `rules_examined` |
@@ -368,7 +401,7 @@ flowchart LR
 | `tools/ghalib/install.py` | Installation des Skills, sha256-Manifest, Abweichungen, Entfernung |
 | `tools/ghalib/report.py` | Befunde, Schweregrade, Markdown- und `--json`-Ausgabe |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, Pfade, Text-Ein-/Ausgabe, Anker |
-| `tests/run_tests.py` | 173 Selbsttests mit Fixtures und Ködern |
+| `tests/run_tests.py` | 194 Selbsttests mit Fixtures und Ködern |
 
 Anker folgen den Regeln von GitHub: Kleinschreibung, Satzzeichen entfallen, Leerzeichen werden zu
 Bindestrichen, eine wiederholte Überschrift erhält `-1`. Die Regel wurde an einem echten

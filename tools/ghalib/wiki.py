@@ -175,7 +175,7 @@ def rewrite_page(text: str, page_path: Path, root: Path, manifest: WikiManifest,
             continue
 
         def replace_image(match: re.Match) -> str:
-            alt, target = match.group(1), match.group(2)
+            target = match.group(2)
             if re.match(r"^(https?:)?//", target) or target.startswith("data:"):
                 return match.group(0)
             report.error("wiki.image-relative", f"relative image in {page_name}: {target}",
@@ -265,14 +265,49 @@ def render_footer(manifest: WikiManifest, report: Report) -> str:
 
 
 # --------------------------------------------------------------------------
+# verify target selection
+# --------------------------------------------------------------------------
+
+def verify_target(root: Path, *, out: Path | None, wiki_dir: str, wiki_dir_given: bool) -> Report:
+    """Decide what to verify: an explicit --out, a --wiki-dir that is already a wiki, or the build.
+
+    `wiki verify --root <repo> --wiki-dir <clone>` used to ignore the flag and look in
+    `<repo>/.ghagent/wiki`, which made the command useless for the growing number of
+    repositories whose wiki lives in its own checkout: the answer was always
+    `wiki.build-missing`, and the header named a directory the caller never passed.
+    """
+    root = Path(root)
+    if out is not None:
+        return verify(out, root=root, wiki_dir=wiki_dir)
+    candidate = root / wiki_dir
+    if wiki_dir_given and candidate.is_dir():
+        looks_built = any((candidate / f"{name}.md").exists() for name in ("Home", "_Sidebar", "_Footer"))
+        if looks_built:
+            return verify(candidate, root=root, wiki_dir=wiki_dir)
+    return verify(root / ".ghagent" / "wiki", root=root, wiki_dir=wiki_dir)
+
+
+# --------------------------------------------------------------------------
 # verify (built tree)
 # --------------------------------------------------------------------------
 
-def verify(build_dir: Path, *, report: Report | None = None) -> Report:
+def verify(build_dir: Path, *, report: Report | None = None, root: Path | None = None,
+           wiki_dir: str = "wiki") -> Report:
     build_dir = Path(build_dir)
     report = report or Report(title="ghagent wiki verify", root=str(build_dir))
     if not build_dir.is_dir():
-        report.error("wiki.build-missing", f"no built wiki at {build_dir}", hint="run `ghagent wiki build` first")
+        sources = Path(root) / wiki_dir if root is not None else None
+        if sources is not None and sources.is_dir() and any(sources.glob("*.md")):
+            report.error("wiki.build-missing", f"no built wiki at {build_dir}",
+                         hint=f"sources exist at {wiki_dir}/: run `ghagent wiki build` (or `wiki publish --push`, which builds and verifies)")
+        else:
+            # Nothing to verify and nothing missing: a repository may keep its wiki in a
+            # separate git repository, and then there is no build here at all. Reporting
+            # that as an error made the command unusable for those repositories.
+            report.info("wiki.not-applicable",
+                        f"no built wiki at {build_dir} and no sources at {wiki_dir}/; nothing to verify",
+                        hint="a wiki kept in its own repository is checked in that checkout: "
+                             "`ghagent doc --root <clone>` (wiki mode is detected from _Sidebar.md)")
         return report
 
     pages = {p.stem for p in build_dir.glob("*.md") if not p.name.startswith("_")}

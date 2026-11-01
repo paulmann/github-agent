@@ -10,6 +10,8 @@
   "wiki_manifest": "wiki/wiki.json",
   "ci_workflow": ".github/workflows/ci.yml",
   "require_files": ["AGENTS.md", "LICENSE", "pyproject.toml", "tests/run_tests.py", "tools/ghagent.py"],
+  "exclude_dirs": ["site"],
+  "safe_email_domains": [],
   "ignore_rules": [],
   "topic_min": 8,
   "topic_max": 20,

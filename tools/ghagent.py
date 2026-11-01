@@ -27,16 +27,16 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-from ghalib import assets as assets_module        # noqa: E402
-from ghalib import audit as audit_module           # noqa: E402
-from ghalib import changelog as changelog_module   # noqa: E402
-from ghalib import config as cfg                   # noqa: E402
-from ghalib import install as install_module       # noqa: E402
-from ghalib import mdcheck                         # noqa: E402
-from ghalib import meta as meta_module             # noqa: E402
-from ghalib import report as report_module         # noqa: E402
-from ghalib import wiki as wiki_module             # noqa: E402
-from ghalib.util import (                          # noqa: E402
+from ghalib import assets as assets_module  # noqa: E402
+from ghalib import audit as audit_module  # noqa: E402
+from ghalib import changelog as changelog_module  # noqa: E402
+from ghalib import config as cfg  # noqa: E402
+from ghalib import install as install_module  # noqa: E402
+from ghalib import mdcheck  # noqa: E402
+from ghalib import meta as meta_module  # noqa: E402
+from ghalib import report as report_module  # noqa: E402
+from ghalib import wiki as wiki_module  # noqa: E402
+from ghalib.util import (  # noqa: E402
     EXIT_FAIL,
     EXIT_OK,
     EXIT_USAGE,
@@ -46,7 +46,6 @@ from ghalib.util import (                          # noqa: E402
     emit,
     fail,
     force_utf8_stdio,
-    read_text,
     rel,
     write_text,
 )
@@ -138,22 +137,33 @@ def cmd_audit(args: argparse.Namespace) -> int:
 
 def cmd_doc(args: argparse.Namespace) -> int:
     root = Path(args.root)
+    config = cfg.load(root)
+    # `.ghagent.json` carries `ignore_rules` for the whole pack; `audit` applied them and
+    # `doc` did not, so the two commands disagreed about the same tree.
+    ignore = {item.strip() for item in args.ignore.split(",") if item.strip()}
+    ignore |= {item.strip() for item in config.ignore_rules if item.strip()}
     options = mdcheck.DocCheckOptions(
-        ignore={item.strip() for item in args.ignore.split(",") if item.strip()},
+        ignore=ignore,
         privacy=not args.no_privacy,
         toc=not args.no_toc,
+        safe_email_domains=set(config.safe_email_domains),
+        wiki_dirs={config.wiki_dir} if config.wiki_dir else set(),
     )
     report = Report(title="ghagent doc", root=str(root))
     checker = mdcheck.DocChecker(root, report, options)
-    # Wiki sources use wiki-namespace links (page names without .md); they are checked by
-    # `wiki build`/`wiki verify`, not as repository links. Opt in with --include-wiki.
-    skip_dirs = {".git", "node_modules", "vendor", ".ghagent", ".venv", "__pycache__"}
-    if not args.include_wiki:
-        skip_dirs.add("wiki")
-    targets = [Path(item) for item in args.paths] if args.paths else sorted(
-        path for path in root.rglob("*.md")
-        if not (set(path.parts) & skip_dirs)
-    )
+    if args.paths:
+        targets = [Path(item) for item in args.paths]
+    else:
+        # One walker for the whole pack: it knows which directories are build output or
+        # tool state (`.git`, `.swarm`, `node_modules`), so `doc` and `privacy` see the
+        # same tree. The wiki sources keep their own contract (`wiki build`/`wiki verify`).
+        targets = []
+        exclude = set(config.exclude_dirs)
+        for path in mdcheck.iter_text_files(root, suffix_set=set(mdcheck.MARKDOWN_SUFFIXES), exclude=exclude):
+            if not args.include_wiki and config.wiki_dir in path.relative_to(root).parts:
+                continue
+            targets.append(path)
+        targets.sort()
     if not targets:
         return fail("no markdown files found to check")
     for path in targets:
@@ -171,7 +181,7 @@ def cmd_privacy(args: argparse.Namespace) -> int:
                       "agents.md-length"}
     report = Report(title="ghagent privacy", root=str(root))
     checker = mdcheck.DocChecker(root, report, options)
-    for path in mdcheck.iter_text_files(root):
+    for path in mdcheck.iter_text_files(root, exclude=set(cfg.load(root).exclude_dirs)):
         checker.check_file(path)
     checker._report_coverage()
     return emit(report, args.json)
@@ -180,19 +190,23 @@ def cmd_privacy(args: argparse.Namespace) -> int:
 def cmd_wiki(args: argparse.Namespace) -> int:
     root = Path(args.root)
     config = cfg.load(root)
+    # None means "not given"; the default is applied here so that `verify` can tell an
+    # explicit `--wiki-dir <clone>` from the default `wiki/`.
+    wiki_dir_given = args.wiki_dir is not None
+    wiki_dir = args.wiki_dir or "wiki"
     if args.action == "init":
         report = wiki_module.scaffold(root, slug=args.repo or config.owner_repo, title=args.title,
-                                      wiki_dir=args.wiki_dir, from_docs=not args.no_docs)
+                                      wiki_dir=wiki_dir, from_docs=not args.no_docs)
         return emit(report, args.json)
     if args.action == "build":
-        report = wiki_module.build(root, wiki_dir=args.wiki_dir, manifest_path=args.manifest,
+        report = wiki_module.build(root, wiki_dir=wiki_dir, manifest_path=args.manifest,
                                    out_dir=Path(args.out) if args.out else None)
         if not args.json and report.data.get("out"):
             print(f"built {report.data.get('pages')} page(s) into {report.data['out']}")
         return emit(report, args.json)
     if args.action == "verify":
-        out = Path(args.out) if args.out else root / ".ghagent" / "wiki"
-        report = wiki_module.verify(out)
+        report = wiki_module.verify_target(root, out=Path(args.out) if args.out else None,
+                                           wiki_dir=wiki_dir, wiki_dir_given=wiki_dir_given)
         return emit(report, args.json)
     if args.action == "publish":
         slug = args.repo or config.owner_repo
@@ -272,9 +286,29 @@ def cmd_meta(args: argparse.Namespace) -> int:
         return report.exit_code()
     if args.action == "check":
         report = Report(title="ghagent meta check")
-        for level, rule, message in meta_module.validate_description(args.description):
+        slug = args.repo or ""
+        description = args.description
+        topics = [item.strip() for item in args.topics.split(",") if item.strip()] if args.topics else []
+        if slug:
+            # `--repo` used to be accepted and ignored: the command validated the empty
+            # arguments and reported "description is empty, 0 topics" for a repository that
+            # had both. A remote that cannot be read is an error, not an empty field.
+            current = meta_module.read_remote(slug)
+            if current is None:
+                report.error("meta.remote", f"cannot read {slug} through gh api",
+                             hint="run `gh auth status`; an unread remote is not an empty description")
+                return emit(report, args.json)
+            if description is None:
+                description = (current.get("description") or "").strip()
+            if not topics:
+                topics = list(current.get("topics") or [])
+            report.data["source"] = f"gh api repos/{slug}"
+            report.data["topics"] = topics
+            report.data["description"] = description
+        for level, rule, message in meta_module.validate_description(description):
             report.add(level, rule, message)
-        topics = [item.strip() for item in args.topics.split(",") if item.strip()]
+        if not topics:
+            report.info("meta.source", "topics were not given and no remote was read")
         for level, rule, message in meta_module.check_topics(topics, minimum=config.topic_min,
                                                             maximum=config.topic_max):
             report.add(level, rule, message)
@@ -283,11 +317,12 @@ def cmd_meta(args: argparse.Namespace) -> int:
         slug = args.repo or config.owner_repo
         if not slug:
             return fail("meta apply needs --repo owner/name or owner_repo in .ghagent.json")
-        topics = [item.strip() for item in args.topics.split(",") if item.strip()] if args.topics else None
+        apply_topics: list[str] | None = ([item.strip() for item in args.topics.split(",") if item.strip()]
+                                        if args.topics else None)
         report = meta_module.apply_metadata(
             slug,
             description=args.description,
-            topics=topics,
+            topics=apply_topics,
             homepage=args.homepage,
             merge_topics=not args.replace_topics,
             write=args.write,
@@ -431,7 +466,7 @@ def build_parser() -> argparse.ArgumentParser:
     wiki_parser.add_argument("--root", default=".")
     wiki_parser.add_argument("--repo", default="")
     wiki_parser.add_argument("--title", default="Project")
-    wiki_parser.add_argument("--wiki-dir", default="wiki")
+    wiki_parser.add_argument("--wiki-dir", default=None)
     wiki_parser.add_argument("--manifest", default="wiki/wiki.json")
     wiki_parser.add_argument("--out", default="")
     wiki_parser.add_argument("--push", action="store_true", help="actually push to the wiki remote")

@@ -24,7 +24,7 @@ written for a POSIX shell; the PowerShell equivalents are in
 - [Release procedure](#release-procedure)
 - [PyPI publication](#pypi-publication)
 - [Homebrew and Scoop](#homebrew-and-scoop)
-- [Deferred: mypy and ruff](#deferred-mypy-and-ruff)
+- [Static analysis: ruff and mypy](#static-analysis-ruff-and-mypy)
 - [Failure modes](#failure-modes)
 
 ## What ships
@@ -298,6 +298,14 @@ because each command examines a tree, not a list of changed files.
 8. Optionally publish the wiki and refresh repository metadata; both are separate commands
    with their own verification.
 
+### The release body is generated, the publish button is not
+
+`.github/workflows/release-draft.yml` runs `ghagent changelog notes <version>` and creates a
+**draft** release from the tagged tree. A draft does not fire `publish.yml`, which listens for
+`release: published`, so the irreversible step (PyPI) stays with a human who reads the draft and
+presses Publish. Signed commits are a repository setting — a key and `git commit -S` — and are
+not something a workflow can grant; they remain a requirement of the procedure, not a step in it.
+
 The release assets are the durable artefact: PyPI forbids re-uploading the same version, so a
 mistake is a new patch version, never a silently replaced file.
 
@@ -360,14 +368,20 @@ The canonical copies live in the tap (`paulmann/homebrew-github-agent-cli`) and 
 source, and [packaging/README.md](../packaging/README.md) carries the bump procedure. Both manifests
 auto-detect a new version from the PyPI JSON API; the hashes still have to be recomputed after each
 release, which is exactly what the `manifests` job checks.
-## Deferred: mypy and ruff
+## Static analysis: ruff and mypy
 
-Neither mypy nor ruff is enabled in CI. The repository has no configuration for either, and
-running their defaults against the current tree would fail on existing code rather than on
-this change; a permanently red job teaches contributors to ignore CI. Add them in a separate
-change that lands with an explicit configuration and a clean baseline, and put the check in
-the `package` job only after that baseline exists. The packaging job stays green and
-meaningful in the meantime.
+Both are now enabled, in a separate `lint` job, with an explicit configuration in `pyproject.toml`
+and a clean baseline — which is what the earlier "deferred" note asked for:
+
+| Tool | Configuration | Why exactly these rules |
+|---|---|---|
+| `ruff` | `select = ["E4", "E7", "E9", "F", "I"]`, `line-length = 120` | `E501` is off on purpose: the prose in this pack is written in paragraphs that wrap for a reader, not for a 79-column counter. `E4/E7/E9` and `F` catch the defects that matter (unused and undefined names, broken syntax); `I` keeps imports sorted so two files stop fighting about the same block. |
+| `mypy` | `files = ["tools/ghalib", "tools/ghagent.py"]`, `check_untyped_defs`, `no_implicit_optional`, `warn_unused_ignores`, `warn_redundant_casts` | Annotations are partial by design; the checker still reads untyped bodies and refuses silent `Optional`. |
+
+Neither tool is imported by the pack and neither ships in the wheel: the runtime dependency count
+stays zero, and `pip install "github-agent-cli[png]"` remains the only extra. The baseline was
+established the way the note required — configuration first, then `ruff check .` and `mypy` green
+on the same commit that enabled them.
 
 ## Failure modes
 

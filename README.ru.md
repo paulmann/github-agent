@@ -12,13 +12,20 @@ CHANGELOG и контракты сообщества, проверяет док�
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Лицензия: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Зависимости при запуске](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![Самопроверки](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
+[![Самопроверки](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — хранитель репозитория и вики для ИИ-агентов"
      width="100%">
 
-[**Установка**](#установка) · [**Использование**](#использование) · [**Вики**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.ru.md**](AGENTS.ru.md) · [**MIGRATION.md**](MIGRATION.md) · [**Упаковка**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.ru.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Безопасность**](SECURITY.ru.md) · [**English version**](README.md)
+<img src="https://github.com/paulmann/github-agent/raw/main/assets/demo.gif"
+     alt="Три команды ghagent в терминале: audit даёт 100%, doc и changelog check проходят"
+     width="100%">
+
+<sub>Анимация собирается `tools/make_demo.py` из настоящего вывода трёх команд: она не может
+показать то, чего инструмент не напечатал.</sub>
+
+[**Установка**](#установка) · [**Использование**](#использование) · [**Зачем это нужно**](#зачем-это-нужно) · [**Чем отличается**](#чем-отличается) · [**Документация**](https://paulmann.github.io/github-agent/) · [**Вики**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.ru.md**](AGENTS.ru.md) · [**Упаковка**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.ru.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Безопасность**](SECURITY.ru.md) · [**English version**](README.md)
 
 Репозиторий проваливается не на коде, а на документации. В README нет раздела об установке,
 в журнале изменений нет дат, вики — три страницы без навигации, баннер — битая картинка,
@@ -39,9 +46,11 @@ CHANGELOG и контракты сообщества, проверяет док�
 
 ## Содержание
 
+- [Зачем это нужно](#зачем-это-нужно)
 - [Установка](#установка)
 - [Использование](#использование)
 - [Что делает пакет](#что-делает-пакет)
+- [Чем отличается](#чем-отличается)
 - [В цифрах](#в-цифрах)
 - [Проверки, которые выполняются](#проверки-которые-выполняются)
 - [Картинки](#картинки)
@@ -55,6 +64,25 @@ CHANGELOG и контракты сообщества, проверяет док�
 - [Лицензия](#лицензия)
 
 ---
+
+## Зачем это нужно
+
+GitHub отрисовывает то, что вы закоммитили, и молчит о том, что в README нет раздела установки,
+в журнале изменений нет дат, у вики нет навигации, а баннер — битая картинка. `git push`
+проходит в любом случае, и дефект живёт годами, потому что на репозиторий никто не смотрит
+как на продукт.
+
+Три идеи задают поведение пакета:
+
+1. **Проверка — это команда с кодом возврата.** `0` — чисто, `1` — есть ошибки, `2` — проблема
+   окружения. Правило, которое не посмотрело ни одного объекта, отвечает `coverage.skipped`:
+   зелёная галочка над пустым множеством — это дефект, а не успех.
+2. **Ложный `PASS` хуже ложного `FAIL`.** Инструмент скорее остановит правильный pull request,
+   чем пропустит сломанный. Там, где это стоит времени настоящему репозиторию, правило сужается,
+   пока оба ответа не станут верными — разбор в
+   [полевых заметках](https://paulmann.github.io/github-agent/FIELD-NOTES/).
+3. **Числа вместо прилагательных.** README, журнал и метаданные сверяются с тем, что репозиторий
+   может доказать; маркетинговый текст пакет не пишет.
 
 ## Установка
 
@@ -183,7 +211,7 @@ ghagent audit .       # 0 чисто, 1 находки уровня error, 2 о�
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 173/173 checks passed
+python tools/ghagent.py selftest    # 194/194 checks passed
 ```
 
 ## Использование
@@ -238,13 +266,24 @@ score: 72.5% (22 scored, 1 skipped)
 `changelog notes`, `meta suggest`, `wiki init`, `wiki publish`) несут свои флаги в
 `ghagent --help`; повторяющиеся задачи сведены в [`AGENTS.md`](AGENTS.ru.md).
 
+## Чем отличается
+
+Пакет не заменяет инструменты ниже и не спорит с ними на их поле: он собирает документальную
+поверхность репозитория в одном месте и сводит её к одному коду возврата.
+
+| Инструмент | Сильная сторона | Отличие этого пакета |
+|---|---|---|
+| `markdownlint` | стиль markdown, один идентификатор правила на находку | `ghagent doc` добавляет ссылки, якоря, оглавление, таблицы, приватность и контракт CHANGELOG |
+| `release-please` | подъём версии из conventional commits | CHANGELOG остаётся рукописным и машинно-проверяемым; `changelog suggest` готовит только черновик |
+| Файлы community health на GitHub | чек-лист в интерфейсе | `audit` считает те же файлы из дерева и из удалённого репозитория: пропуск — это число, а не бейдж |
+
 ## В цифрах
 
 Измерено в этом дереве 2026-10-30 на версии 1.2.2:
 
 | Поверхность | Значение | Источник измерения |
 |---|---:|---|
-| Самопроверок | 173 | `python tests/run_tests.py` |
+| Самопроверок | 194 | `python tests/run_tests.py` |
 | Команд CLI | 13 | `ghagent --help` |
 | Модулей библиотеки | 11 | `tools/ghalib/*.py` |
 | Правил документов, осмотренных на этом дереве | 17 | `ghagent doc --json`, поле `rules_examined` |
@@ -362,7 +401,7 @@ flowchart LR
 | `tools/ghalib/install.py` | установка навыка, манифест sha256, расхождения, удаление |
 | `tools/ghalib/report.py` | находки, уровни, markdown- и `--json`-вывод |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, пути, ввод-вывод текста, якоря |
-| `tests/run_tests.py` | 173 самопроверок с фикстурами и приманками |
+| `tests/run_tests.py` | 194 самопроверок с фикстурами и приманками |
 
 Якоря считаются по правилам GitHub: нижний регистр, пунктуация отбрасывается, пробелы
 становятся дефисами, повтор заголовка получает `-1`. Правило сверено с живым оглавлением:

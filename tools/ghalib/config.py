@@ -27,6 +27,13 @@ class Config:
     ci_workflow: str = ".github/workflows/ci.yml"
     require_files: list[str] = field(default_factory=list)
     ignore_rules: list[str] = field(default_factory=list)
+    # Domains that are role addresses in this repository (`@mycompany.com`). The built-in
+    # list holds only RFC examples and GitHub noreply addresses, so no project's personal
+    # domain is whitelisted by default for everybody else.
+    safe_email_domains: list[str] = field(default_factory=list)
+    # Extra directories the documentation walk must not enter (build output whose name the
+    # pack cannot know: `site`, `_site`, `public`, `out`).
+    exclude_dirs: list[str] = field(default_factory=list)
     topic_min: int = 8
     topic_max: int = 20
     description_max: int = 200

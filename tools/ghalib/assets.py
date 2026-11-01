@@ -16,20 +16,24 @@ nothing at all. A missing Pillow lowers the output format, never the honesty of 
 
 from __future__ import annotations
 
-import base64
 import re
 import struct
 import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .util import IMAGE_RE, Report, iter_text_files, read_text, rel
+from .util import IMAGE_RE, Report, read_text, rel
 
 SOCIAL_SIZE = (1280, 640)
 SOCIAL_MIN = (640, 320)
 SOCIAL_MAX_BYTES = 1_000_000
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".avif"}
 SOCIAL_ACCEPTED = {".png", ".jpg", ".jpeg", ".gif"}
+# An emoji in an H1 is fine on GitHub and unreadable on a rendered card: the font set has
+# no colour glyphs, so it lands as a box or disappears. The banner strips it.
+EMOJI_RE = re.compile(
+    "[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0001F1E6-\U0001F1FF\u2b00-\u2bff\uFE0F]"
+)
 
 PALETTE = {
     "bg": "#0d1117",
@@ -120,26 +124,29 @@ def _escape(text: str) -> str:
 
 
 def _wrap(text: str, limit: int, max_lines: int) -> list[str]:
+    """Wrap into at most `max_lines` lines of about `limit` characters.
+
+    The last line is filled before anything is dropped: an earlier version stopped at
+    `max_lines - 1` lines and marked the rest as cut, so a 38-character title was reported
+    as truncated although two lines had room for it.
+    """
     words = text.split()
     lines: list[str] = []
     current = ""
     for word in words:
         candidate = f"{current} {word}".strip()
-        if len(candidate) <= limit:
+        if not current or len(candidate) <= limit:
             current = candidate
             continue
+        lines.append(current)
+        current = word
+        if len(lines) == max_lines:
+            break
+    else:
         if current:
             lines.append(current)
-        current = word
-        if len(lines) == max_lines - 1:
-            break
-    if current and len(lines) < max_lines:
-        lines.append(current)
-    if not lines:
-        return []
-    remainder = " ".join(words)[len(" ".join(lines)):].strip()
-    if remainder and lines:
-        lines[-1] = lines[-1].rstrip(" .,;") + "…"
+        return lines[:max_lines]
+    lines[-1] = lines[-1].rstrip(" .,;") + "…"
     return lines
 
 
@@ -261,6 +268,11 @@ def render_png(spec: BannerSpec) -> bytes | None:
     return buffer.getvalue()
 
 
+def _truncated(lines: list[str]) -> bool:
+    """`_wrap` marks a loss of text with an ellipsis; the caller must say so out loud."""
+    return bool(lines) and lines[-1].endswith("…")
+
+
 def spec_from_repository(root: Path, *, title: str = "", tagline: str = "", command: str = "",
                          chips: list[str] | None = None) -> BannerSpec:
     from . import meta as meta_module
@@ -277,12 +289,19 @@ def spec_from_repository(root: Path, *, title: str = "", tagline: str = "", comm
         if not summary:
             summary = facts.get("summary", "")
     languages = [language for language, _count in facts.get("languages", [])[:3]]
+    # Chips describe what the project IS, not what its tooling is written in: a PHP library
+    # whose scripts happen to be Python and shell was advertised as "php python shell".
+    # Declared keywords come first; languages are only the fallback.
+    keywords = [str(word) for word in facts.get("declared_keywords", []) if str(word).strip()][:3]
+    default_chips = keywords or languages
+    resolved_title = title or facts.get("title") or Path(root).name
+    resolved_title = EMOJI_RE.sub("", resolved_title).strip() or Path(root).name
     return BannerSpec(
-        title=title or facts.get("title") or Path(root).name,
+        title=resolved_title,
         tagline=tagline or summary[:180],
         command=command,
-        chips=(chips if chips is not None else languages + ["mit"])[:6],
-        footer=" · ".join(filter(None, ["MIT", ", ".join(languages)])),
+        chips=(chips if chips is not None else default_chips + ["mit"])[:6],
+        footer=" · ".join(filter(None, ["MIT", languages[0] if languages else ""])),
     )
 
 
@@ -308,6 +327,17 @@ def write_assets(root: Path, *, out_dir: str = "assets", spec: BannerSpec | None
         "written": [],
         "png_unavailable": "" if png else "Pillow is not installed: only the SVG was produced",
     })
+    # A silently cut title is a defect of the render, not of the reader's screen: the PNG
+    # is what the social preview shows and it cannot grow.
+    if _truncated(_wrap(spec.title, 26, 2)):
+        report.warn("assets.truncated", f"the title is cut at two lines ({len(spec.title)} characters)",
+                    hint="shorten --title: it renders as two lines of about 26 characters")
+    if _truncated(_wrap(spec.tagline, 62, 3)):
+        report.warn("assets.truncated", f"the tagline is cut at three lines ({len(spec.tagline)} characters)",
+                    hint="shorten --tagline: it renders as three lines of about 62 characters")
+    if not spec.command:
+        report.info("assets.no-command", "the banner carries no command line",
+                    hint="pass --command 'ghagent audit .' to show one")
     if not png:
         report.warn("assets.no-pillow", "Pillow is not available, so no PNG was rendered",
                     hint="a social preview must be PNG/JPG/GIF; install Pillow or supply your own image")

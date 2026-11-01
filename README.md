@@ -13,13 +13,20 @@ the repository — one command per job.
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Runtime dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![Self-tests](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
+[![Self-tests](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — repository and wiki steward for AI agents"
      width="100%">
 
-[**Installation**](#installation) · [**Usage**](#usage) · [**Wiki**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**MIGRATION.md**](MIGRATION.md) · [**Packaging**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Security**](SECURITY.md) · [**Русская версия**](README.ru.md)
+<img src="https://github.com/paulmann/github-agent/raw/main/assets/demo.gif"
+     alt="Three ghagent commands in a terminal: audit scores 100%, doc and changelog check pass"
+     width="100%">
+
+<sub>The animation is produced by `tools/make_demo.py` from the real output of three commands; it
+cannot show anything the tool did not print.</sub>
+
+[**Installation**](#installation) · [**Usage**](#usage) · [**Why this exists**](#why-this-exists) · [**How it compares**](#how-it-compares) · [**Docs site**](https://paulmann.github.io/github-agent/) · [**Wiki**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**Packaging**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/github-agent/issues) · [**Security**](SECURITY.md) · [**Русская версия**](README.ru.md)
 
 A repository rarely fails on code; it fails on documentation. The README has no installation
 section, the changelog has no dates, the wiki is three pages without navigation, the banner is
@@ -40,9 +47,11 @@ wrote and refuses to publish what is broken.
 
 ## Contents
 
+- [Why this exists](#why-this-exists)
 - [Installation](#installation)
 - [Usage](#usage)
 - [What the pack does](#what-the-pack-does)
+- [How it compares](#how-it-compares)
 - [In numbers](#in-numbers)
 - [Checks that run](#checks-that-run)
 - [Images](#images)
@@ -56,6 +65,24 @@ wrote and refuses to publish what is broken.
 - [License](#license)
 
 ---
+
+## Why this exists
+
+GitHub renders whatever you commit. It does not tell you that the installation section is
+missing, that the changelog has no dates, that the wiki has no navigation, that the banner is a
+broken image or that the description is one word. `git push` succeeds either way, and the defect
+survives for years because nobody is looking at the repository as a product.
+
+Three ideas decide how the pack behaves:
+
+1. **A check you cannot run is not a check.** Every rule is one command with an exit code:
+   `0` clean, `1` findings at error level, `2` usage or environment problem. A rule that examined
+   zero objects reports `coverage.skipped` — a green check over an empty set is a defect.
+2. **A false `PASS` is worse than a false `FAIL`.** The tool would rather stop a correct pull
+   request than wave a broken one through. Where that costs a real repository time, the rule is
+   narrowed until both answers are right — see [Field notes](https://paulmann.github.io/github-agent/FIELD-NOTES/).
+3. **Numbers over adjectives.** The README, the changelog and the metadata are checked against
+   what the repository can prove. Nothing here writes marketing copy.
 
 ## Installation
 
@@ -184,7 +211,7 @@ there exits `2` with a message that points at the clone rather than reporting a 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 173/173 checks passed
+python tools/ghagent.py selftest    # 194/194 checks passed
 ```
 
 ## Usage
@@ -239,13 +266,28 @@ The CLI has 13 commands; the table names the ones used every day. The rest (`rep
 `changelog notes`, `meta suggest`, `wiki init`, `wiki publish`) carry their flags in
 `ghagent --help`; the recurring jobs are mapped in [`AGENTS.md`](AGENTS.md).
 
+## How it compares
+
+The pack does not replace the tools below and does not compete with them on their ground: it
+orchestrates the documentation surface of a repository and calls the same ideas from one place,
+with one exit code.
+
+| Tool | Strong at | Where this pack differs |
+|---|---|---|
+| `markdownlint` | markdown style, one rule id per finding | `ghagent doc` adds links, anchors, TOC, tables, privacy and the CHANGELOG contract; it also checks documents that are not markdown |
+| `vale` / `textlint` | prose style with a dictionary you maintain | the pack checks structure a machine can prove and does not judge wording; only the README summary is checked for superlatives |
+| `action-gh-release` | creating a release from a tag | `changelog notes <version>` produces the body from the CHANGELOG, and `changelog check` refuses a release without a dated section |
+| `pre-commit` hooks | running linters before a commit | the pack ships hooks for its own commands; the hooks are the delivery, not the check |
+| `release-please` | version bumps from conventional commits | the CHANGELOG stays hand-written and machine-verified; `changelog suggest` drafts entries but a human writes them |
+| GitHub community health files | a checklist in the UI | `audit` scores the same files from the tree and from the remote, so a missing `SECURITY.md` is a number, not a badge nobody opens |
+
 ## In numbers
 
 Measured in this tree on 2026-10-30 against version 1.2.2:
 
 | Surface | Value | Measurement source |
 |---|---:|---|
-| Self-tests | 173 | `python tests/run_tests.py` |
+| Self-tests | 194 | `python tests/run_tests.py` |
 | CLI commands | 13 | `ghagent --help` |
 | Library modules | 11 | `tools/ghalib/*.py` |
 | Document rules examined on this tree | 17 | `ghagent doc --json`, field `rules_examined` |
@@ -361,7 +403,7 @@ flowchart LR
 | `tools/ghalib/install.py` | skill installation, sha256 manifest, drift, removal |
 | `tools/ghalib/report.py` | findings, severities, markdown and `--json` output |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, paths, text I/O, anchors |
-| `tests/run_tests.py` | 173 self-tests with fixtures and decoys |
+| `tests/run_tests.py` | 194 self-tests with fixtures and decoys |
 
 Anchors follow GitHub's rules: lowercase, punctuation dropped, spaces to hyphens, a repeated
 heading gets `-1`. The rule was verified against a live table of contents: an em dash in a

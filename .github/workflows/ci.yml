@@ -30,6 +30,25 @@ jobs:
       - name: The CLI answers
         run: python tools/ghagent.py --version
 
+  lint:
+    name: Static analysis (ruff, mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install the analysers (development only)
+        run: python -m pip install --disable-pip-version-check ruff mypy
+
+      - name: ruff
+        run: python -m ruff check .
+
+      - name: mypy
+        run: python -m mypy
+
   documents:
     name: Documents and repository contracts
     runs-on: ubuntu-latest

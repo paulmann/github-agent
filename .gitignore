@@ -1,6 +1,7 @@
 # agent work directories
 .ghagent/
 .install.json
+.ragraf/
 
 # python
 __pycache__/
@@ -13,6 +14,10 @@ build/
 *.egg-info/
 .venv/
 .venv-*/
+
+# documentation site (mkdocs build)
+site/
+.cache/
 
 # editors and OS
 .vscode/

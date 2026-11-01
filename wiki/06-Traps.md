@@ -35,6 +35,23 @@ Publication keeps pages the build does not contain and prints their list. Deleti
 flag. The reason is simple: the server may hold pages written by hand, and losing them silently is
 not acceptable.
 
+### A wiki checkout is not a repository tree
+
+In a wiki `[Architecture](Architecture)` is a page, not a file, and `_Sidebar.md` / `_Footer.md`
+are navigation that GitHub renders on every page. A checker that treats a wiki checkout like an
+ordinary tree reports every correct link as a missing file and every partial as a document without
+a title — measured on a 24-page wiki: 121 errors, 119 of them false. `ghagent doc` detects the
+context from the markers (`_Sidebar.md`, `_Footer.md`) and switches the link rule to page names
+inside that directory only; the same link in a repository stays an error.
+
+### `wiki verify` reads what you named
+
+The command resolves its target in a fixed order: `--out`, then a `--wiki-dir` that already looks
+like a wiki (`Home.md`, `_Sidebar.md` or `_Footer.md` present), then `.ghagent/wiki`. The header of
+the report names the directory that was actually read, so `--root <repo> --wiki-dir <clone>`
+verifies the clone. A repository with neither sources nor a build gets one note, not an error: a
+wiki kept in its own repository is checked in that checkout.
+
 ### A check that examined zero objects
 
 An empty tree, a broken path, a missing file — none of these produce a green result. They produce

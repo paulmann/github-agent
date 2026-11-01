@@ -31,7 +31,9 @@ What `build` does:
 5. Generates `_Sidebar.md` from the manifest groups and `_Footer.md` with repository links.
 
 `verify` checks the built tree: required files, links to existing pages, no `.md` inside internal
-links, no relative images, an `H1` per page, every page reachable from navigation.
+links, no relative images, an `H1` per page, every page reachable from navigation. It reads the
+directory you name — `--out` first, then a `--wiki-dir` that already looks like a wiki, then
+`.ghagent/wiki` — and the header of the report says which one it was.
 
 ## Publish
 

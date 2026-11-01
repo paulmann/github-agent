@@ -12,13 +12,19 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![许可证：MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![运行时依赖](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![自检](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
+[![自检](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent —— 面向 AI 智能体的仓库与维基管家"
      width="100%">
 
-[**安装**](#安装) · [**用法**](#用法) · [**维基**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**MIGRATION.md**](MIGRATION.md) · [**打包**](docs/PACKAGING.md) · [**更新日志**](CHANGELOG.md) · [**问题反馈**](https://github.com/paulmann/github-agent/issues) · [**安全**](SECURITY.md) · [**Русская версия**](README.ru.md)
+<img src="https://github.com/paulmann/github-agent/raw/main/assets/demo.gif"
+     alt="终端中的三条 ghagent 命令：audit 得到 100%，doc 与 changelog check 通过"
+     width="100%">
+
+<sub>该动画由 `tools/make_demo.py` 用三条命令的真实输出生成，不会展示工具没有打印的内容。</sub>
+
+[**安装**](#安装) · [**用法**](#用法) · [**为什么需要它**](#为什么需要它) · [**与替代方案的比较**](#与替代方案的比较) · [**文档站**](https://paulmann.github.io/github-agent/) · [**维基**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**打包**](docs/PACKAGING.md) · [**更新日志**](CHANGELOG.md) · [**问题反馈**](https://github.com/paulmann/github-agent/issues) · [**安全**](SECURITY.md) · [**Русская версия**](README.ru.md)
 
 仓库很少因为代码而失败，失败往往在文档上。README 没有安装章节，CHANGELOG 没有日期，
 维基只有三页且没有导航，横幅是一张打不开的图片，仓库描述只有一个词。而 `git push` 依然
@@ -38,9 +44,11 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 
 ## 目录
 
+- [为什么需要它](#为什么需要它)
 - [安装](#安装)
 - [用法](#用法)
 - [工具包做什么](#工具包做什么)
+- [与替代方案的比较](#与替代方案的比较)
 - [数据一览](#数据一览)
 - [执行的检查](#执行的检查)
 - [图片](#图片)
@@ -54,6 +62,16 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 - [许可证](#许可证)
 
 ---
+
+## 为什么需要它
+
+GitHub 只渲染你提交的内容：它不会告诉你 README 缺少安装章节、CHANGELOG 没有日期、维基没有导航、
+横幅是打不开的图片。`git push` 照样成功，缺陷因此能活很多年，因为没人把仓库当作产品来看。
+
+三条原则决定这个工具包的行为：**检查就是带退出码的命令**（`0` 干净、`1` 有错误级发现、`2` 环境问题），
+而没有检查到任何对象的规则会报 `coverage.skipped`；**错误的 `PASS` 比错误的 `FAIL` 更糟** —— 规则会
+收窄到两个答案都正确的程度（见[实测笔记](https://paulmann.github.io/github-agent/FIELD-NOTES/)）；
+**用数字，不用形容词**。
 
 ## 安装
 
@@ -176,7 +194,7 @@ ghagent audit .       # 0 干净，1 有错误级发现，2 用法或环境问�
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 173/173 项检查通过
+python tools/ghagent.py selftest    # 194/194 项检查通过
 ```
 
 ## 用法
@@ -229,13 +247,23 @@ CLI 共有 13 条命令；表格列出的是日常使用的那几条。其余命
 `changelog notes`、`meta suggest`、`wiki init`、`wiki publish`）连同标志列在
 [`AGENTS.md`](AGENTS.md) 中。
 
+## 与替代方案的比较
+
+这个工具包不取代下面这些工具：它把仓库的文档层面收在一处，并归结为一个退出码。
+
+| 工具 | 强项 | 这个工具包的差异 |
+|---|---|---|
+| `markdownlint` | Markdown 风格，每条发现一个规则 ID | `ghagent doc` 另外检查链接、锚点、目录、表格、隐私与 CHANGELOG 契约 |
+| `release-please` | 由 conventional commits 推导版本 | CHANGELOG 仍由人手写并由机器校验；`changelog suggest` 只给草稿 |
+| GitHub 社区健康文件 | 界面里的清单 | `audit` 从工作树和远端仓库两侧统计同一批文件：缺失是数字，不是徽章 |
+
 ## 数据一览
 
 在本仓库中于 2026-10-30 针对 1.2.2 版本实测：
 
 | 项目 | 数值 | 测量来源 |
 |---|---:|---|
-| 自检 | 173 | `python tests/run_tests.py` |
+| 自检 | 194 | `python tests/run_tests.py` |
 | CLI 命令 | 13 | `ghagent --help` |
 | 库模块 | 11 | `tools/ghalib/*.py` |
 | 在本仓库上检查的文档规则 | 17 | `ghagent doc --json`，字段 `rules_examined` |
@@ -346,7 +374,7 @@ flowchart LR
 | `tools/ghalib/install.py` | 技能安装、sha256 清单、差异、卸载 |
 | `tools/ghalib/report.py` | 发现、严重级别、Markdown 与 `--json` 输出 |
 | `tools/ghalib/config.py`、`tools/ghalib/util.py` | `.ghagent.json`、路径、文本输入输出、锚点 |
-| `tests/run_tests.py` | 173 个自检，带用例与诱饵 |
+| `tests/run_tests.py` | 194 个自检，带用例与诱饵 |
 
 锚点遵循 GitHub 的规则：小写、去掉标点、空格转连字符，重复的标题加 `-1`。这条规则在真实
 的目录上验证过：标题里的破折号会产生双连字符。架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。

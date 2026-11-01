@@ -27,7 +27,6 @@ from .util import (
     EXIT_FAIL,
     EXIT_OK,
     Report,
-    guess_repo_slug,
     read_text,
     rel,
     run,
@@ -187,8 +186,14 @@ def audit_local(root: Path, *, config: cfg.Config | None = None, doc_report: Rep
             report.warn("wiki.manifest", f"{config.wiki_manifest} is absent",
                         hint="wiki build cannot order pages without a manifest")
     else:
+        # A repository may keep its wiki in its own git repository, or not have one at all;
+        # neither is a defect. Skipping keeps the item out of the score instead of charging
+        # three points for a file the project never intended to publish here.
         result.items.append(Item(ident="wiki-source", title=f"{config.wiki_dir}/", weight=3,
-                                 status="fail", detail="no wiki source directory"))
+                                 status="skipped",
+                                 detail=f"no {config.wiki_dir}/ directory (wiki not maintained in this repository)"))
+        report.info("wiki.source-absent", f"no {config.wiki_dir}/ directory; the wiki item is not scored",
+                    hint="a wiki kept in its own repository is checked in that checkout")
 
     assets_report = assets_module.check(root, report=report)
     reference_item = Item(ident="assets.banner", title="README banner", weight=4)

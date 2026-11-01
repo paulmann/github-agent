@@ -8,6 +8,26 @@ All notable changes to this project are documented here. The format is
 
 ### Added
 
+- `docs/FIELD-NOTES.md`: ten defects that real repositories found, anonymised — the symptom, the
+  cause, the rule that changed and the fixture that now holds it. Published as a page of the
+  documentation site.
+- A documentation site on GitHub Pages: `mkdocs.yml` (Material), `docs/index.md`,
+  `.github/workflows/docs.yml` (build on every pull request, deploy from `main`) and
+  `hooks/repo_links.py`, which points a link that leaves `docs/` at the repository instead of at a
+  page that does not exist.
+- `.github/workflows/codeql.yml` (CodeQL, security-and-quality queries) and a `lint` job in CI:
+  `ruff` and `mypy` with their configuration in `pyproject.toml`. Both are development tools — the
+  runtime dependency count stays zero.
+- `.github/workflows/release-draft.yml`: a manual workflow that renders the release body from the
+  CHANGELOG (`changelog notes`) and creates a **draft** release. A draft does not trigger
+  `publish.yml`, so nothing reaches PyPI before a human presses Publish.
+- `tools/make_demo.py` and `assets/demo.gif`: the README animation is rendered from the real
+  output of three commands, so it cannot show anything the tool did not print.
+- README sections **Why this exists** and **How it compares** (with `markdownlint`, `vale`,
+  `action-gh-release`, pre-commit, `release-please` and the community-health files) in all six
+  languages.
+- `.ghagent.json` keys `exclude_dirs` (build output whose name the pack cannot know, e.g. `site`)
+  and `safe_email_domains` (role domains of this repository).
 - `packaging/homebrew/github-agent-cli.rb`: a Homebrew formula that installs the PyPI sdist
   `github_agent_cli-1.2.2.tar.gz` (sha256 `f60d17b1…e14ae`) into a virtualenv with `python@3.13`,
   with `livecheck` reading the PyPI JSON API. Canonical copy: `paulmann/homebrew-github-agent-cli`.
@@ -25,6 +45,26 @@ All notable changes to this project are documented here. The format is
 
 ### Changed
 
+- `md.link-local`: inside a wiki checkout — detected from `_Sidebar.md` or `_Footer.md` — a page
+  name resolves to `Page.md`, including names with dots (`Migration-3.x-to-4.0`). In an ordinary
+  repository the same link stays an error, because there it is a 404.
+- `md.h1`: `_Sidebar.md`, `_Footer.md` and `_Header.md` are wiki furniture and are reported as a
+  note, not as a document without a title.
+- `doc` and `privacy` share one walker, which skips every dot-directory except `.github/` and
+  `.well-known/`; `doc` also honours `ignore_rules` from `.ghagent.json`, which only `audit` read
+  before.
+- `changelog.link-refs`: missing link references are a warning, not an error — Keep a Changelog
+  makes them optional. `changelog.types`: a grouping subtitle is dropped before the lookup, so
+  `### Added — template language` is `Added`.
+- `assets render`: chips come from the declared keywords (languages are the fallback), emoji are
+  stripped from the title, and a title or tagline that would be cut is a warning that names the
+  limit.
+- `meta check --repo <slug>` reads the repository through `gh api` instead of validating the empty
+  arguments it was given.
+- `audit`: `wiki-source` is skipped, not failed, when the tree has no `wiki/` directory.
+- `wiki verify`: the target is an explicit `--out`, then a `--wiki-dir` that already looks like a
+  wiki checkout, then the build; the header names the directory that was read, and a repository
+  with neither sources nor a build gets one note instead of an error.
 - `docs/PACKAGING.md`: the Homebrew and Scoop section is no longer "deferred" — it lists both
   manifests, the measured hashes and how the CI job verifies them.
 - The six READMEs and `AGENTS.md` gained the `brew` and `scoop` install commands.

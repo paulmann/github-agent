@@ -13,13 +13,20 @@ CHANGELOG और समुदाय के अनुबंधों को अ�
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![लाइसेंस: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![रनटाइम निर्भरताएँ](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![स्वयं-परीक्षण](https://img.shields.io/badge/self--tests-173%20checks-brightgreen)](tests/run_tests.py)
+[![स्वयं-परीक्षण](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — AI एजेंटों के लिए रिपॉज़िटरी और विकि का संचालक"
      width="100%">
 
-[**इंस्टॉलेशन**](#इंस्टॉलेशन) · [**उपयोग**](#उपयोग) · [**विकि**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**MIGRATION.md**](MIGRATION.md) · [**पैकेजिंग**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**मुद्दे**](https://github.com/paulmann/github-agent/issues) · [**सुरक्षा**](SECURITY.md) · [**Русская версия**](README.ru.md)
+<img src="https://github.com/paulmann/github-agent/raw/main/assets/demo.gif"
+     alt="टर्मिनल में तीन ghagent कमांड: audit 100%, doc और changelog check पास"
+     width="100%">
+
+<sub>यह एनिमेशन `tools/make_demo.py` द्वारा तीन कमांड के वास्तविक आउटपुट से बनता है; यह वह कुछ
+नहीं दिखा सकता जो टूल ने प्रिंट न किया हो।</sub>
+
+[**इंस्टॉलेशन**](#इंस्टॉलेशन) · [**उपयोग**](#उपयोग) · [**यह क्यों है**](#यह-क्यों-है) · [**तुलना**](#तुलना) · [**दस्तावेज़ साइट**](https://paulmann.github.io/github-agent/) · [**विकि**](https://github.com/paulmann/github-agent/wiki) · [**AGENTS.md**](AGENTS.md) · [**पैकेजिंग**](docs/PACKAGING.md) · [**Changelog**](CHANGELOG.md) · [**मुद्दे**](https://github.com/paulmann/github-agent/issues) · [**सुरक्षा**](SECURITY.md) · [**Русская версия**](README.ru.md)
 
 रिपॉज़िटरी कोड पर कम ही विफल होती है; वह दस्तावेज़ पर विफल होती है। README में इंस्टॉलेशन खंड
 नहीं है, changelog में तारीखें नहीं हैं, विकि नेविगेशन के बिना तीन पृष्ठों की है, बैनर एक टूटी हुई छवि है,
@@ -40,9 +47,11 @@ CHANGELOG और समुदाय के अनुबंधों को अ�
 
 ## विषय-सूची
 
+- [यह क्यों है](#यह-क्यों-है)
 - [इंस्टॉलेशन](#इंस्टॉलेशन)
 - [उपयोग](#उपयोग)
 - [यह पैक क्या करता है](#यह-पैक-क्या-करता-है)
+- [तुलना](#तुलना)
 - [संख्याओं में](#संख्याओं-में)
 - [कौन-सी जाँचें चलती हैं](#कौन-सी-जाँचें-चलती-हैं)
 - [चित्र](#चित्र)
@@ -56,6 +65,18 @@ CHANGELOG और समुदाय के अनुबंधों को अ�
 - [लाइसेंस](#लाइसेंस)
 
 ---
+
+## यह क्यों है
+
+GitHub वही दिखाता है जो कमिट किया गया: वह नहीं बताता कि README में इंस्टॉलेशन खंड नहीं है,
+CHANGELOG में तारीखें नहीं हैं, विकि में नेविगेशन नहीं है, और बैनर टूटी हुई तस्वीर है। `git push`
+फिर भी सफल होता है, इसलिए कमी सालों जीवित रहती है — क्योंकि कोई रिपॉज़िटरी को उत्पाद की तरह
+नहीं देखता।
+
+तीन विचार व्यवहार तय करते हैं: **जाँच एक कमांड है जिसका निकास कोड है** (`0` साफ़, `1` त्रुटि,
+`2` वातावरण की समस्या), और जिस नियम ने कुछ भी नहीं देखा वह `coverage.skipped` कहता है; **झूठा
+`PASS` झूठे `FAIL` से बुरा है** — नियम तब तक सिकोड़ा जाता है जब तक दोनों उत्तर सही न हों (देखें
+[फ़ील्ड नोट्स](https://paulmann.github.io/github-agent/FIELD-NOTES/)); **आँकड़े, विशेषण नहीं**।
 
 ## इंस्टॉलेशन
 
@@ -182,7 +203,7 @@ ghagent audit .       # 0 स्वच्छ, 1 त्रुटि-स्तर 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 173/173 जाँचें पास
+python tools/ghagent.py selftest    # 194/194 जाँचें पास
 ```
 
 ## उपयोग
@@ -236,13 +257,24 @@ CLI में 13 कमांड हैं; तालिका रोज़ क�
 `changelog notes`, `meta suggest`, `wiki init`, `wiki publish`) अपने फ़्लैग के साथ
 [`AGENTS.md`](AGENTS.md) में सूचीबद्ध हैं।
 
+## तुलना
+
+यह पैक नीचे दिए टूल की जगह नहीं लेता: यह रिपॉज़िटरी की दस्तावेज़ सतह को एक जगह इकट्ठा करता है
+और एक ही निकास कोड पर लाता है।
+
+| टूल | ताकत | इस पैक का अंतर |
+|---|---|---|
+| `markdownlint` | मार्कडाउन शैली, हर निष्कर्ष पर एक नियम आईडी | `ghagent doc` लिंक, एंकर, विषय-सूची, टेबल, गोपनीयता और CHANGELOG अनुबंध भी जाँचता है |
+| `release-please` | conventional commits से वर्शन | CHANGELOG हाथ से लिखा और मशीन से जाँचा जाता रहता है; `changelog suggest` केवल मसौदा देता है |
+| GitHub सामुदायिक फ़ाइलें | इंटरफ़ेस में चेकलिस्ट | `audit` वही फ़ाइलें वर्किंग ट्री और रिमोट दोनों से गिनता है: अनुपस्थिति एक संख्या है, बैज नहीं |
+
 ## संख्याओं में
 
 इस ट्री में 2026-10-30 को संस्करण 1.2.2 के विरुद्ध मापा गया:
 
 | पक्ष | मान | माप का स्रोत |
 |---|---:|---|
-| स्वयं-परीक्षण | 173 | `python tests/run_tests.py` |
+| स्वयं-परीक्षण | 194 | `python tests/run_tests.py` |
 | CLI कमांड | 13 | `ghagent --help` |
 | लाइब्रेरी मॉड्यूल | 11 | `tools/ghalib/*.py` |
 | इस ट्री पर जाँचे गए दस्तावेज़ नियम | 17 | `ghagent doc --json`, फ़ील्ड `rules_examined` |
@@ -358,7 +390,7 @@ flowchart LR
 | `tools/ghalib/install.py` | स्किल इंस्टॉलेशन, sha256 मैनिफ़ेस्ट, विचलन, हटाना |
 | `tools/ghalib/report.py` | निष्कर्ष, गंभीरता, Markdown और `--json` आउटपुट |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, पथ, टेक्स्ट इनपुट/आउटपुट, एंकर |
-| `tests/run_tests.py` | फ़िक्स्चर और जाल-फ़ाइलों सहित 173 स्वयं-परीक्षण |
+| `tests/run_tests.py` | फ़िक्स्चर और जाल-फ़ाइलों सहित 194 स्वयं-परीक्षण |
 
 एंकर GitHub के नियमों का पालन करते हैं: छोटे अक्षर, विराम-चिह्न हटते हैं, स्थान हाइफ़न बनते हैं,
 दोहराया गया शीर्षक `-1` पाता है। यह नियम जीवंत विषय-सूची पर जाँचा गया: शीर्षक में em dash दोहरा

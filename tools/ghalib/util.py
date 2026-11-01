@@ -121,11 +121,36 @@ def force_utf8_stdio() -> None:
             pass
 
 
-def iter_text_files(root: Path, *, suffix_set: set[str] | None = None):
+# A directory whose name starts with a dot carries tool state, not documentation: `.git`,
+# `.idea`, `.ruff_cache`, and the scratch space of a coding agent (`.swarm`, `.claude`,
+# `.dsh`, `.cursor`). Walking it produced privacy errors for machine paths written in a
+# plan file that is never published — measured on a real repository: 6 errors in `.swarm/`
+# that blocked the gate. The allowlist holds the one dot-directory that IS a published
+# surface: `.github/` (issue forms, PR template) and `.well-known/`.
+HIDDEN_DIR_ALLOWLIST = {".github", ".well-known"}
+
+
+def visible_dirs(names, exclude=()) -> list[str]:
+    """Directories a documentation walk may enter: no build output, no tool state.
+
+    `exclude` carries the names a repository adds itself (`.ghagent.json` → `exclude_dirs`),
+    so a project with a generated `site/` directory does not teach the pack the name of its
+    build tool.
+    """
+    blocked = set(exclude) | EXCLUDED_DIRS
+    return sorted(
+        name for name in names
+        if name not in blocked
+        and not name.startswith(".ghagent-")
+        and (not name.startswith(".") or name in HIDDEN_DIR_ALLOWLIST)
+    )
+
+
+def iter_text_files(root: Path, *, suffix_set: set[str] | None = None, exclude=()):
     root = Path(root)
     suffixes = suffix_set if suffix_set is not None else TEXT_SUFFIXES
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS and not d.startswith(".ghagent-"))
+        dirnames[:] = visible_dirs(dirnames, exclude)
         for name in sorted(filenames):
             path = Path(dirpath) / name
             if path.suffix.lower() in suffixes:

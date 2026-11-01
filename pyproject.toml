@@ -52,7 +52,6 @@ Issues = "https://github.com/paulmann/github-agent/issues"
 
 [project.scripts]
 ghagent = "ghagent:main"
-
 # The version is read from the pack's single source: tools/ghalib/util.py.
 # Nothing in this file repeats the number.
 [tool.hatch.version]
@@ -60,8 +59,7 @@ path = "tools/ghalib/util.py"
 pattern = '^PACK_VERSION = "(?P<version>[^"]+)"'
 
 [tool.hatch.build]
-exclude = [
-  "**/__pycache__",
+exclude = [  "**/__pycache__",
   "**/*.py[cod]",
   "/.ghagent",
   "/.install.json",
@@ -113,10 +111,12 @@ only-include = [
   ".pre-commit-hooks.yaml",
   "action.yml",
   "Dockerfile",
+  "mkdocs.yml",
   "scripts",
   "assets",
   "docs",
   "examples",
+  "hooks",
   "reference",
   "skills",
   "tests",
@@ -124,3 +124,27 @@ only-include = [
   "wiki",
   ".github",
 ]
+
+# ---------------------------------------------------------------------------
+# Static analysis. Development tools only: neither ruff nor mypy is imported by
+# the pack, and neither ships in the wheel — the runtime dependency count stays 0.
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+# E501 is deliberately absent: prose in this pack is written in paragraphs that
+# wrap for a reader, not for a 79-column counter. E4/E7/E9 and F catch the
+# defects that matter (unused names, undefined names, broken syntax); I keeps
+# imports sorted so two files do not fight about the same block.
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["tools/ghalib", "tools/ghagent.py"]
+check_untyped_defs = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true

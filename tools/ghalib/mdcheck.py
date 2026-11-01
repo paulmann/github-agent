@@ -10,11 +10,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
 
 from .util import (
-    FENCE_RE,
-    IMAGE_RE,
     INLINE_LINK_RE,
     MARKDOWN_SUFFIXES,
     Report,
@@ -27,6 +25,11 @@ from .util import (
 )
 
 ALLOWED_ALERTS = {"NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"}
+# GitHub wiki furniture: partial pages that carry navigation, not documents. A wiki
+# renders `_Sidebar.md` and `_Footer.md` on every page, so neither the H1 rule nor a
+# page-shaped link contract applies to them (measured: 2 false errors on a 24-page wiki).
+WIKI_FURNITURE = {"_sidebar.md", "_footer.md", "_header.md"}
+WIKI_MODE_MARKERS = ("_Sidebar.md", "_Footer.md")
 # AGENTS.md is the import entry point an agent reads first: a map, not a manual. The
 # canonical root file is the only one this rule measures — translations and nested
 # copies are checked by their own contracts.
@@ -44,9 +47,11 @@ ABS_PATH_PATTERNS = [
     re.compile(r"(?<![\w.])/(?:home|Users)/[a-z0-9._-]+/", re.IGNORECASE),
 ]
 PERSONAL_EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})\b")
+# Role addresses only: a personal domain that happens to belong to the pack's author has
+# no place here, or the whitelist becomes a leak of its own. A repository adds its own
+# domains with `safe_email_domains` in `.ghagent.json`.
 SAFE_EMAIL_DOMAINS = {
-    "users.noreply.github.com", "example.com", "example.org", "example.net",
-    "localhost", "deynekin.com",
+    "users.noreply.github.com", "example.com", "example.org", "example.net", "localhost",
 }
 KEBAB_TOPIC_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -67,6 +72,13 @@ class DocCheckOptions:
     toc: bool = True
     line_length: int = 200
     max_line_rule: bool = True
+    # None means "decide from the tree": a directory that carries `_Sidebar.md` or
+    # `_Footer.md` is a wiki checkout, and a wiki addresses pages by name.
+    wiki_links: bool | None = None
+    # Directory names whose contents are wiki sources even without the generated markers
+    # (`wiki/` holds page-name links; the sidebar is generated into the build).
+    wiki_dirs: set[str] = field(default_factory=set)
+    safe_email_domains: set[str] = field(default_factory=set)
 
 
 class DocChecker:
@@ -76,6 +88,26 @@ class DocChecker:
         self.options = options or DocCheckOptions()
         self.stats: dict[str, RuleStats] = {}
         self.anchor_cache: dict[Path, set[str]] = {}
+        self.wiki_cache: dict[Path, bool] = {}
+
+    def wiki_tree(self, path: Path) -> bool:
+        """True when the document lives in a GitHub wiki checkout.
+
+        A wiki links its own pages by name (`[Architecture](Architecture)`), and GitHub
+        resolves that to `Architecture.md`. In an ordinary repository the same link is a
+        404, so the resolution is enabled only where the context proves it: the directory
+        carries `_Sidebar.md` or `_Footer.md`. Measured on a 24-page wiki before the fix:
+        119 errors, of which 117 were correct links reported as missing files.
+        """
+        if self.options.wiki_links is not None:
+            return self.options.wiki_links
+        directory = path.parent.resolve()
+        if directory not in self.wiki_cache:
+            named = bool(self.options.wiki_dirs) and any(part in self.options.wiki_dirs
+                                                         for part in path.parts[:-1])
+            self.wiki_cache[directory] = named or any((directory / marker).exists()
+                                                      for marker in WIKI_MODE_MARKERS)
+        return self.wiki_cache[directory]
 
     # -- infrastructure ----------------------------------------------------
     def _rule(self, rule: str) -> bool:
@@ -164,9 +196,13 @@ class DocChecker:
             h1 = [h for h in headings if h.level == 1]
             is_template = ".github" in path.parts or "template" in path.name.lower()
             is_template = is_template or "<!-- ghagent: template -->" in text
+            is_furniture = path.name.lower() in WIKI_FURNITURE
             if not h1:
                 if is_template:
                     self.report.info("md.h1", "template without an H1 (expected: the body starts at H2)",
+                                     path=relative, line=1)
+                elif is_furniture:
+                    self.report.info("md.h1", "wiki partial without an H1 (navigation is rendered on every page)",
                                      path=relative, line=1)
                 else:
                     self.report.error("md.h1", "no H1 heading", path=relative, line=1,
@@ -288,6 +324,7 @@ class DocChecker:
 
     def _check_links(self, path: Path, relative: str, links, headings, text: str) -> None:
         local_anchors = {h.anchor for h in headings}
+        wiki = self.wiki_tree(path)
         for link in links:
             if link.kind != "inline":
                 continue
@@ -304,9 +341,23 @@ class DocChecker:
                 continue  # placeholder kept on purpose in templates
             if self._rule("md.link-local"):
                 self._hit("md.link-local")
-                self._resolve_link(path, relative, link, local_anchors)
+                self._resolve_link(path, relative, link, local_anchors, wiki)
 
-    def _resolve_link(self, path: Path, relative: str, link, local_anchors: set[str]) -> None:
+    @staticmethod
+    def wiki_page_target(candidate: Path) -> Path | None:
+        """Resolve a wiki page name to its file: `Architecture` -> `Architecture.md`.
+
+        A wiki page name may contain dots (`Migration-3.x-to-4.0`), so the suffix is
+        appended to the whole name instead of replacing what looks like an extension.
+        """
+        for suffix in (".md", ".markdown", ".mdown"):
+            alternative = candidate.with_name(candidate.name + suffix)
+            if alternative.exists():
+                return alternative
+        return None
+
+    def _resolve_link(self, path: Path, relative: str, link, local_anchors: set[str],
+                      wiki: bool = False) -> None:
         target = link.target.strip()
         anchorless = target.split("#", 1)[0]
         anchor = target.split("#", 1)[1] if "#" in target else ""
@@ -319,10 +370,13 @@ class DocChecker:
                                 hint="a trailing slash is a browsable directory on GitHub; a file link is better for readers")
                 return
             if not candidate.exists():
-                self.report.error("md.link-local", f"target does not exist: {target}",
-                                  path=relative, line=link.line,
-                                  hint="fix the path or drop the link")
-                return
+                resolved = self.wiki_page_target(candidate) if wiki else None
+                if resolved is None:
+                    self.report.error("md.link-local", f"target does not exist: {target}",
+                                      path=relative, line=link.line,
+                                      hint="fix the path or drop the link")
+                    return
+                candidate = resolved
             if anchor and candidate.suffix.lower() in MARKDOWN_SUFFIXES:
                 if anchor.lower() not in {a.lower() for a in self.anchors_of(candidate)}:
                     self.report.error("md.link-anchor",
@@ -391,9 +445,10 @@ class DocChecker:
                                       path=relative, line=line,
                                       hint="use a relative path or a <placeholder>")
         if self._rule("privacy.email"):
+            allowed = SAFE_EMAIL_DOMAINS | {domain.lower() for domain in self.options.safe_email_domains}
             for match in PERSONAL_EMAIL_RE.finditer(text):
                 domain = match.group(1).lower()
-                if domain in SAFE_EMAIL_DOMAINS:
+                if domain in allowed:
                     continue
                 self._hit("privacy.email")
                 line = text.count("\n", 0, match.start()) + 1

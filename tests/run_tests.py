@@ -1410,7 +1410,7 @@ def test_assets_card(tmp: Path) -> None:
     bare_check.mkdir()
     write_text(bare_check / "README.md",
                "# Bare Project\n\nOne sentence about a bare project.\n\n"
-               "![banner](assets/social-preview.png)\n")
+               "![banner](assets/social-preview.svg)\n")
     bare_render = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets",
                                   "render", "--root", str(bare_check), "--write"],
                                  capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -1423,8 +1423,11 @@ def test_assets_card(tmp: Path) -> None:
     check("assets: the identity block stays on a card without a panel", "Bare Project" in bare_svg,
           bare_svg[:200])
     bare_png = bare_check / "assets" / "social-preview.png"
+    # Pillow is optional (`github-agent-cli[png]`): a runner without it writes the SVG only and
+    # the PNG assertions below must not turn into a red gate on a machine that never promised one.
+    png_supported = assets_module.render_png(assets_module.BannerSpec(title="probe")) is not None
     check("assets: the card without a panel is still 1280x640",
-          assets_module.image_size(bare_png) == assets_module.SOCIAL_SIZE,
+          assets_module.image_size(bare_png) == assets_module.SOCIAL_SIZE or not png_supported,
           str(assets_module.image_size(bare_png)))
     bare_report = assets_module.check(bare_check)
     check("assets: a card without a panel still passes assets check", bare_report.exit_code() == 0,

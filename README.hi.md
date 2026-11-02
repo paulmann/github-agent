@@ -13,7 +13,7 @@ CHANGELOG और समुदाय के अनुबंधों को अ�
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![लाइसेंस: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![रनटाइम निर्भरताएँ](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![स्वयं-परीक्षण](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
+[![स्वयं-परीक्षण](https://img.shields.io/badge/self--tests-236%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — AI एजेंटों के लिए रिपॉज़िटरी और विकि का संचालक"
@@ -36,7 +36,7 @@ CHANGELOG और समुदाय के अनुबंधों को अ�
 देता है। यह मार्केटिंग कॉपी नहीं लिखता और संख्याएँ नहीं गढ़ता: यह जाँचता है कि मनुष्य ने क्या
 लिखा, और जो टूटा है उसे प्रकाशित करने से मना कर देता है।
 
-> **दस्तावेज़ की स्थिति।** इस README का हर आँकड़ा 2026-11-01 को संस्करण 1.3.0 के विरुद्ध, तालिका
+> **दस्तावेज़ की स्थिति।** इस README का हर आँकड़ा 2026-11-02 को संस्करण 1.4.0 के विरुद्ध, तालिका
 > में नामित कमांडों से मापा गया। विस्तृत मार्गदर्शिकाएँ
 > [Wiki](https://github.com/paulmann/github-agent/wiki) और [`docs/`](docs/IMPORT.md) में रहती हैं;
 > एजेंटों के लिए प्रोटोकॉल [`AGENTS.md`](AGENTS.md) है, और पैकेजिंग व माइग्रेशन के नोट
@@ -137,7 +137,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` है। एंट्री पॉइंट `ghagent` है, इसलिए इमेज के
-नाम के बाद पहला आर्ग्युमेंट ही कमांड है। 1.3.0 के भाग के रूप में कोई रजिस्ट्री इमेज प्रकाशित नहीं
+नाम के बाद पहला आर्ग्युमेंट ही कमांड है। 1.4.0 के भाग के रूप में कोई रजिस्ट्री इमेज प्रकाशित नहीं
 होती और CI कंटेनर नहीं बनाता: टैग एक स्थानीय परंपरा है। देखें
 [examples/docker.md](examples/docker.md)।
 
@@ -148,7 +148,7 @@ Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` ह�
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.3.0    # रिलीज़ टैग पिन करें
+- uses: paulmann/github-agent@v1.4.0    # रिलीज़ टैग पिन करें
   with:
     command: audit .
     min-score: "80"
@@ -175,7 +175,7 @@ Windows PowerShell में वही माउंट `-v "${PWD}:/repo"` ह�
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.3.0     # प्लेसहोल्डर: वह रिलीज़ टैग पिन करें जिस पर आप भरोसा करते हैं
+    rev: v1.4.0     # प्लेसहोल्डर: वह रिलीज़ टैग पिन करें जिस पर आप भरोसा करते हैं
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -193,7 +193,7 @@ pre-commit टूल को टैग किए गए ट्री से ब�
 किसी भी इंस्टॉल के बाद एक कमांड बताता है कि CLI जारी किया गया बिल्ड है या नहीं:
 
 ```bash
-ghagent --version     # संस्करण छापता है, उदाहरण के लिए github-agent 1.3.0
+ghagent --version     # संस्करण छापता है, उदाहरण के लिए github-agent 1.4.0
 ghagent audit .       # 0 स्वच्छ, 1 त्रुटि-स्तर के निष्कर्ष, 2 उपयोग या वातावरण की समस्या
 ```
 
@@ -203,7 +203,7 @@ ghagent audit .       # 0 स्वच्छ, 1 त्रुटि-स्तर 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 194/194 जाँचें पास
+python tools/ghagent.py selftest    # 236/236 जाँचें पास
 ```
 
 ## उपयोग
@@ -217,7 +217,7 @@ ghagent assets check               # प्रारूप, माप, alt ट�
 ghagent wiki build                 # विकि नेमस्पेस के लिए लिंक फिर से लिखें
 ghagent wiki verify                # हर आंतरिक लिंक खुलता है
 ghagent changelog check            # Keep a Changelog और SemVer
-ghagent changelog release 1.3.0 --write
+ghagent changelog release 1.4.0 --write
 ghagent meta suggest               # विवरण और विषय
 ```
 
@@ -248,7 +248,7 @@ score: 72.5% (22 scored, 1 skipped)
 | सीक्रेट और मशीन पथ खोजना | `ghagent privacy --root .` |
 | बैनर और सोशल प्रीव्यू रेंडर करना | `ghagent assets render --write` |
 | विकि बनाना, सत्यापित करना और प्रकाशित करना | `ghagent wiki build`, `verify`, `publish --push` |
-| संस्करण जारी करना | `ghagent changelog release 1.3.0 --write` |
+| संस्करण जारी करना | `ghagent changelog release 1.4.0 --write` |
 | विवरण और विषय ठीक करना | `ghagent meta apply --repo owner/name --write` |
 | स्किल को दूसरे एजेंट में इंस्टॉल करना | `ghagent install --profile harness --write` |
 
@@ -270,11 +270,11 @@ CLI में 13 कमांड हैं; तालिका रोज़ क�
 
 ## संख्याओं में
 
-इस ट्री में 2026-11-01 को संस्करण 1.3.0 के विरुद्ध मापा गया:
+इस ट्री में 2026-11-02 को संस्करण 1.4.0 के विरुद्ध मापा गया:
 
 | पक्ष | मान | माप का स्रोत |
 |---|---:|---|
-| स्वयं-परीक्षण | 194 | `python tests/run_tests.py` |
+| स्वयं-परीक्षण | 236 | `python tests/run_tests.py` |
 | CLI कमांड | 13 | `ghagent --help` |
 | लाइब्रेरी मॉड्यूल | 11 | `tools/ghalib/*.py` |
 | इस ट्री पर जाँचे गए दस्तावेज़ नियम | 17 | `ghagent doc --json`, फ़ील्ड `rules_examined` |
@@ -307,9 +307,7 @@ CLI में 13 कमांड हैं; तालिका रोज़ क�
 इस फ़ाइल के शीर्ष पर बैनर पैक स्वयं बनाता है:
 
 ```bash
-ghagent assets render --title "github-agent" \
-    --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
+python tools/make_social_preview.py --write
 ```
 
 - `assets/social-preview.png` — 1280×640, 1 MB से कम, **Settings → Social preview** के लिए तैयार।
@@ -390,7 +388,7 @@ flowchart LR
 | `tools/ghalib/install.py` | स्किल इंस्टॉलेशन, sha256 मैनिफ़ेस्ट, विचलन, हटाना |
 | `tools/ghalib/report.py` | निष्कर्ष, गंभीरता, Markdown और `--json` आउटपुट |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, पथ, टेक्स्ट इनपुट/आउटपुट, एंकर |
-| `tests/run_tests.py` | फ़िक्स्चर और जाल-फ़ाइलों सहित 194 स्वयं-परीक्षण |
+| `tests/run_tests.py` | फ़िक्स्चर और जाल-फ़ाइलों सहित 236 स्वयं-परीक्षण |
 
 एंकर GitHub के नियमों का पालन करते हैं: छोटे अक्षर, विराम-चिह्न हटते हैं, स्थान हाइफ़न बनते हैं,
 दोहराया गया शीर्षक `-1` पाता है। यह नियम जीवंत विषय-सूची पर जाँचा गया: शीर्षक में em dash दोहरा

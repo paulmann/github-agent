@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -50,10 +51,12 @@ RESULTS: list[tuple[str, bool, str]] = []
 QUIET = "--quiet" in sys.argv
 
 
-def check(name: str, condition: bool, detail: str = "") -> None:
-    RESULTS.append((name, bool(condition), detail))
+def check(name: str, condition: bool, detail: object = "") -> None:
+    """Record one assertion. `detail` may be any value: it is only shown and stored as text."""
+    text = "" if detail is None else str(detail)
+    RESULTS.append((name, bool(condition), text))
     if not condition and not QUIET:
-        print(f"  FAIL  {name}  {detail}")
+        print(f"  FAIL  {name}  {text}")
 
 
 def expect_rule(report: Report, rule: str, name: str) -> None:
@@ -546,10 +549,13 @@ def test_meta_remote(tmp: Path) -> None:
 
 def test_assets_traps(tmp: Path) -> None:
     """A cut banner is reported, and a two-line title is not called cut."""
-    check("assets: a two-line title is not reported as cut",
-          not assets_module._truncated(assets_module._wrap("HTML.PHP — Template Processing Library", 26, 2)))
-    check("assets: an over-long tagline is reported as cut",
-          assets_module._truncated(assets_module._wrap("word " * 60, 62, 3)))
+    title_lines, title_cut = assets_module._wrap("HTML.PHP — Template Processing Library",
+                                                 "mono-bold", 64, 1200, 2)
+    check("assets: a two-line title is not reported as cut", len(title_lines) == 2 and not title_cut,
+          f"{title_lines} cut={title_cut}")
+    tagline_lines, tagline_cut = assets_module._wrap("word " * 60, "sans", 20, 600, 2)
+    check("assets: an over-long tagline is reported as cut", tagline_cut,
+          f"{tagline_lines} cut={tagline_cut}")
     root = tmp / "assets-traps"
     root.mkdir(parents=True, exist_ok=True)
     write_text(root / "README.md", "# Title\n\n**Summary.**\n")
@@ -813,8 +819,18 @@ def test_wiki(tmp: Path) -> None:
     check("wiki: sidebar lists the pages without .md", "[Home](Home)" in sidebar and "[02 · FAQ](02-FAQ)" in sidebar,
           sidebar[:200])
     check("wiki: sidebar groups appear", "### Начало" in sidebar and "### Справочник" in sidebar)
+    check("wiki: generated navigation is English",
+          "### Links" in sidebar and "[Repository](https://github.com/owner/demo)" in sidebar
+          and "[Releases](https://github.com/owner/demo/releases)" in sidebar, sidebar[-400:])
+    check("wiki: generated navigation carries no Russian labels",
+          "Ссылки" not in sidebar and "Репозиторий" not in sidebar and "Релизы" not in sidebar,
+          sidebar[-400:])
     footer, _ = read_text(out / "_Footer.md")
     check("wiki: footer links are absolute", footer.count("https://github.com/owner/demo") >= 2, footer)
+    check("wiki: footer is English too",
+          "[repository](https://github.com/owner/demo)" in footer
+          and "[releases](https://github.com/owner/demo/releases)" in footer
+          and "репозиторий" not in footer, footer)
     home, _ = read_text(out / "Home.md")
     check("wiki: internal link loses the .md suffix", "](01-Install)" in home, home)
     check("wiki: repository link becomes absolute",
@@ -1102,8 +1118,8 @@ def test_assets(tmp: Path) -> None:
     check("assets: SVG carries the title and the dimensions",
           "github-agent" in svg and 'width="1280"' in svg and svg.strip().endswith("</svg>"))
     check("assets: SVG escapes angle brackets",
-          "a &lt;b&gt; c" in assets_module.render_svg(assets_module.BannerSpec(title="a <b> c", tagline="x")),
-          assets_module.render_svg(assets_module.BannerSpec(title="a <b> c", tagline="x"))[:200])
+          "&lt;b&gt;" in assets_module.render_svg(assets_module.BannerSpec(title="a <b> c", tagline="x")),
+          assets_module.render_svg(assets_module.BannerSpec(title="a <b> c", tagline="x"))[:300])
     png_bytes = assets_module.render_png(spec)
     if png_bytes is None:
         check("assets: PNG rendering reports the missing dependency", True)
@@ -1200,6 +1216,231 @@ def test_assets(tmp: Path) -> None:
           assets_module.render_png(spec) is None or (cli_root / "assets" / "social-preview.png").exists())
 
 
+def test_assets_card(tmp: Path) -> None:
+    """The designed card: one layout into PNG and SVG, and only facts the tree can prove.
+
+    Two hard edges are tested here. An auto fact exists only when the tree measures it — an
+    unmeasurable license or test count is omitted, never guessed. And the SVG is not a second
+    design: it receives the same instruction list as the PNG, coordinate for coordinate.
+    """
+    # A tree with nothing measurable proves that the renderer omits instead of inventing.
+    bare = tmp / "card-bare"
+    bare.mkdir()
+    write_text(bare / "README.md", "# Bare Project\n\nOne sentence about a bare project.\n")
+    bare_labels = {label for label, _value, _source in assets_module.derive_facts(bare)}
+    for label in ("license", "version", "test functions", "wiki pages", "doc pages", "runtime deps"):
+        check(f"assets: auto facts omit the unmeasurable '{label}'", label not in bare_labels,
+              str(sorted(bare_labels)))
+
+    # A tree that declares the facts: each one must name the file it came from.
+    measured = tmp / "card-measured"
+    (measured / "docs").mkdir(parents=True)
+    (measured / "tests").mkdir()
+    (measured / "wiki").mkdir()
+    write_text(measured / "README.md", "# Measured Tool\n\nA tool that measures itself.\n")
+    write_text(measured / "LICENSE", "MIT License\n\nPermission is hereby granted, free of charge.\n")
+    write_text(measured / "pyproject.toml",
+               '[project]\nname = "measured"\nversion = "2.5.1"\n'
+               'description = "A measured tool."\nlicense = "MIT"\ndependencies = []\n\n'
+               '[project.scripts]\nmeasured = "measured:main"\n')
+    write_text(measured / "docs" / "guide.md", "# Guide\n\nText.\n")
+    write_text(measured / "tests" / "test_measured.py",
+               "def test_one() -> None:\n    assert True\n\ndef test_two() -> None:\n    assert True\n")
+    write_text(measured / "wiki" / "wiki.json",
+               '{"repo": "owner/measured", "groups": [{"title": "Start", "pages": ["Home.md"]}]}\n')
+    facts = assets_module.derive_facts(measured)
+    by_label = {label: value for label, value, _source in facts}
+    check("assets: the version fact comes from the manifest", by_label.get("version") == "2.5.1",
+          str(by_label))
+    check("assets: the license fact comes from the manifest", by_label.get("license") == "MIT",
+          str(by_label))
+    check("assets: the dependency fact is the declared array length",
+          by_label.get("runtime deps") == "0", str(by_label))
+    check("assets: the test fact counts the test functions", by_label.get("test functions") == "2",
+          str(by_label))
+    check("assets: the wiki fact counts the manifest entries", by_label.get("wiki page") == "1",
+          str(by_label))
+    check("assets: every fact names its source", all(source.strip() for _l, _v, source in facts),
+          str(facts))
+
+    # One layout, two renderers: every text instruction lands on the same coordinate in both.
+    spec = assets_module.spec_from_repository(measured, title="Measured Tool",
+                                              command="measured --help", outputs=["PASS: ok"])
+    spec.width, spec.height = assets_module.SOCIAL_SIZE
+    card = assets_module.build_card(spec)
+    svg = assets_module.render_card_svg(card)
+    expected = [(str(element.at[0]), str(element.at[1])) for element in card.elements
+                if element.kind in {"text", "duo", "wordmark"}]
+    rendered = re.findall(r'<text x="(\d+)" y="(\d+)"', svg)
+    check("assets: the SVG twin carries every text at the same coordinate", rendered == expected,
+          f"svg={rendered[:4]} card={expected[:4]}")
+    check("assets: the wordmark starts with an accent-coloured letter",
+          'fill="#4f9cf9">M</tspan>easured' in svg,
+          svg[svg.find("<tspan"):svg.find("<tspan") + 160])
+    check("assets: the card is a vertical gradient with a terminal panel",
+          "linearGradient" in svg and "url(#background)" in svg)
+    check("assets: the terminal panel carries traffic lights and real output",
+          svg.count("<circle") >= 3 and "measured --help" in svg and "PASS: ok" in svg)
+    check("assets: a homepage draws a status dot in the footer",
+          assets_module.render_card_svg(assets_module.build_card(
+              assets_module.BannerSpec(title="T", footer_right="example.com"))).count("<circle") == 1)
+
+    # A two-word wordmark: one designed gap, one layout used by both renderers. A monospace space
+    # cell (42 px at size 76) reads as a double space at display size, so the words are measured
+    # once and separated by `WORD_GAP_RATIO`; the remainder therefore starts at the measured
+    # prefix width plus exactly that one gap, never at a second space.
+    two_card = assets_module.build_card(assets_module.BannerSpec(title="Cert Unifier",
+                                                                command="demo --help"))
+    wordmark = [element for element in two_card.elements if element.kind == "wordmark"][0]
+    layout = assets_module.wordmark_layout(wordmark.text, wordmark.font, wordmark.size)
+    check("assets: a two-word wordmark splits into its words",
+          [word for word, _x in layout] == ["Cert", "Unifier"], str(layout))
+    prefix_width = assets_module.text_width("mono-bold", wordmark.size, "Cert")
+    designed_gap = wordmark.size * assets_module.WORD_GAP_RATIO
+    check("assets: the remainder starts at the measured prefix plus one gap",
+          abs(layout[1][1] - (prefix_width + designed_gap)) <= 1,
+          f"layout={layout} prefix={prefix_width} gap={designed_gap}")
+    check("assets: the words add up to one measured string",
+          abs(assets_module.wordmark_width("Cert Unifier", "mono-bold", wordmark.size)
+              - (prefix_width + designed_gap
+                 + assets_module.text_width("mono-bold", wordmark.size, "Unifier"))) <= 1,
+          f"full={assets_module.wordmark_width('Cert Unifier', 'mono-bold', wordmark.size)}")
+    two_svg = assets_module.render_card_svg(two_card)
+    two_wordmark_line = next(line for line in two_svg.splitlines()
+                             if "<tspan" in line and "Unifier" in line)
+    word_positions = [int(value) for value in re.findall(r'<tspan x="(\d+)"', two_wordmark_line)]
+    check("assets: the SVG places each word where the layout says",
+          word_positions == [wordmark.at[0] + offset for _word, offset in layout],
+          f"{word_positions} vs {layout}")
+    two_png = assets_module.render_card_png(two_card)
+    if two_png is None:
+        check("assets: PNG rendering reports the missing dependency", True)
+    else:
+        from io import BytesIO
+
+        from PIL import Image
+        image = Image.open(BytesIO(two_png)).convert("RGB")
+        gaps: list[int] = []
+        gap_size = 0
+        started = False
+        for column in range(wordmark.at[0], wordmark.at[0] + 600):
+            ink = False
+            for row in range(wordmark.at[1] - wordmark.size, wordmark.at[1] + 4):
+                pixel = image.getpixel((column, row))
+                if isinstance(pixel, tuple) and sum(pixel) > 240:
+                    ink = True
+                    break
+            if ink:
+                if started and gap_size:
+                    gaps.append(gap_size)
+                gap_size = 0
+                started = True
+            elif started:
+                gap_size += 1
+        space_cell = assets_module.text_width("mono-bold", wordmark.size, " ")
+        word_gap = max(gaps) if gaps else 0
+        check("assets: the wordmark keeps one normal word gap, not two spaces",
+              0.2 * space_cell < word_gap < 0.95 * space_cell,
+              f"gap={word_gap} space={space_cell} gaps={gaps[:8]}")
+
+    png = assets_module.render_card_png(card)
+    if png is None:
+        check("assets: PNG rendering reports the missing dependency", True)
+    else:
+        out = tmp / "card-measured.png"
+        out.write_bytes(png)
+        check("assets: the card PNG is 1280x640",
+              assets_module.image_size(out) == assets_module.SOCIAL_SIZE, str(assets_module.image_size(out)))
+        check("assets: the card PNG stays under 1 MB", len(png) < assets_module.SOCIAL_MAX_BYTES,
+              f"{len(png)} bytes")
+
+    # The dry run says what it drew and where every pill came from.
+    report = assets_module.write_assets(measured)
+    check("assets: the dry run reports the pills it drew", bool(report.data.get("facts")),
+          str(report.data.get("facts")))
+    check("assets: the dry run reports a source for every pill",
+          all(report.data.get("fact_sources", {}).values()), str(report.data.get("fact_sources")))
+
+    # Explicit facts: --fact turns auto derivation off, --facts auto turns it back on.
+    proc = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets", "render",
+                           "--root", str(measured), "--fact", "tools=40", "--write"],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
+    written_svg, _ = read_text(measured / "assets" / "social-preview.svg")
+    check("assets: --fact appears on the card as a value-first pill", "40 tools" in written_svg,
+          written_svg[:200])
+    check("assets: --fact replaces the auto facts", "MIT license" not in written_svg, written_svg[:200])
+    subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets", "render",
+                    "--root", str(measured), "--fact", "tools=40", "--facts", "auto", "--write"],
+                   capture_output=True, text=True, encoding="utf-8", errors="replace")
+    written_svg, _ = read_text(measured / "assets" / "social-preview.svg")
+    check("assets: --facts auto keeps the measured pills next to --fact",
+          "40 tools" in written_svg and "MIT license" in written_svg, written_svg[:200])
+
+    # A legacy --chips caller keeps its pills: explicit pills outrank the derived ones.
+    legacy = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets", "render",
+                             "--root", str(measured), "--chips", "legacy,chips", "--write"],
+                            capture_output=True, text=True, encoding="utf-8", errors="replace")
+    written_svg, _ = read_text(measured / "assets" / "social-preview.svg")
+    check("assets: --chips keeps its pills when auto facts are on",
+          legacy.returncode == 0 and "legacy" in written_svg and "chips" in written_svg,
+          written_svg[:200])
+
+    # The six-pill cap is reported, and losing a pill is not an error.
+    arguments = [sys.executable, str(PACK / "tools" / "ghagent.py"), "assets", "render",
+                 "--root", str(measured), "--write"]
+    for index in range(8):
+        arguments += ["--fact", f"fact{index}={index}"]
+    proc = subprocess.run(arguments, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    check("assets: more than six pills is reported", "assets.facts-overflow" in proc.stdout,
+          proc.stdout[-300:])
+    check("assets: a dropped pill is not an error", proc.returncode == 0, f"exit {proc.returncode}")
+
+    # A non-standard size scales the layout instead of cropping it.
+    subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets", "render",
+                    "--root", str(measured), "--size", "640x320", "--write"],
+                   capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if assets_module.render_png(assets_module.BannerSpec(title="x")) is not None:
+        check("assets: --size 640x320 produces a 640x320 PNG",
+              assets_module.image_size(measured / "assets" / "social-preview.png") == (640, 320),
+              str(assets_module.image_size(measured / "assets" / "social-preview.png")))
+
+    # A card with neither a command nor output has no terminal panel: the empty box that used to
+    # look unfinished is gone and the identity block is centred between rule and footer.
+    bare_check = tmp / "card-bare-check"
+    bare_check.mkdir()
+    write_text(bare_check / "README.md",
+               "# Bare Project\n\nOne sentence about a bare project.\n\n"
+               "![banner](assets/social-preview.png)\n")
+    bare_render = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets",
+                                  "render", "--root", str(bare_check), "--write"],
+                                 capture_output=True, text=True, encoding="utf-8", errors="replace")
+    bare_svg, _ = read_text(bare_check / "assets" / "social-preview.svg")
+    check("assets: no command and no output means no terminal panel",
+          bare_render.returncode == 0 and "#0a1018" not in bare_svg and "<circle" not in bare_svg,
+          bare_render.stdout[-300:] + bare_render.stderr[-200:])
+    check("assets: the missing panel is explained", "assets.no-command" in bare_render.stdout,
+          bare_render.stdout[-300:])
+    check("assets: the identity block stays on a card without a panel", "Bare Project" in bare_svg,
+          bare_svg[:200])
+    bare_png = bare_check / "assets" / "social-preview.png"
+    check("assets: the card without a panel is still 1280x640",
+          assets_module.image_size(bare_png) == assets_module.SOCIAL_SIZE,
+          str(assets_module.image_size(bare_png)))
+    bare_report = assets_module.check(bare_check)
+    check("assets: a card without a panel still passes assets check", bare_report.exit_code() == 0,
+          "; ".join(f"{finding.rule}: {finding.message}" for finding in bare_report.errors[:4]))
+
+    # Every renderer flag is documented in --help.
+    help_proc = subprocess.run([sys.executable, str(PACK / "tools" / "ghagent.py"), "assets", "--help"],
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+    documented = help_proc.stdout
+    flags = ("--title", "--eyebrow", "--summary", "--tagline", "--command", "--output",
+             "--output-line", "--fact", "--facts", "--license", "--chips", "--footer-left",
+             "--footer-right", "--url", "--homepage", "--accent", "--size", "--out-dir", "--write")
+    missing = [flag for flag in flags if flag not in documented]
+    check("assets: --help documents every renderer flag", not missing, str(missing))
+
+
 def test_pack_hygiene() -> None:
     """The pack must ship without BOM, CRLF, machine paths or personal addresses."""
     offenders: list[str] = []
@@ -1263,6 +1504,7 @@ def main() -> int:
             ("meta", lambda: test_meta()),
             ("report", lambda: test_report(tmp)),
             ("assets", lambda: test_assets(tmp)),
+            ("assets-card", lambda: test_assets_card(tmp)),
             ("stdio-encoding", lambda: test_stdio_encoding(tmp)),
             ("cli", lambda: test_cli(tmp)),
             ("pack-hygiene", lambda: test_pack_hygiene()),

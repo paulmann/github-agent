@@ -13,7 +13,7 @@ the repository — one command per job.
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Runtime dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![Self-tests](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
+[![Self-tests](https://img.shields.io/badge/self--tests-236%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — repository and wiki steward for AI agents"
@@ -36,8 +36,8 @@ This pack puts a verifiable contract on each of those places and reduces the wor
 command. It does not write marketing copy and does not invent numbers: it checks what a human
 wrote and refuses to publish what is broken.
 
-> **Documentation status.** Every number in this README was measured on 2026-11-01 against
-> version 1.3.0 with the commands named in the table. Long guides live in the
+> **Documentation status.** Every number in this README was measured on 2026-11-02 against
+> version 1.4.0 with the commands named in the table. Long guides live in the
 > [Wiki](https://github.com/paulmann/github-agent/wiki) and [`docs/`](docs/IMPORT.md); the
 > protocol for agents is [`AGENTS.md`](AGENTS.md), the packaging and migration notes are
 > [`docs/PACKAGING.md`](docs/PACKAGING.md) and [`MIGRATION.md`](MIGRATION.md).
@@ -145,8 +145,8 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 On Windows PowerShell the same mount is `-v "${PWD}:/repo"`. The entry point is `ghagent`, so
-the first argument after the image name is the command. No registry image is published as part
-of 1.3.0 and CI does not build the container: the tag is a local convention. See
+the first argument after the image name is the command. No registry image is published by the
+release workflow and CI does not build the container: the tag is a local convention. See
 [examples/docker.md](examples/docker.md).
 
 ### GitHub Action
@@ -156,7 +156,7 @@ release and works as soon as the tag exists:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.3.0    # pin the release tag
+- uses: paulmann/github-agent@v1.4.0    # pin the release tag
   with:
     command: audit .
     min-score: "80"
@@ -183,7 +183,7 @@ The repository is also a pre-commit hook source; the hooks are `ghagent-doc`,
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.3.0     # placeholder: pin the release tag you decide to trust
+    rev: v1.4.0     # placeholder: pin the release tag you decide to trust
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -201,7 +201,7 @@ tag, because pre-commit builds the tool from the tagged tree.
 After any install, one command answers whether the CLI is the released build:
 
 ```bash
-ghagent --version     # prints the version, for example github-agent 1.3.0
+ghagent --version     # prints the version, for example github-agent 1.4.0
 ghagent audit .       # 0 clean, 1 findings at error level, 2 usage or environment problem
 ```
 
@@ -211,7 +211,7 @@ there exits `2` with a message that points at the clone rather than reporting a 
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 194/194 checks passed
+python tools/ghagent.py selftest    # 236/236 checks passed
 ```
 
 ## Usage
@@ -225,7 +225,7 @@ ghagent assets check               # format, dimensions, alt text, referenced fi
 ghagent wiki build                 # rewrite links for the wiki namespace
 ghagent wiki verify                # every internal link resolves
 ghagent changelog check            # Keep a Changelog and SemVer
-ghagent changelog release 1.3.0 --write
+ghagent changelog release 1.4.0 --write
 ghagent meta suggest               # description and topics
 ```
 
@@ -257,7 +257,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Find secrets and machine paths | `ghagent privacy --root .` |
 | Render the banner and social preview | `ghagent assets render --write` |
 | Build, verify and publish the wiki | `ghagent wiki build`, `verify`, `publish --push` |
-| Release a version | `ghagent changelog release 1.3.0 --write` |
+| Release a version | `ghagent changelog release 1.4.0 --write` |
 | Fix description and topics | `ghagent meta apply --repo owner/name --write` |
 | Install the skill into another agent | `ghagent install --profile harness --write` |
 
@@ -283,17 +283,17 @@ with one exit code.
 
 ## In numbers
 
-Measured in this tree on 2026-11-01 against version 1.3.0:
+Measured in this tree on 2026-11-02 against version 1.4.0:
 
 | Surface | Value | Measurement source |
 |---|---:|---|
-| Self-tests | 194 | `python tests/run_tests.py` |
+| Self-tests | 236 | `python tests/run_tests.py` |
 | CLI commands | 13 | `ghagent --help` |
 | Library modules | 11 | `tools/ghalib/*.py` |
 | Document rules examined on this tree | 17 | `ghagent doc --json`, field `rules_examined` |
 | Runtime dependencies | 0 | `pyproject.toml`, `dependencies = []` |
 | Platform traps recorded | 15 | the traps table in [docs/RULES.md](docs/RULES.md) |
-| Python lines | 4412 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
+| Python lines | 4787 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## Checks that run
 
@@ -320,13 +320,23 @@ empty tree is `doc.no-text-files`.
 The banner at the top of this file is generated by the pack itself:
 
 ```bash
-ghagent assets render --title "github-agent" \
-    --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
+python tools/make_social_preview.py --write
+```
+
+The generic renderer behind it is `ghagent assets render`. It derives the fact pills from the tree
+(`--facts auto`), takes the command from the manifest when `--command` is absent, and draws the
+terminal panel only from `--output` / `--output-line` values, so a line it was not given is never
+invented. A project's own card is one command:
+
+```bash
+ghagent assets render --eyebrow "ONE COMMAND PER JOB" \
+    --summary "What it does, for whom." --tagline "One more sentence." \
+    --command "project --help" --output "usage: project [-h]" --write
 ```
 
 - `assets/social-preview.png` — 1280×640, under 1 MB, ready for **Settings → Social preview**.
-- `assets/social-preview.svg` — vector twin for the README, no dependency needed.
+- `assets/social-preview.svg` — vector twin produced from the same layout description, not a second
+  design, so the pair cannot drift; no dependency needed.
 - `assets check` verifies format, byte size, dimensions, alt text and that every referenced file
   exists. The repository copy is not the social preview automatically: that upload is a manual
   step, and the check prints the reminder.
@@ -396,14 +406,14 @@ flowchart LR
 | `tools/ghagent.py` | argument parsing, exit codes, report assembly |
 | `tools/ghalib/mdcheck.py` | markdown, links, anchors, privacy |
 | `tools/ghalib/audit.py` | required files, README and changelog contracts, score |
-| `tools/ghalib/assets.py` | banner and social preview: render, check, suggest |
+| `tools/ghalib/assets.py` | social preview: one layout into PNG and SVG, measurable facts, check, suggest |
 | `tools/ghalib/wiki.py` | manifest, link rewriting, sidebar and footer, publication |
 | `tools/ghalib/changelog.py` | Keep a Changelog 2.0.0, release, draft from commits |
 | `tools/ghalib/meta.py` | description, topics, homepage |
 | `tools/ghalib/install.py` | skill installation, sha256 manifest, drift, removal |
 | `tools/ghalib/report.py` | findings, severities, markdown and `--json` output |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, paths, text I/O, anchors |
-| `tests/run_tests.py` | 194 self-tests with fixtures and decoys |
+| `tests/run_tests.py` | 236 self-tests with fixtures and decoys |
 
 Anchors follow GitHub's rules: lowercase, punctuation dropped, spaces to hyphens, a repeated
 heading gets `-1`. The rule was verified against a live table of contents: an em dash in a

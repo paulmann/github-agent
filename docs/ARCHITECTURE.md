@@ -22,7 +22,7 @@ argv → ghagent.py (argparse, cmd_* one per command)
 | `tools/ghalib/mdcheck.py` | UTF-8/BOM/CRLF, headings, tables, fences, alerts, images, links, anchors, TOC, privacy, `agents.md-length` | `doc.*`, `md.*`, `privacy.*` |
 | `tools/ghalib/audit.py` | required files, README contract, CHANGELOG contract, AGENTS items, hygiene score; remote metadata through `gh api` | `repo.*`, `readme.*`, `changelog.*`, `agents.*` |
 | `tools/ghalib/changelog.py` | Keep a Changelog conformance, promoting `[Unreleased]`, draft from commits, release body | `changelog.*` |
-| `tools/ghalib/assets.py` | renders banner SVG (and PNG when Pillow is present), checks references, sizes and dimensions | `assets.*` |
+| `tools/ghalib/assets.py` | one `BannerSpec` → `Card` layout into PNG (Pillow) and SVG (stdlib), measurable fact derivation, checks references, sizes and dimensions | `assets.*` |
 | `tools/ghalib/wiki.py` | manifest-driven build with link rewriting, verify of the built tree, dry-run publication, scaffold | `wiki.*` |
 | `tools/ghalib/meta.py` | description and topic validation, merged topic updates through `gh api` | `meta.*` |
 | `tools/ghalib/install.py` | copies the pack into an agent skill root, writes a sha256 manifest, verifies drift, removes | `install.*`, `verify.*`, `uninstall.*` |

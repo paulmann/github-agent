@@ -30,23 +30,35 @@ preview. That is why the pack writes both: `social-preview.png` for the upload a
 ## Render
 
 ```bash
-python <pack>/tools/ghagent.py assets render --title "Project" \
-    --tagline "What it does, for whom, in one sentence." \
-    --command "project --help" --chips "python,github,cli" --write
+python <pack>/tools/ghagent.py assets render --eyebrow "REPOSITORY STEWARD" \
+    --summary "What it does, for whom, in one sentence." \
+    --tagline "The benefit, one line." \
+    --command "project --help" --output "usage: project [-h]" --write
 python <pack>/tools/ghagent.py assets check
 ```
 
 | Flag | Effect |
 |---|---|
-| `--title` | the large line; defaults to the README `H1` |
-| `--tagline` | one or two lines; defaults to the README summary paragraph |
-| `--command` | the monospace line, usually the primary command |
-| `--chips` | comma-separated keywords drawn as chips |
+| `--title` | the monospace wordmark; defaults to the README `H1` |
+| `--eyebrow` | the small accent line above the wordmark |
+| `--summary` | the bold statement; defaults to the README summary paragraph |
+| `--tagline` | the muted line; defaults to the manifest description |
+| `--command` | the command in the terminal panel; defaults to the manifest console script |
+| `--output`, `--output-line` | terminal output lines; only these are drawn |
+| `--fact LABEL=VALUE` | a fact pill, drawn value-first (`"MCP tools=40"` becomes `40 MCP tools`); at most six |
+| `--facts auto` | the default without `--fact`: only facts the tree measures (version, license, dependencies, tests, wiki and doc pages, languages) |
+| `--license` | SPDX id for the license pill |
+| `--footer-left`, `--footer-right`, `--url`, `--homepage` | footer slots; the right one gets a green status dot |
+| `--accent` | accent colour as `#rrggbb` |
+| `--chips` | text-only pills; kept for older callers |
 | `--size` | `WxH`, default `1280x640` |
 | `--write` | actually write files; without it the command is a dry run |
 
-Output goes to `assets/social-preview.svg` always, and `assets/social-preview.png` when Pillow is
-installed. Without Pillow the report says so instead of pretending a preview is ready.
+The card is a dark vertical gradient with the wordmark, the summary, the tagline, the pill row, a
+terminal panel with traffic lights, and the footer. One layout feeds both renderers, so the SVG is a
+faithful twin of the PNG. Output goes to `assets/social-preview.svg` always, and
+`assets/social-preview.png` when Pillow is installed. Without Pillow the report says so instead of
+pretending a preview is ready. A fact the tree cannot measure is omitted, never invented.
 
 ## Place it
 

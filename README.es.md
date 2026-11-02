@@ -13,7 +13,7 @@ wiki en el repositorio — una orden por tarea.
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Licencia: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Dependencias en tiempo de ejecución](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![Autopruebas](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
+[![Autopruebas](https://img.shields.io/badge/self--tests-236%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — gestor de repositorios y wikis para agentes de IA"
@@ -37,8 +37,8 @@ Este paquete impone un contrato verificable en cada uno de esos puntos y reduce 
 orden. No escribe texto de marketing ni inventa cifras: comprueba lo que escribió una persona y
 se niega a publicar lo que está roto.
 
-> **Estado de la documentación.** Cada cifra de este README se midió el 2026-11-01 sobre la
-> versión 1.3.0 con las órdenes indicadas en la tabla. Las guías extensas están en la
+> **Estado de la documentación.** Cada cifra de este README se midió el 2026-11-02 sobre la
+> versión 1.4.0 con las órdenes indicadas en la tabla. Las guías extensas están en la
 > [Wiki](https://github.com/paulmann/github-agent/wiki) y en [`docs/`](docs/IMPORT.md); el protocolo
 > para agentes es [`AGENTS.md`](AGENTS.md), y las notas de empaquetado y migración están en
 > [`docs/PACKAGING.md`](docs/PACKAGING.md) y [`MIGRATION.md`](MIGRATION.md).
@@ -142,7 +142,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 En Windows PowerShell el mismo montaje es `-v "${PWD}:/repo"`. El punto de entrada es `ghagent`,
 así que el primer argumento tras el nombre de la imagen es la orden. No se publica ninguna imagen
-de registro como parte de 1.3.0 y la CI no construye el contenedor: la etiqueta es una convención
+de registro como parte de 1.4.0 y la CI no construye el contenedor: la etiqueta es una convención
 local. Véase [examples/docker.md](examples/docker.md).
 
 ### GitHub Action
@@ -152,7 +152,7 @@ publicación en PyPI y funciona en cuanto existe la etiqueta:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.3.0    # fije la etiqueta de la versión
+- uses: paulmann/github-agent@v1.4.0    # fije la etiqueta de la versión
   with:
     command: audit .
     min-score: "80"
@@ -180,7 +180,7 @@ El repositorio también es fuente de hooks de pre-commit; los hooks son `ghagent
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.3.0     # marcador: fije la etiqueta de versión en la que confíe
+    rev: v1.4.0     # marcador: fije la etiqueta de versión en la que confíe
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -198,7 +198,7 @@ etiqueta publicada, porque pre-commit construye la herramienta desde el árbol e
 Tras cualquier instalación, una orden responde si la CLI es la compilación publicada:
 
 ```bash
-ghagent --version     # imprime la versión, por ejemplo github-agent 1.3.0
+ghagent --version     # imprime la versión, por ejemplo github-agent 1.4.0
 ghagent audit .       # 0 limpio, 1 hallazgos de nivel de error, 2 problema de uso o de entorno
 ```
 
@@ -209,7 +209,7 @@ falso:
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 194/194 pruebas superadas
+python tools/ghagent.py selftest    # 236/236 pruebas superadas
 ```
 
 ## Uso
@@ -223,7 +223,7 @@ ghagent assets check               # formato, dimensiones, texto alternativo, ar
 ghagent wiki build                 # reescribe enlaces para el espacio de nombres de la wiki
 ghagent wiki verify                # todo enlace interno resuelve
 ghagent changelog check            # Keep a Changelog y SemVer
-ghagent changelog release 1.3.0 --write
+ghagent changelog release 1.4.0 --write
 ghagent meta suggest               # descripción y temas
 ```
 
@@ -254,7 +254,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Encontrar secretos y rutas de la máquina | `ghagent privacy --root .` |
 | Generar el banner y la vista previa social | `ghagent assets render --write` |
 | Construir, verificar y publicar la wiki | `ghagent wiki build`, `verify`, `publish --push` |
-| Publicar una versión | `ghagent changelog release 1.3.0 --write` |
+| Publicar una versión | `ghagent changelog release 1.4.0 --write` |
 | Corregir la descripción y los temas | `ghagent meta apply --repo owner/name --write` |
 | Instalar la skill en otro agente | `ghagent install --profile harness --write` |
 
@@ -276,11 +276,11 @@ repositorio en un solo lugar y la reduce a un código de salida.
 
 ## En cifras
 
-Medido en este árbol el 2026-11-01 sobre la versión 1.3.0:
+Medido en este árbol el 2026-11-02 sobre la versión 1.4.0:
 
 | Ámbito | Valor | Fuente de la medición |
 |---|---:|---|
-| Autopruebas | 194 | `python tests/run_tests.py` |
+| Autopruebas | 236 | `python tests/run_tests.py` |
 | Órdenes de la CLI | 13 | `ghagent --help` |
 | Módulos de la biblioteca | 11 | `tools/ghalib/*.py` |
 | Reglas de documento examinadas en este árbol | 17 | `ghagent doc --json`, campo `rules_examined` |
@@ -313,9 +313,7 @@ y un árbol vacío es `doc.no-text-files`.
 El banner de la parte superior de este archivo lo genera el propio paquete:
 
 ```bash
-ghagent assets render --title "github-agent" \
-    --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
+python tools/make_social_preview.py --write
 ```
 
 - `assets/social-preview.png` — 1280×640, menos de 1 MB, listo para **Settings → Social preview**.
@@ -397,7 +395,7 @@ flowchart LR
 | `tools/ghalib/install.py` | instalación de la skill, manifiesto sha256, deriva, eliminación |
 | `tools/ghalib/report.py` | hallazgos, gravedades, salida en Markdown y `--json` |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, rutas, E/S de texto, anclas |
-| `tests/run_tests.py` | 194 autopruebas con fixtures y señuelos |
+| `tests/run_tests.py` | 236 autopruebas con fixtures y señuelos |
 
 Las anclas siguen las reglas de GitHub: minúsculas, se elimina la puntuación, los espacios pasan a
 guiones y un encabezado repetido recibe `-1`. La regla se verificó contra un índice real: un guion

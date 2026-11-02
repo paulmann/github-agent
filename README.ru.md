@@ -12,7 +12,7 @@ CHANGELOG и контракты сообщества, проверяет док�
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Лицензия: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Зависимости при запуске](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![Самопроверки](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
+[![Самопроверки](https://img.shields.io/badge/self--tests-236%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — хранитель репозитория и вики для ИИ-агентов"
@@ -35,7 +35,7 @@ CHANGELOG и контракты сообщества, проверяет док�
 Он не пишет рекламных текстов и не выдумывает чисел: он проверяет то, что написал человек,
 и отказывается публиковать сломанное.
 
-> **Состояние документации.** Каждое число в этом README измерено 2026-11-01 на версии 1.3.0
+> **Состояние документации.** Каждое число в этом README измерено 2026-11-02 на версии 1.4.0
 > командами, названными в таблице. Подробные руководства лежат в
 > [вики](https://github.com/paulmann/github-agent/wiki) и в [`docs/`](docs/IMPORT.ru.md);
 > протокол для агентов — [`AGENTS.md`](AGENTS.ru.md), заметки об упаковке и миграции —
@@ -145,8 +145,8 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 В Windows PowerShell тот же монтаж выглядит как `-v "${PWD}:/repo"`. Точка входа — `ghagent`,
-поэтому первый аргумент после имени образа — это команда. В рамках 1.3.0 образ в реестр не
-публикуется, и CI контейнер не собирает: тег — локальная договорённость. См.
+поэтому первый аргумент после имени образа — это команда. Релизный workflow образ в реестр не
+публикует, и CI контейнер не собирает: тег — локальная договорённость. См.
 [examples/docker.md](examples/docker.md).
 
 ### GitHub Action
@@ -156,7 +156,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.3.0    # закрепите релизный тег
+- uses: paulmann/github-agent@v1.4.0    # закрепите релизный тег
   with:
     command: audit .
     min-score: "80"
@@ -183,7 +183,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.3.0     # заглушка: закрепите релизный тег, которому доверяете
+    rev: v1.4.0     # заглушка: закрепите релизный тег, которому доверяете
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -201,7 +201,7 @@ repos:
 После любой установки на вопрос, является ли CLI релизной сборкой, отвечает одна команда:
 
 ```bash
-ghagent --version     # печатает версию, например github-agent 1.3.0
+ghagent --version     # печатает версию, например github-agent 1.4.0
 ghagent audit .       # 0 чисто, 1 находки уровня error, 2 ошибка вызова или окружения
 ```
 
@@ -211,7 +211,7 @@ ghagent audit .       # 0 чисто, 1 находки уровня error, 2 о�
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 194/194 checks passed
+python tools/ghagent.py selftest    # 236/236 checks passed
 ```
 
 ## Использование
@@ -225,7 +225,7 @@ ghagent assets check               # формат, размеры, alt-текс�
 ghagent wiki build                 # переписать ссылки под пространство вики
 ghagent wiki verify                # каждая внутренняя ссылка разрешается
 ghagent changelog check            # Keep a Changelog и SemVer
-ghagent changelog release 1.3.0 --write
+ghagent changelog release 1.4.0 --write
 ghagent meta suggest               # описание и темы
 ```
 
@@ -257,7 +257,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Найти секреты и машинные пути | `ghagent privacy --root .` |
 | Нарисовать баннер и социальное превью | `ghagent assets render --write` |
 | Собрать, проверить и опубликовать вики | `ghagent wiki build`, `verify`, `publish --push` |
-| Выпустить версию | `ghagent changelog release 1.3.0 --write` |
+| Выпустить версию | `ghagent changelog release 1.4.0 --write` |
 | Привести в порядок описание и темы | `ghagent meta apply --repo owner/name --write` |
 | Установить навык другому агенту | `ghagent install --profile harness --write` |
 
@@ -279,17 +279,17 @@ score: 72.5% (22 scored, 1 skipped)
 
 ## В цифрах
 
-Измерено в этом дереве 2026-11-01 на версии 1.3.0:
+Измерено в этом дереве 2026-11-02 на версии 1.4.0:
 
 | Поверхность | Значение | Источник измерения |
 |---|---:|---|
-| Самопроверок | 194 | `python tests/run_tests.py` |
+| Самопроверок | 236 | `python tests/run_tests.py` |
 | Команд CLI | 13 | `ghagent --help` |
 | Модулей библиотеки | 11 | `tools/ghalib/*.py` |
 | Правил документов, осмотренных на этом дереве | 17 | `ghagent doc --json`, поле `rules_examined` |
 | Зависимостей при запуске | 0 | `pyproject.toml`, `dependencies = []` |
 | Записанных ловушек платформы | 15 | таблица ловушек в [docs/RULES.md](docs/RULES.md) |
-| Строк Python | 4412 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
+| Строк Python | 4787 | `wc -l tools/ghagent.py tools/ghalib/*.py` |
 
 ## Проверки, которые выполняются
 
@@ -316,14 +316,24 @@ score: 72.5% (22 scored, 1 skipped)
 Баннер в начале этого файла создаёт сам пакет:
 
 ```bash
-ghagent assets render --title "github-agent" \
-    --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
+python tools/make_social_preview.py --write
+```
+
+Типовой рендерер под ним — `ghagent assets render`. Он выводит «пилюли» фактов из дерева
+(`--facts auto`), берёт команду из манифеста, если не передан `--command`, и рисует панель
+терминала только из значений `--output` / `--output-line`, поэтому строку, которую ему не
+передали, он не выдумывает. Собственная карточка проекта — одна команда:
+
+```bash
+ghagent assets render --eyebrow "ОДНА КОМАНДА НА ЗАДАЧУ" \
+    --summary "Что делает и для кого." --tagline "Ещё одно предложение." \
+    --command "project --help" --output "usage: project [-h]" --write
 ```
 
 - `assets/social-preview.png` — 1280×640, до 1 МБ, готов к загрузке
   в **Settings → Social preview**.
-- `assets/social-preview.svg` — векторный двойник для README, ничего не требует.
+- `assets/social-preview.svg` — векторный двойник из того же описания раскладки, а не вторая
+  раскладка, поэтому пара не может разъехаться; ничего не требует.
 - `assets check` проверяет формат, размер в байтах, размеры в пикселях, alt-текст и наличие
   каждого упомянутого файла. Копия в репозитории не становится социальным превью сама: эта
   загрузка — отдельный шаг, и проверка об этом напоминает.
@@ -394,14 +404,14 @@ flowchart LR
 | `tools/ghagent.py` | разбор аргументов, коды возврата, сборка отчёта |
 | `tools/ghalib/mdcheck.py` | markdown, ссылки, якоря, приватность |
 | `tools/ghalib/audit.py` | обязательные файлы, контракты README и журнала изменений, оценка |
-| `tools/ghalib/assets.py` | баннер и социальное превью: отрисовка, проверка, подсказки |
+| `tools/ghalib/assets.py` | социальное превью: одна раскладка в PNG и SVG, измеримые факты, проверка, подсказки |
 | `tools/ghalib/wiki.py` | манифест, переписывание ссылок, сайдбар и футер, публикация |
 | `tools/ghalib/changelog.py` | Keep a Changelog 2.0.0, выпуск версии, черновик из коммитов |
 | `tools/ghalib/meta.py` | описание, темы, домашняя страница |
 | `tools/ghalib/install.py` | установка навыка, манифест sha256, расхождения, удаление |
 | `tools/ghalib/report.py` | находки, уровни, markdown- и `--json`-вывод |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, пути, ввод-вывод текста, якоря |
-| `tests/run_tests.py` | 194 самопроверок с фикстурами и приманками |
+| `tests/run_tests.py` | 236 самопроверок с фикстурами и приманками |
 
 Якоря считаются по правилам GitHub: нижний регистр, пунктуация отбрасывается, пробелы
 становятся дефисами, повтор заголовка получает `-1`. Правило сверено с живым оглавлением:

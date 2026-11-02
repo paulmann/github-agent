@@ -6,20 +6,53 @@ All notable changes to this project are documented here. The format is
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-02
+
 ### Added
 
-- `tools/make_social_preview.py`: the repository's own social preview, rendered from one layout
-description into `assets/social-preview.png` **and** its SVG twin, so the pair cannot drift. The
-card carries the name, one sentence, three claims and a terminal panel with output the tool
-really prints.
+- A designed social preview for `ghagent assets render`: a dark vertical gradient, an accent top
+  rule, an eyebrow, a monospace wordmark whose first letter carries the accent colour, a bold
+  summary and a muted tagline, a row of fact pills, a terminal panel with traffic lights and
+  command output, and a footer with the repository URL on the left and the homepage behind a green
+  status dot on the right.
+- New `assets render` flags, each documented in `--help`: `--eyebrow`, `--summary`, `--fact`
+  (`Label=Value`, repeatable), `--output` / `--output-line`, `--footer-left` / `--footer-right`,
+  `--url`, `--homepage`, `--accent`, `--facts auto|none` and `--license`. `--title`, `--tagline`,
+  `--command`, `--chips`, `--size`, `--out-dir` and `--write` keep working.
+- `--facts auto` (the default when no `--fact` is given) derives only measurable pills: the version
+  from the manifest (`[project]`, the `[tool.hatch.version]` path and pattern, `package.json`,
+  `CITATION.cff`, `VERSION`, a local tag), an SPDX license from the manifest or `LICENSE`, the
+  declared runtime dependency count, the test-function count in `tests/`, the wiki manifest
+  entries, documentation pages, languages and source files by extension. A fact the tree cannot
+  prove is omitted, and `--json` names the source of every pill it drew.
+- `tools/make_social_preview.py`: this repository's own card, as a thin preset over the same
+  renderer. It runs the three gate commands before drawing, so the terminal panel repeats what
+  they printed seconds earlier.
+- Self-tests for the card: the SVG carries every text instruction at the PNG coordinate, auto
+  facts omit what cannot be measured, `--fact` overrides appear, the six-pill cap is reported,
+  `--size` scales the layout, and every flag appears in `--help`.
+- The generated `_Sidebar.md` / `_Footer.md` navigation is English — "### Links", "Repository",
+  "Releases", "repository" — and a self-test holds it there.
 
 ### Changed
 
-- `assets/social-preview.png` and `assets/social-preview.svg` are the designed card now (1280×640,
-  63 KB) instead of the generic `assets render` output.
+- `assets render` draws the designed card now; the flat card and the duplicated `render_svg` /
+  `render_png` layout code are gone. Both renderers consume one `Card` instruction list, and the
+  own card and the generic card share it, so the designs cannot drift apart.
+- A card with neither a command nor output lines draws no terminal panel: the identity block is
+  centred between the top rule and the footer instead of a large empty box, and `assets.no-command`
+  says so.
+- `assets/social-preview.png` and `assets/social-preview.svg` are regenerated (1280×640, 56 KB):
+  the card shows 1.4.0, MIT, 0 runtime dependencies, 25 test functions, 16 wiki pages and 8
+  documentation pages, every number measured from this tree.
 
 ### Fixed
 
+- A multi-word wordmark was laid out with the monospace space cell, which reads as a double space
+  at display size: the words are now placed by one layout with a 0.35 em gap, identical in the PNG
+  and the SVG, and a self-test compares the word positions and the rendered ink gap.
+- The generated wiki navigation carried Russian strings in an English project: `_Sidebar.md` said
+  "Ссылки / Репозиторий / Релизы" and `_Footer.md` said "репозиторий / релизы".
 - The pack hygiene test skipped build output and tool state: one `python -m build` wrote its own
   files under `dist/` and turned the gate red for a file nobody ships.
 
@@ -217,7 +250,8 @@ really prints.
 
 - The pack ships without tokens, absolute machine paths or personal addresses; the privacy rule fails the build if one appears, and a self-test enforces it on the pack itself.
 
-[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/paulmann/github-agent/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/paulmann/github-agent/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/paulmann/github-agent/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/paulmann/github-agent/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/paulmann/github-agent/compare/v1.2.0...v1.2.1

@@ -245,10 +245,10 @@ def render_sidebar(manifest: WikiManifest, on_disk: list[str]) -> str:
             lines.append(f"- [{label}]({page_id(page)})")
     if manifest.slug:
         lines.append("")
-        lines.append("### Ссылки")
+        lines.append("### Links")
         lines.append("")
-        lines.append(f"- [Репозиторий](https://github.com/{manifest.slug})")
-        lines.append(f"- [Релизы](https://github.com/{manifest.slug}/releases)")
+        lines.append(f"- [Repository](https://github.com/{manifest.slug})")
+        lines.append(f"- [Releases](https://github.com/{manifest.slug}/releases)")
         lines.append(f"- [Issues](https://github.com/{manifest.slug}/issues)")
     return "\n".join(lines).strip() + "\n"
 
@@ -257,8 +257,8 @@ def render_footer(manifest: WikiManifest, report: Report) -> str:
     if not manifest.slug:
         report.warn("wiki.footer", "footer is generated without repository links because `repo` is empty")
         return "---\n*Published by ghagent.*\n"
-    parts = [f"[репозиторий](https://github.com/{manifest.slug})",
-             f"[релизы](https://github.com/{manifest.slug}/releases)"]
+    parts = [f"[repository](https://github.com/{manifest.slug})",
+             f"[releases](https://github.com/{manifest.slug}/releases)"]
     if manifest.footer:
         parts.append(manifest.footer)
     return "---\n*" + " · ".join(parts) + "*\n"

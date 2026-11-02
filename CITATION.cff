@@ -5,8 +5,8 @@ abstract: "Repository and wiki steward for AI agents: audits README, CHANGELOG a
 type: software
 authors:
   - name: "github-agent contributors"
-version: 1.3.0
-date-released: 2026-11-01
+version: 1.4.0
+date-released: 2026-11-02
 license: MIT
 repository-code: "https://github.com/paulmann/github-agent"
 keywords:

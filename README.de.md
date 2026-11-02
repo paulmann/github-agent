@@ -13,7 +13,7 @@ Wiki im Repository — ein Befehl pro Aufgabe.
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![Lizenz: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Laufzeitabhängigkeiten](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![Selbsttests](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
+[![Selbsttests](https://img.shields.io/badge/self--tests-236%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent — Verwalter für Repositories und Wikis im Dienst von KI-Agenten"
@@ -37,7 +37,7 @@ Dieses Paket legt auf jede dieser Stellen einen prüfbaren Vertrag und reduziert
 einen Befehl. Es schreibt keine Marketingtexte und erfindet keine Zahlen: Es prüft, was ein
 Mensch geschrieben hat, und veröffentlicht nicht, was defekt ist.
 
-> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-11-01 gegen Version 1.3.0
+> **Stand der Dokumentation.** Jede Zahl in diesem README wurde am 2026-11-02 gegen Version 1.4.0
 > mit den in der Tabelle genannten Befehlen gemessen. Ausführliche Anleitungen stehen im
 > [Wiki](https://github.com/paulmann/github-agent/wiki) und in [`docs/`](docs/IMPORT.md); das
 > Protokoll für Agenten ist [`AGENTS.md`](AGENTS.md), die Hinweise zu Paketierung und Migration
@@ -143,7 +143,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 Unter Windows PowerShell lautet derselbe Mount `-v "${PWD}:/repo"`. Der Einstiegspunkt ist
-`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.3.0 wird
+`ghagent`, daher ist das erste Argument nach dem Image-Namen der Befehl. Als Teil von 1.4.0 wird
 kein Registry-Image veröffentlicht, und die CI baut den Container nicht: Der Tag ist eine lokale
 Konvention. Siehe [examples/docker.md](examples/docker.md).
 
@@ -154,7 +154,7 @@ von einer PyPI-Veröffentlichung ab und funktioniert, sobald der Tag existiert:
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.3.0    # den Release-Tag festlegen
+- uses: paulmann/github-agent@v1.4.0    # den Release-Tag festlegen
   with:
     command: audit .
     min-score: "80"
@@ -182,7 +182,7 @@ Das Repository ist zugleich eine Quelle für pre-commit-Hooks; die Hooks heißen
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.3.0     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
+    rev: v1.4.0     # Platzhalter: den Release-Tag festlegen, dem Sie trauen
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -200,7 +200,7 @@ einen veröffentlichten Tag, weil pre-commit das Werkzeug aus dem getaggten Baum
 Nach jeder Installation beantwortet ein Befehl, ob die CLI der freigegebene Build ist:
 
 ```bash
-ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.3.0
+ghagent --version     # gibt die Version aus, zum Beispiel github-agent 1.4.0
 ghagent audit .       # 0 sauber, 1 Befunde auf Fehlerstufe, 2 Aufruf- oder Umgebungsproblem
 ```
 
@@ -211,7 +211,7 @@ melden:
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 194/194 Prüfungen bestanden
+python tools/ghagent.py selftest    # 236/236 Prüfungen bestanden
 ```
 
 ## Verwendung
@@ -225,7 +225,7 @@ ghagent assets check               # Format, Abmessungen, Alternativtext, refere
 ghagent wiki build                 # schreibt Links für den Namensraum des Wikis um
 ghagent wiki verify                # jeder interne Link löst auf
 ghagent changelog check            # Keep a Changelog und SemVer
-ghagent changelog release 1.3.0 --write
+ghagent changelog release 1.4.0 --write
 ghagent meta suggest               # Beschreibung und Topics
 ```
 
@@ -257,7 +257,7 @@ score: 72.5% (22 scored, 1 skipped)
 | Geheimnisse und Maschinenpfade finden | `ghagent privacy --root .` |
 | Banner und Social Preview erzeugen | `ghagent assets render --write` |
 | Wiki bauen, prüfen und veröffentlichen | `ghagent wiki build`, `verify`, `publish --push` |
-| Eine Version freigeben | `ghagent changelog release 1.3.0 --write` |
+| Eine Version freigeben | `ghagent changelog release 1.4.0 --write` |
 | Beschreibung und Topics korrigieren | `ghagent meta apply --repo owner/name --write` |
 | Den Skill in einen anderen Agenten installieren | `ghagent install --profile harness --write` |
 
@@ -279,11 +279,11 @@ Repositories an einer Stelle und führt sie auf einen Rückgabecode zurück.
 
 ## In Zahlen
 
-In diesem Baum am 2026-11-01 gegen Version 1.3.0 gemessen:
+In diesem Baum am 2026-11-02 gegen Version 1.4.0 gemessen:
 
 | Messgröße | Wert | Quelle der Messung |
 |---|---:|---|
-| Selbsttests | 194 | `python tests/run_tests.py` |
+| Selbsttests | 236 | `python tests/run_tests.py` |
 | CLI-Befehle | 13 | `ghagent --help` |
 | Bibliotheksmodule | 11 | `tools/ghalib/*.py` |
 | In diesem Baum geprüfte Dokumentregeln | 17 | `ghagent doc --json`, Feld `rules_examined` |
@@ -316,9 +316,7 @@ Eine Regel, die null Objekte geprüft hat, gilt nicht als bestanden: Sie erschei
 Das Banner am Anfang dieser Datei erzeugt das Paket selbst:
 
 ```bash
-ghagent assets render --title "github-agent" \
-    --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
+python tools/make_social_preview.py --write
 ```
 
 - `assets/social-preview.png` — 1280×640, unter 1 MB, bereit für **Settings → Social preview**.
@@ -401,7 +399,7 @@ flowchart LR
 | `tools/ghalib/install.py` | Installation des Skills, sha256-Manifest, Abweichungen, Entfernung |
 | `tools/ghalib/report.py` | Befunde, Schweregrade, Markdown- und `--json`-Ausgabe |
 | `tools/ghalib/config.py`, `tools/ghalib/util.py` | `.ghagent.json`, Pfade, Text-Ein-/Ausgabe, Anker |
-| `tests/run_tests.py` | 194 Selbsttests mit Fixtures und Ködern |
+| `tests/run_tests.py` | 236 Selbsttests mit Fixtures und Ködern |
 
 Anker folgen den Regeln von GitHub: Kleinschreibung, Satzzeichen entfallen, Leerzeichen werden zu
 Bindestrichen, eine wiederholte Überschrift erhält `-1`. Die Regel wurde an einem echten

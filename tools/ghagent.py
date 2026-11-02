@@ -77,6 +77,21 @@ def _add_ignore(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--ignore", default="", help="comma-separated rule ids to skip")
 
 
+def _parse_fact(raw: str) -> tuple[str, str]:
+    label, separator, value = raw.partition("=")
+    if not separator:
+        raise ValueError('a fact must look like "Label=Value"')
+    return label.strip(), value.strip()
+
+
+def _parse_outputs(args: argparse.Namespace) -> list[str]:
+    """--output accepts literal \\n sequences; --output-line adds one line each time."""
+    lines = [line.strip() for line in (args.output or "").replace("\\n", "\n").splitlines()
+             if line.strip()]
+    lines.extend(line.strip() for line in args.output_line or [] if line.strip())
+    return lines
+
+
 def cmd_assets(args: argparse.Namespace) -> int:
     root = Path(args.root)
     if args.action == "check":
@@ -86,16 +101,43 @@ def cmd_assets(args: argparse.Namespace) -> int:
         report = assets_module.suggest(root)
         return emit(report, args.json)
     if args.action == "render":
-        width, _, height = (args.size or "1280x640").partition("x")
+        width_text, _, height_text = (args.size or "1280x640").partition("x")
+        try:
+            width, height = int(width_text), int(height_text)
+            if width <= 0 or height <= 0:
+                raise ValueError
+        except ValueError:
+            return fail("--size must look like 1280x640")
+        accent = (args.accent or "").strip()
+        if accent and not assets_module.HEX_RE.match(accent):
+            return fail("--accent must look like #4f9cf9")
+        manual_facts: list[tuple[str, str]] = []
+        for raw in args.fact or []:
+            try:
+                manual_facts.append(_parse_fact(raw))
+            except ValueError:
+                return fail(f'--fact {raw!r} must look like "Label=Value"')
+        facts_mode = args.facts or ("auto" if not manual_facts else "none")
         try:
             spec = assets_module.spec_from_repository(
                 root,
                 title=args.title or "",
+                eyebrow=args.eyebrow or "",
+                summary=args.summary or "",
                 tagline=args.tagline or "",
                 command=args.command or "",
+                outputs=_parse_outputs(args),
                 chips=[chip.strip() for chip in args.chips.split(",") if chip.strip()] or None,
+                facts=manual_facts or None,
+                facts_mode=facts_mode,
+                footer_left=args.footer_left or "",
+                footer_right=args.footer_right or "",
+                homepage=args.homepage or "",
+                url=args.url or "",
+                accent=accent,
+                license=args.license or "",
             )
-            spec.width, spec.height = int(width), int(height)
+            spec.width, spec.height = width, height
         except ValueError:
             return fail("--size must look like 1280x640")
         report = assets_module.write_assets(root, out_dir=args.out_dir, spec=spec, write=args.write)
@@ -451,13 +493,41 @@ def build_parser() -> argparse.ArgumentParser:
     assets_parser = subparsers.add_parser("assets", help="banner and social preview: render, check, suggest")
     assets_parser.add_argument("action", choices=["render", "check", "suggest"])
     assets_parser.add_argument("--root", default=".")
-    assets_parser.add_argument("--title", default="")
-    assets_parser.add_argument("--tagline", default="")
-    assets_parser.add_argument("--command", default="")
-    assets_parser.add_argument("--chips", default="")
-    assets_parser.add_argument("--size", default="1280x640")
-    assets_parser.add_argument("--out-dir", default="assets")
-    assets_parser.add_argument("--write", action="store_true")
+    assets_parser.add_argument("--title", default="", help="large monospace wordmark; defaults to the README H1")
+    assets_parser.add_argument("--eyebrow", default="",
+                               help="small accent line above the wordmark, e.g. 'REPOSITORY & WIKI STEWARD'")
+    assets_parser.add_argument("--summary", default="",
+                               help="bold one or two-line statement; defaults to the README summary paragraph")
+    assets_parser.add_argument("--tagline", default="",
+                               help="muted line under the summary; defaults to the manifest description")
+    assets_parser.add_argument("--command", default="",
+                               help="command line in the terminal panel; defaults to the manifest console script")
+    assets_parser.add_argument("--output", default="",
+                               help=r"terminal output lines; a literal \n starts a new line")
+    assets_parser.add_argument("--output-line", action="append", default=None, metavar="LINE",
+                               help="one terminal output line; repeatable")
+    assets_parser.add_argument("--fact", action="append", default=None, metavar="LABEL=VALUE",
+                               help='a fact pill such as "MCP tools=40", drawn as "40 MCP tools"; '
+                                    "repeatable, at most six")
+    assets_parser.add_argument("--facts", choices=["auto", "none"], default=None,
+                               help="auto (the default when no --fact is given) derives only measurable "
+                                    "facts from the tree; none disables that derivation")
+    assets_parser.add_argument("--chips", default="",
+                               help="comma-separated text-only pills; kept for older callers")
+    assets_parser.add_argument("--license", default="",
+                               help="SPDX license shown in a pill; defaults to the license detected in the tree")
+    assets_parser.add_argument("--footer-left", default="",
+                               help="left footer text; defaults to the repository URL")
+    assets_parser.add_argument("--footer-right", default="",
+                               help="right footer text, drawn with a status dot; defaults to the manifest homepage")
+    assets_parser.add_argument("--url", default="", help="repository URL for the left footer slot")
+    assets_parser.add_argument("--homepage", default="",
+                               help="homepage for the right footer slot, shown with a green status dot")
+    assets_parser.add_argument("--accent", default="", help="accent colour as #rrggbb (default #4f9cf9)")
+    assets_parser.add_argument("--size", default="1280x640", help="canvas as WxH, default 1280x640")
+    assets_parser.add_argument("--out-dir", default="assets", help="directory for social-preview.png and .svg")
+    assets_parser.add_argument("--write", action="store_true",
+                               help="write the files; without it the command is a dry run")
     _add_json(assets_parser)
     assets_parser.set_defaults(func=cmd_assets)
 

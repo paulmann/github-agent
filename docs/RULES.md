@@ -289,20 +289,69 @@ and [reference/wiki-home-template.md](../reference/wiki-home-template.md).
 | `assets.social-dimensions` | error/warn | the preview is at least 640×320; 1280×640 is the recommended size (reported as info) |
 | `assets.svg-social` | warn | the preview is a PNG, JPG or GIF; an SVG renders in a README but is rejected as a social preview |
 | `assets.no-pillow` | warn | `assets render` produced the SVG but no PNG |
-| `assets.truncated` | warn | the title or the tagline does not fit the card and would be cut; the finding names the limit |
-| `assets.no-command` | info | the banner carries no command line (`--command` fills the lower band) |
+| `assets.truncated` | warn | the eyebrow, title, summary, tagline or a terminal line does not fit the card and was cut |
+| `assets.facts-overflow` | warn | more pills were requested than the card can show; the finding names the dropped ones |
+| `assets.terminal-overflow` | warn | the terminal panel has room for a few lines; the finding says how many are hidden |
+| `assets.derived-command` | info | the terminal command comes from a manifest's console script, not from `--command` |
+| `assets.no-command` | info | the card has no terminal panel: neither a command nor output was given |
 | `assets.dry-run`, `assets.written` | info | `render` without `--write` writes nothing |
 | `assets.upload-hint` | info | the repository copy is not the social preview until it is uploaded in Settings → Social preview |
 
-The chip row describes what the project *is*: declared keywords first, the top languages only as a
-fallback. Emoji from a `README` H1 are stripped — the font set has no colour glyphs, so they land
-as a box.
+### The card
 
-`assets render` is the generic generator: it reads the repository and draws a card that any project
-can use. This repository's own card is a designed one, and it is still reproducible:
-`python tools/make_social_preview.py --write` renders both `assets/social-preview.png` and its SVG
-twin from a single layout description, so the two files cannot drift apart. The terminal panel in
-it repeats output the tool actually prints, which is the only reason the picture can be trusted.
+`assets render` draws one 1280×640 card: a dark vertical gradient, an accent top rule, an eyebrow, a
+monospace wordmark whose first letter carries the accent colour, a bold summary, a muted tagline, a
+row of fact pills, a terminal panel with traffic lights and command output, and a footer with the
+repository URL on the left and the homepage behind a green status dot on the right. One layout
+description (`BannerSpec` → `Card`) feeds both renderers, so the PNG and the SVG carry the same
+coordinates: the SVG is a faithful twin, not a second design.
+
+A multi-word wordmark is laid out word by word with one designed gap (0.35 em) rather than the
+monospace space cell, which reads as a double space at display size; both renderers read that one
+layout, so a word gap cannot be counted twice. A card with neither a command nor output lines draws
+no terminal panel at all — the identity block is centred instead, because an empty terminal box
+looks unfinished.
+
+| Flag | Meaning |
+|---|---|
+| `--title` | the wordmark; defaults to the README `H1` |
+| `--eyebrow` | the small accent line above it |
+| `--summary` | the bold statement; defaults to the first README paragraph |
+| `--tagline` | the muted line; defaults to the manifest description |
+| `--command` | the command in the terminal panel; defaults to the manifest console script with `--help` |
+| `--output`, `--output-line` | terminal output lines; nothing else is drawn, so no output is invented |
+| `--fact LABEL=VALUE` | a fact pill, drawn value-first (`"MCP tools=40"` becomes `40 MCP tools`); repeatable, at most six |
+| `--facts auto` / `--facts none` | `auto` (the default without `--fact`) derives measurable facts; `none` disables derivation |
+| `--license` | SPDX id for the license pill; defaults to what the tree declares |
+| `--footer-left`, `--footer-right` | footer text overrides |
+| `--url`, `--homepage` | the repository URL and the homepage that gets the status dot |
+| `--accent` | accent colour as `#rrggbb` |
+| `--chips` | text-only pills; kept for older callers |
+| `--size`, `--out-dir`, `--write` | canvas, output directory, and actually writing the files |
+
+### Facts are measured, never guessed
+
+`--facts auto` draws a pill only when the tree proves it, and `--json` names the source of every pill
+it drew:
+
+| Fact | Source |
+|---|---|
+| version | `[project].version`, the `[tool.hatch.version]` path and pattern, `package.json`, `CITATION.cff`, `VERSION`, a local tag |
+| license | the manifest license, else the SPDX line or the first lines of `LICENSE` |
+| runtime dependencies | the declared dependency array of `pyproject.toml` or `package.json` |
+| tests | `def test_…` functions under `tests/` |
+| wiki pages | the entries of the wiki manifest, else `wiki/*.md` |
+| documentation pages | `docs/**/*.md`, translations excluded |
+| languages, source files | the extensions present in the tree |
+
+A missing manifest, license, test suite or wiki means that pill is absent, not estimated. Explicit
+`--fact` values come first; auto facts fill the remaining slots. Emoji from a `README` H1 are
+stripped — the font set has no colour glyphs, so they land as a box.
+
+`python tools/make_social_preview.py --write` renders this repository's own card through the same
+renderer, with an eyebrow, a summary, a homepage footer and a terminal panel whose lines are the
+output of three gate commands executed seconds earlier — which is the only reason the picture can be
+trusted.
 
 ## Metadata
 

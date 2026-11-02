@@ -12,7 +12,7 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![许可证：MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![运行时依赖](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](pyproject.toml)
-[![自检](https://img.shields.io/badge/self--tests-194%20checks-brightgreen)](tests/run_tests.py)
+[![自检](https://img.shields.io/badge/self--tests-236%20checks-brightgreen)](tests/run_tests.py)
 
 <img src="https://github.com/paulmann/github-agent/raw/main/assets/social-preview.png"
      alt="github-agent —— 面向 AI 智能体的仓库与维基管家"
@@ -33,7 +33,7 @@ github-agent 是一个用于 GitHub 仓库及其维基的 Python 命令行管家
 本工具包为上述每一处都建立了可验证的约定，并把这项工作压缩到一条命令。它不写营销文案，
 也不编造数字：它检查人写下的内容，并拒绝发布已经损坏的东西。
 
-> **文档状态。** 本 README 中的每个数字都在 2026-11-01 针对 1.3.0 版本、用表格中列出的命令
+> **文档状态。** 本 README 中的每个数字都在 2026-11-02 针对 1.4.0 版本、用表格中列出的命令
 > 实测得出。较长的指南放在
 > [维基](https://github.com/paulmann/github-agent/wiki) 与 [`docs/`](docs/IMPORT.md) 中；面向
 > 智能体的协议是 [`AGENTS.md`](AGENTS.md)，打包与迁移说明见
@@ -131,7 +131,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```
 
 在 Windows PowerShell 中，同样的挂载写作 `-v "${PWD}:/repo"`。入口点是 `ghagent`，因此镜像名
-之后的第一个参数就是命令。1.3.0 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
+之后的第一个参数就是命令。1.4.0 不发布任何镜像仓库中的镜像，CI 也不构建容器：这个标签是本地
 约定。参见 [examples/docker.md](examples/docker.md)。
 
 ### GitHub Action
@@ -140,7 +140,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: paulmann/github-agent@v1.3.0    # 固定发布标签
+- uses: paulmann/github-agent@v1.4.0    # 固定发布标签
   with:
     command: audit .
     min-score: "80"
@@ -166,7 +166,7 @@ docker run --rm -v "$PWD:/repo" ghagent audit .
 ```yaml
 repos:
   - repo: https://github.com/paulmann/github-agent
-    rev: v1.3.0     # 占位符：固定你信任的发布标签
+    rev: v1.4.0     # 占位符：固定你信任的发布标签
     hooks:
       - id: ghagent-doc
       - id: ghagent-audit
@@ -184,7 +184,7 @@ repos:
 安装之后，一条命令即可回答 CLI 是否为已发布的构建：
 
 ```bash
-ghagent --version     # 打印版本，例如 github-agent 1.3.0
+ghagent --version     # 打印版本，例如 github-agent 1.4.0
 ghagent audit .       # 0 干净，1 有错误级发现，2 用法或环境问题
 ```
 
@@ -194,7 +194,7 @@ ghagent audit .       # 0 干净，1 有错误级发现，2 用法或环境问�
 ```bash
 git clone https://github.com/paulmann/github-agent.git
 cd github-agent
-python tools/ghagent.py selftest    # 194/194 项检查通过
+python tools/ghagent.py selftest    # 236/236 项检查通过
 ```
 
 ## 用法
@@ -208,7 +208,7 @@ ghagent assets check               # 格式、尺寸、替代文本、被引用�
 ghagent wiki build                 # 为维基命名空间重写链接
 ghagent wiki verify                # 每个内部链接都能解析
 ghagent changelog check            # Keep a Changelog 与 SemVer
-ghagent changelog release 1.3.0 --write
+ghagent changelog release 1.4.0 --write
 ghagent meta suggest               # 描述与主题
 ```
 
@@ -238,7 +238,7 @@ score: 72.5% (22 scored, 1 skipped)
 | 查找密钥与本机路径 | `ghagent privacy --root .` |
 | 渲染横幅与社交预览 | `ghagent assets render --write` |
 | 构建、校验并发布维基 | `ghagent wiki build`、`verify`、`publish --push` |
-| 发布一个版本 | `ghagent changelog release 1.3.0 --write` |
+| 发布一个版本 | `ghagent changelog release 1.4.0 --write` |
 | 修正描述与主题 | `ghagent meta apply --repo owner/name --write` |
 | 把技能安装到其他智能体 | `ghagent install --profile harness --write` |
 
@@ -259,11 +259,11 @@ CLI 共有 13 条命令；表格列出的是日常使用的那几条。其余命
 
 ## 数据一览
 
-在本仓库中于 2026-11-01 针对 1.3.0 版本实测：
+在本仓库中于 2026-11-02 针对 1.4.0 版本实测：
 
 | 项目 | 数值 | 测量来源 |
 |---|---:|---|
-| 自检 | 194 | `python tests/run_tests.py` |
+| 自检 | 236 | `python tests/run_tests.py` |
 | CLI 命令 | 13 | `ghagent --help` |
 | 库模块 | 11 | `tools/ghalib/*.py` |
 | 在本仓库上检查的文档规则 | 17 | `ghagent doc --json`，字段 `rules_examined` |
@@ -296,9 +296,7 @@ CLI 共有 13 条命令；表格列出的是日常使用的那几条。其余命
 本文件顶部的横幅由工具包自身生成：
 
 ```bash
-ghagent assets render --title "github-agent" \
-    --tagline "Repository and wiki steward for AI agents: one command per job." \
-    --command "ghagent audit ." --chips "python,github,wiki,lint" --write
+python tools/make_social_preview.py --write
 ```
 
 - `assets/social-preview.png` —— 1280×640，小于 1 MB，可直接用于 **Settings → Social preview**。
@@ -374,7 +372,7 @@ flowchart LR
 | `tools/ghalib/install.py` | 技能安装、sha256 清单、差异、卸载 |
 | `tools/ghalib/report.py` | 发现、严重级别、Markdown 与 `--json` 输出 |
 | `tools/ghalib/config.py`、`tools/ghalib/util.py` | `.ghagent.json`、路径、文本输入输出、锚点 |
-| `tests/run_tests.py` | 194 个自检，带用例与诱饵 |
+| `tests/run_tests.py` | 236 个自检，带用例与诱饵 |
 
 锚点遵循 GitHub 的规则：小写、去掉标点、空格转连字符，重复的标题加 `-1`。这条规则在真实
 的目录上验证过：标题里的破折号会产生双连字符。架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。

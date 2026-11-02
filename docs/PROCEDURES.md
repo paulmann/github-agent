@@ -86,9 +86,15 @@ README.
 
 ```bash
 python tools/ghagent.py assets suggest
-python tools/ghagent.py assets render --title "Project" --tagline "What it does." --command "project --help" --write
+python tools/ghagent.py assets render --eyebrow "ONE COMMAND PER JOB" \
+    --summary "What it does, for whom." --tagline "One more sentence." \
+    --command "project --help" --output "usage: project [-h]" --write
 python tools/ghagent.py assets check
 ```
+
+The card derives its fact pills from the tree (`--facts auto`); pass `--fact "Label=Value"` to add
+one, and `--output` or `--output-line` for terminal output — the renderer draws no line it was not
+given.
 
 **Success:** `assets/social-preview.png` is 1280×640, under 1 MB, referenced from the README with
 alt text, and `assets check` exits `0`. Then upload the same file in **Settings → Social

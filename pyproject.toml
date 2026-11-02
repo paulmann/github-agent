@@ -144,6 +144,13 @@ select = ["E4", "E7", "E9", "F", "I"]
 [tool.mypy]
 python_version = "3.11"
 files = ["tools/ghalib", "tools/ghagent.py"]
+# The tests import the pack the same way the CLI does (`from ghalib import …`), so the same
+# module path has to be on the checker's search path when a caller checks a single file such
+# as `python -m mypy tests/run_tests.py`.
+mypy_path = "tools"
+# Build output is not part of the checked tree: a local `python -m build` leaves a second copy
+# of the package under dist/, which mypy would otherwise report as a duplicate module.
+exclude = ["^dist/", "^site/", "^build/"]
 check_untyped_defs = true
 no_implicit_optional = true
 warn_unused_ignores = true
